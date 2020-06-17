@@ -1,8 +1,10 @@
 import * as core from '@actions/core'
+import SentryCli from '@sentry/cli'
 import {wait} from './wait'
 
 async function run(): Promise<void> {
   try {
+    const cli = new SentryCli()
     const ms: string = core.getInput('milliseconds')
     core.debug(`Waiting ${ms} milliseconds ...`)
 
