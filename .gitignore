@@ -81,6 +81,10 @@ typings/
 # vuepress build output
 .vuepress/dist
 
+# vercel build output
+dist/
+!dist/index.js
+
 # Serverless directories
 .serverless/
 
@@ -97,3 +101,6 @@ Thumbs.db
 # Ignore built ts files
 __tests__/runner/*
 lib/**/*
+
+# IDE settings
+.idea/

@@ -1,10 +1,22 @@
-name: 'Your name here'
-description: 'Provide a description here'
-author: 'Your name or organization here'
+name: 'Sentry Release'
+description: 'GitHub Action for creating a release on Sentry'
+author: 'Sentry'
 inputs:
-  myInput:              # change this
-    description: 'input description here'
-    default: 'default value if applicable'
+  environment:
+    description: 'The name of the environment. E.g. production. TODO'
+    required: true
+  sourcemaps:
+    description: 'Space-separated list of paths to JavaScript sourcemaps. Omit to skip _sending_ sourcemaps.'
+    required: false
+  skip_finalize:
+    description: 'When true, omit setting the _TODO_ timestamp on the release.'
+    default: false
+  started_at:
+    description: 'Unix timestamp '
+    required: false
 runs:
   using: 'node12'
   main: 'dist/index.js'
+branding:
+  icon: 'triangle'
+  color: 'purple'
