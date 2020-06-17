@@ -1,8 +1,8 @@
 {
-  "name": "typescript-action",
-  "version": "0.0.0",
+  "name": "github-action-release",
+  "version": "0.0.1",
   "private": true,
-  "description": "TypeScript template action",
+  "description": "GitHub Action for creating a release on Sentry",
   "main": "lib/main.js",
   "scripts": {
     "build": "tsc",
@@ -15,14 +15,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/actions/typescript-action.git"
+    "url": "git+https://github.com/getsentry/github-action-release.git"
   },
   "keywords": [
     "actions",
-    "node",
-    "setup"
+    "sentry",
+    "release"
   ],
-  "author": "YourNameOrOrganization",
+  "author": "Sentry",
   "license": "MIT",
   "dependencies": {
     "@actions/core": "^1.2.4",
