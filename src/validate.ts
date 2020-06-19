@@ -17,7 +17,6 @@ export const getVersion = async (): Promise<string> => {
     version = await getCLI().proposeVersion();
   }
 
-  core.debug(`Version is ${version}`);
   return version;
 };
 
@@ -66,7 +65,7 @@ export const getSourcemaps = (): string[] => {
 };
 
 /**
- * TODO
+ * Find out from input if we should finalize the release.
  * @returns boolean
  */
 export const getShouldFinalize = (): boolean => {
