@@ -1,6 +1,6 @@
 declare module '@sentry/cli' {
   export class Releases {
-    constructor(configFile: string, options?: {silent?: boolean});
+    constructor(configFile?: string, options?: {silent?: boolean});
     new(release: string): Promise<void>;
     setCommits(
       release: string,
