@@ -29,11 +29,19 @@ describe('validate', () => {
 
 // shows how the runner will run a javascript action with env / stdout protocol
 test('test runs', () => {
-  process.env['INPUT_ENVIRONMENT'] = 'production';
-  process.env['MOCK'] = 'true';
-  const ip = path.join(__dirname, '..', 'lib', 'main.js');
-  const options: cp.ExecSyncOptions = {
-    env: process.env,
-  };
-  console.log(cp.spawnSync('node', [ip], options).toString());
+  const output = cp.execSync(
+    `node ${path.join(__dirname, '..', 'lib', 'main.js')}`,
+    {
+      env: {
+        ...process.env,
+        INPUT_ENVIRONMENT: 'production',
+        MOCK: 'true',
+        SENTRY_AUTH_TOKEN: 'test_token',
+        SENTRY_ORG: 'test_org',
+        SENTRY_PROJECT: 'test_project',
+      },
+    }
+  );
+
+  console.log(output.toString());
 });

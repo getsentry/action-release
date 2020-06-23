@@ -89,11 +89,22 @@ export const getShouldFinalize = (): boolean => {
 };
 
 /**
- * TODO should I check for these environment variables or let the CLI break when
- * they're missing?
+ * Check for required environment variables.
  */
 export const checkEnvironmentVariables = (): void => {
-  process.env['SENTRY_ORG'];
-  process.env['SENTRY_PROJECT'];
-  process.env['SENTRY_AUTH_TOKEN'];
+  if (!process.env['SENTRY_ORG']) {
+    throw Error(
+      'Environment variable SENTRY_ORG is missing an organization slug'
+    );
+  }
+  if (!process.env['SENTRY_PROJECT']) {
+    throw Error(
+      'Environment variable SENTRY_PROJECT is missing an project slug'
+    );
+  }
+  if (!process.env['SENTRY_AUTH_TOKEN']) {
+    throw Error(
+      'Environment variable SENTRY_AUTH_TOKEN is missing an auth token'
+    );
+  }
 };

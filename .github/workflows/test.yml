@@ -16,6 +16,10 @@ jobs:
         npm run all
   test: # make sure the action works on a clean machine without building
     runs-on: ubuntu-latest
+    env:
+      SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+      SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
+      SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
     steps:
     - uses: actions/checkout@v2
     - uses: ./
