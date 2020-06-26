@@ -81,10 +81,6 @@ typings/
 # vuepress build output
 .vuepress/dist
 
-# vercel build output
-dist/
-!dist/index.js
-
 # Serverless directories
 .serverless/
 

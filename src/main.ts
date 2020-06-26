@@ -2,7 +2,7 @@ import * as core from '@actions/core';
 import {getCLI} from './cli';
 import * as validate from './validate';
 
-export const release = async (): Promise<void> => {
+(async () => {
   try {
     // Validate parameters first so we can fail early.
     validate.checkEnvironmentVariables();
@@ -40,6 +40,4 @@ export const release = async (): Promise<void> => {
   } catch (error) {
     core.setFailed(error.message);
   }
-};
-
-release();
+})();

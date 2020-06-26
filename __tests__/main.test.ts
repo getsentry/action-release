@@ -30,7 +30,7 @@ describe('validate', () => {
 // shows how the runner will run a javascript action with env / stdout protocol
 test('test runs', () => {
   const output = cp.execSync(
-    `node ${path.join(__dirname, '..', 'lib', 'main.js')}`,
+    `node ${path.join(__dirname, '..', 'dist', 'index.js')}`,
     {
       env: {
         ...process.env,
