@@ -7,17 +7,13 @@ import {getCLI} from './cli';
  * @returns Promise<string>
  */
 export const getVersion = async (): Promise<string> => {
-  let version: string;
-
   const versionOption: string = core.getInput('version');
   if (versionOption) {
-    version = versionOption;
-  } else {
-    core.debug('Version not provided, proposing one...');
-    version = await getCLI().proposeVersion();
+    return versionOption;
   }
 
-  return version;
+  core.debug('Version not provided, proposing one...');
+  return getCLI().proposeVersion();
 };
 
 /**
