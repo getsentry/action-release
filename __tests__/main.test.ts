@@ -1,4 +1,4 @@
-import * as cp from 'child_process';
+import {execSync} from 'child_process';
 import * as path from 'path';
 import * as process from 'process';
 import {getShouldFinalize} from '../src/validate';
@@ -29,7 +29,7 @@ describe('validate', () => {
 
 // shows how the runner will run a javascript action with env / stdout protocol
 test('test runs', () => {
-  const output = cp.execSync(
+  const output = execSync(
     `node ${path.join(__dirname, '..', 'dist', 'index.js')}`,
     {
       env: {
