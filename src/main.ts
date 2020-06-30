@@ -27,7 +27,7 @@ import * as validate from './validate';
     core.debug(`Adding deploy to release`);
     await getCLI().newDeploy(version, {
       env: environment,
-      started: deployStartedAtOption,
+      ...(deployStartedAtOption && {started: deployStartedAtOption}),
     });
 
     core.debug(`Finalizing the release`);

@@ -31,12 +31,12 @@ export const getEnvironment = (): string => {
  * TODO what if this is in the future?
  * TODO FIRST it could also be a datetime.
  * @throws
- * @returns string
+ * @returns number
  */
-export const getStartedAt = (): number | undefined => {
+export const getStartedAt = (): number | null => {
   const startedAtOption: string = core.getInput('started_at');
   if (!startedAtOption) {
-    return undefined;
+    return null;
   }
 
   const startedAt = parseInt(startedAtOption);
