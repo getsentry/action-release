@@ -95,7 +95,7 @@ export const checkEnvironmentVariables = (): void => {
   }
   if (!process.env['SENTRY_PROJECT']) {
     throw Error(
-      'Environment variable SENTRY_PROJECT is missing an project slug'
+      'Environment variable SENTRY_PROJECT is missing a project slug'
     );
   }
   if (!process.env['SENTRY_AUTH_TOKEN']) {
