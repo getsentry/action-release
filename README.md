@@ -14,7 +14,7 @@ Additionally, releases are used for applying source maps to minified JavaScript 
 steps:
 ...
 - name: Sentry Release
-  uses: getsentry/github-action-release@v0.0.1
+  uses: getsentry/action-release@v0.0.1
   with:
     environment: 'production'
     sourcemaps: './lib'
@@ -24,7 +24,7 @@ steps:
 
 
 ## Contributing
-See the [Contributing Guide](https://github.com/getsentry/github-action-release/blob/master/CONTRIBUTING).
+See the [Contributing Guide](https://github.com/getsentry/action-release/blob/master/CONTRIBUTING).
 
 ## License
-See the [License File](https://github.com/getsentry/github-action-release/blob/master/LICENSE).
+See the [License File](https://github.com/getsentry/action-release/blob/master/LICENSE).
