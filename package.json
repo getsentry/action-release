@@ -10,7 +10,7 @@
     "format-check": "prettier --check **/*.ts",
     "lint": "eslint src/**/*.ts",
     "test": "jest",
-    "all": "npm run format && npm run lint && npm run build && npm test"
+    "all": "yarn run format && yarn run lint && yarn run build && yarn test"
   },
   "repository": {
     "type": "git",
