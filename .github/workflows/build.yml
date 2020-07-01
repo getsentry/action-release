@@ -19,10 +19,10 @@ jobs:
         node-version: 12.x
 
     - name: Install dependencies
-      run: npm install
+      run: yarn install
 
     - name: Build
-      run: npm run build
+      run: yarn run build
 
     - name: Commit changes
       uses: stefanzweifel/git-auto-commit-action@v4
