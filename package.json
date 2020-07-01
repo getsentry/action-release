@@ -1,5 +1,5 @@
 {
-  "name": "github-action-release",
+  "name": "action-release",
   "version": "0.0.1",
   "private": true,
   "description": "GitHub Action for creating a release on Sentry",
@@ -15,7 +15,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/getsentry/github-action-release.git"
+    "url": "git+https://github.com/getsentry/action-release.git"
   },
   "keywords": [
     "actions",
