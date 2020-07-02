@@ -118,10 +118,7 @@ const validate = __importStar(__webpack_require__(196));
             yield cli_1.getCLI().uploadSourceMaps(version, { include: sourcemaps });
         }
         core.debug(`Adding deploy to release`);
-        yield cli_1.getCLI().newDeploy(version, {
-            env: environment,
-            started: deployStartedAtOption,
-        });
+        yield cli_1.getCLI().newDeploy(version, Object.assign({ env: environment }, (deployStartedAtOption && { started: deployStartedAtOption })));
         core.debug(`Finalizing the release`);
         if (shouldFinalize) {
             yield cli_1.getCLI().finalize(version);
@@ -180,16 +177,12 @@ const cli_1 = __webpack_require__(750);
  * @returns Promise<string>
  */
 exports.getVersion = () => __awaiter(void 0, void 0, void 0, function* () {
-    let version;
     const versionOption = core.getInput('version');
     if (versionOption) {
-        version = versionOption;
+        return versionOption;
     }
-    else {
-        core.debug('Version not provided, proposing one...');
-        version = yield cli_1.getCLI().proposeVersion();
-    }
-    return version;
+    core.debug('Version not provided, proposing one...');
+    return cli_1.getCLI().proposeVersion();
 });
 /**
  * Environment is required.
@@ -205,12 +198,12 @@ exports.getEnvironment = () => {
  * TODO what if this is in the future?
  * TODO FIRST it could also be a datetime.
  * @throws
- * @returns string
+ * @returns number
  */
 exports.getStartedAt = () => {
     const startedAtOption = core.getInput('started_at');
     if (!startedAtOption) {
-        return undefined;
+        return null;
     }
     const startedAt = parseInt(startedAtOption);
     if (isNaN(startedAt)) {
@@ -235,20 +228,20 @@ exports.getSourcemaps = () => {
  * @returns boolean
  */
 exports.getShouldFinalize = () => {
-    const skipFinalizeOption = core.getInput('skip_finalize');
-    if (!skipFinalizeOption) {
+    const finalizeOption = core.getInput('finalize');
+    if (!finalizeOption) {
         return true;
     }
-    const skipFinalize = skipFinalizeOption.trim().toLowerCase();
-    switch (skipFinalize) {
+    const finalize = finalizeOption.trim().toLowerCase();
+    switch (finalize) {
         case 'true':
         case '1':
-            return false;
+            return true;
         case 'false':
         case '0':
-            return true;
+            return false;
     }
-    throw Error('skip_finalize is not a boolean');
+    throw Error('finalize is not a boolean');
 };
 /**
  * Check for required environment variables.
@@ -258,7 +251,7 @@ exports.checkEnvironmentVariables = () => {
         throw Error('Environment variable SENTRY_ORG is missing an organization slug');
     }
     if (!process.env['SENTRY_PROJECT']) {
-        throw Error('Environment variable SENTRY_PROJECT is missing an project slug');
+        throw Error('Environment variable SENTRY_PROJECT is missing a project slug');
     }
     if (!process.env['SENTRY_AUTH_TOKEN']) {
         throw Error('Environment variable SENTRY_AUTH_TOKEN is missing an auth token');
@@ -574,7 +567,7 @@ function escapeProperty(s) {
 /***/ 439:
 /***/ (function(module) {
 
-module.exports = {"_args":[["@sentry/cli@1.54.0","/home/runner/work/action-release/action-release"]],"_from":"@sentry/cli@1.54.0","_id":"@sentry/cli@1.54.0","_inBundle":false,"_integrity":"sha512-021X1UbkSLlMTK3iivbf+hzJkL1gaVYbL6fpAPa4BU9GHy89OVU1w1E3SX/Nr3uJlAF3dF7HfYm95UCMuVFkLw==","_location":"/@sentry/cli","_phantomChildren":{},"_requested":{"type":"version","registry":true,"raw":"@sentry/cli@1.54.0","name":"@sentry/cli","escapedName":"@sentry%2fcli","scope":"@sentry","rawSpec":"1.54.0","saveSpec":null,"fetchSpec":"1.54.0"},"_requiredBy":["/"],"_resolved":"https://registry.npmjs.org/@sentry/cli/-/cli-1.54.0.tgz","_spec":"1.54.0","_where":"/home/runner/work/action-release/action-release","bin":{"sentry-cli":"bin/sentry-cli"},"bugs":{"url":"https://github.com/getsentry/sentry-cli/issues"},"dependencies":{"https-proxy-agent":"^5.0.0","mkdirp":"^0.5.5","node-fetch":"^2.6.0","progress":"^2.0.3","proxy-from-env":"^1.1.0"},"description":"A command line utility to work with Sentry. https://docs.sentry.io/hosted/learn/cli/","devDependencies":{"eslint":"^6.8.0","eslint-config-airbnb-base":"^14.1.0","eslint-config-prettier":"^6.10.1","eslint-plugin-import":"^2.20.2","jest":"^25.3.0","npm-run-all":"^4.1.5","prettier":"^1.19.1"},"engines":{"node":">= 8"},"homepage":"https://docs.sentry.io/hosted/learn/cli/","jest":{"collectCoverage":true,"testEnvironment":"node"},"keywords":["sentry","sentry-cli","cli"],"license":"BSD-3-Clause","main":"js/index.js","name":"@sentry/cli","repository":{"type":"git","url":"git+https://github.com/getsentry/sentry-cli.git"},"scripts":{"fix":"npm-run-all fix:eslint fix:prettier","fix:eslint":"eslint --fix bin/* scripts/**/*.js js/**/*.js","fix:prettier":"prettier --write bin/* scripts/**/*.js js/**/*.js","install":"node scripts/install.js","test":"npm-run-all test:jest test:eslint test:prettier","test:eslint":"eslint bin/* scripts/**/*.js js/**/*.js","test:jest":"jest","test:prettier":"prettier --check  bin/* scripts/**/*.js js/**/*.js","test:watch":"jest --watch --notify"},"version":"1.54.0"};
+module.exports = {"name":"@sentry/cli","version":"1.55.0","description":"A command line utility to work with Sentry. https://docs.sentry.io/hosted/learn/cli/","homepage":"https://docs.sentry.io/hosted/learn/cli/","license":"BSD-3-Clause","keywords":["sentry","sentry-cli","cli"],"repository":{"type":"git","url":"https://github.com/getsentry/sentry-cli"},"bugs":{"url":"https://github.com/getsentry/sentry-cli/issues"},"engines":{"node":">= 8"},"main":"js/index.js","bin":{"sentry-cli":"bin/sentry-cli"},"scripts":{"install":"node scripts/install.js","fix":"npm-run-all fix:eslint fix:prettier","fix:eslint":"eslint --fix bin/* scripts/**/*.js js/**/*.js","fix:prettier":"prettier --write bin/* scripts/**/*.js js/**/*.js","test":"npm-run-all test:jest test:eslint test:prettier","test:jest":"jest","test:watch":"jest --watch --notify","test:eslint":"eslint bin/* scripts/**/*.js js/**/*.js","test:prettier":"prettier --check  bin/* scripts/**/*.js js/**/*.js"},"dependencies":{"https-proxy-agent":"^5.0.0","mkdirp":"^0.5.5","node-fetch":"^2.6.0","progress":"^2.0.3","proxy-from-env":"^1.1.0"},"devDependencies":{"eslint":"^6.8.0","eslint-config-airbnb-base":"^14.1.0","eslint-config-prettier":"^6.10.1","eslint-plugin-import":"^2.20.2","jest":"^25.3.0","npm-run-all":"^4.1.5","prettier":"^1.19.1"},"jest":{"collectCoverage":true,"testEnvironment":"node","testPathIgnorePatterns":["src/utils"]}};
 
 /***/ }),
 
