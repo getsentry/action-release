@@ -40,7 +40,7 @@ module.exports =
 /******/ 	// the startup function
 /******/ 	function startup() {
 /******/ 		// Load entry module and return exports
-/******/ 		return __webpack_require__(198);
+/******/ 		return __webpack_require__(131);
 /******/ 	};
 /******/
 /******/ 	// run startup
@@ -63,7 +63,7 @@ module.exports = require("child_process");
 
 /***/ }),
 
-/***/ 198:
+/***/ 131:
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
@@ -96,30 +96,167 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 const core = __importStar(__webpack_require__(470));
-const cli_1 = __importDefault(__webpack_require__(928));
-const wait_1 = __webpack_require__(521);
-function run() {
-    return __awaiter(this, void 0, void 0, function* () {
-        try {
-            const cli = new cli_1.default();
-            const ms = core.getInput('milliseconds');
-            core.debug(`Waiting ${ms} milliseconds ...`);
-            core.debug(new Date().toTimeString());
-            yield wait_1.wait(parseInt(ms, 10));
-            core.debug(new Date().toTimeString());
-            core.setOutput('time', new Date().toTimeString());
+const cli_1 = __webpack_require__(750);
+const validate = __importStar(__webpack_require__(196));
+(() => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        // Validate parameters first so we can fail early.
+        validate.checkEnvironmentVariables();
+        const environment = validate.getEnvironment();
+        const sourcemaps = validate.getSourcemaps();
+        const shouldFinalize = validate.getShouldFinalize();
+        const deployStartedAtOption = validate.getStartedAt();
+        const version = yield validate.getVersion();
+        core.debug(`Version is ${version}`);
+        yield cli_1.getCLI().new(version);
+        core.debug(`Setting commits`);
+        yield cli_1.getCLI().setCommits(version, { auto: true });
+        if (sourcemaps) {
+            core.debug(`Adding sourcemaps`);
+            yield cli_1.getCLI().uploadSourceMaps(version, { include: sourcemaps });
         }
-        catch (error) {
-            core.setFailed(error.message);
+        core.debug(`Adding deploy to release`);
+        yield cli_1.getCLI().newDeploy(version, Object.assign({ env: environment }, (deployStartedAtOption && { started: deployStartedAtOption })));
+        core.debug(`Finalizing the release`);
+        if (shouldFinalize) {
+            yield cli_1.getCLI().finalize(version);
         }
+        core.debug(`Done`);
+        core.setOutput('version', version);
+    }
+    catch (error) {
+        core.setFailed(error.message);
+    }
+}))();
+
+
+/***/ }),
+
+/***/ 196:
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
-}
-run();
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.checkEnvironmentVariables = exports.getShouldFinalize = exports.getSourcemaps = exports.getStartedAt = exports.getEnvironment = exports.getVersion = void 0;
+const core = __importStar(__webpack_require__(470));
+const cli_1 = __webpack_require__(750);
+/**
+ * Get the release version string from parameter or propose one.
+ * @throws
+ * @returns Promise<string>
+ */
+exports.getVersion = () => __awaiter(void 0, void 0, void 0, function* () {
+    const versionOption = core.getInput('version');
+    if (versionOption) {
+        return versionOption;
+    }
+    core.debug('Version not provided, proposing one...');
+    return cli_1.getCLI().proposeVersion();
+});
+/**
+ * Environment is required.
+ * @throws
+ * @returns string
+ */
+exports.getEnvironment = () => {
+    return core.getInput('environment', { required: true });
+};
+/**
+ * TODO I don't want to duplicate logic here. How should I validate the timestamp?
+ * TODO must be a UNIX timestamp
+ * TODO what if this is in the future?
+ * TODO FIRST it could also be a datetime.
+ * @throws
+ * @returns number
+ */
+exports.getStartedAt = () => {
+    const startedAtOption = core.getInput('started_at');
+    if (!startedAtOption) {
+        return null;
+    }
+    const startedAt = parseInt(startedAtOption);
+    if (isNaN(startedAt)) {
+        throw new Error('started_at is not a number');
+    }
+    return startedAt;
+};
+/**
+ * TODO EXPLAIN FORMAT IN THE README
+ * TODO handle failure
+ * @returns string[]
+ */
+exports.getSourcemaps = () => {
+    const sourcemapsOption = core.getInput('sourcemaps');
+    if (!sourcemapsOption) {
+        return [];
+    }
+    return sourcemapsOption.split(' ');
+};
+/**
+ * Find out from input if we should finalize the release.
+ * @returns boolean
+ */
+exports.getShouldFinalize = () => {
+    const finalizeOption = core.getInput('finalize');
+    if (!finalizeOption) {
+        return true;
+    }
+    const finalize = finalizeOption.trim().toLowerCase();
+    switch (finalize) {
+        case 'true':
+        case '1':
+            return true;
+        case 'false':
+        case '0':
+            return false;
+    }
+    throw Error('finalize is not a boolean');
+};
+/**
+ * Check for required environment variables.
+ */
+exports.checkEnvironmentVariables = () => {
+    if (!process.env['SENTRY_ORG']) {
+        throw Error('Environment variable SENTRY_ORG is missing an organization slug');
+    }
+    if (!process.env['SENTRY_PROJECT']) {
+        throw Error('Environment variable SENTRY_PROJECT is missing a project slug');
+    }
+    if (!process.env['SENTRY_AUTH_TOKEN']) {
+        throw Error('Environment variable SENTRY_AUTH_TOKEN is missing an auth token');
+    }
+};
 
 
 /***/ }),
@@ -430,7 +567,7 @@ function escapeProperty(s) {
 /***/ 439:
 /***/ (function(module) {
 
-module.exports = {"_from":"@sentry/cli@^1.54.0","_id":"@sentry/cli@1.54.0","_inBundle":false,"_integrity":"sha512-021X1UbkSLlMTK3iivbf+hzJkL1gaVYbL6fpAPa4BU9GHy89OVU1w1E3SX/Nr3uJlAF3dF7HfYm95UCMuVFkLw==","_location":"/@sentry/cli","_phantomChildren":{},"_requested":{"type":"range","registry":true,"raw":"@sentry/cli@^1.54.0","name":"@sentry/cli","escapedName":"@sentry%2fcli","scope":"@sentry","rawSpec":"^1.54.0","saveSpec":null,"fetchSpec":"^1.54.0"},"_requiredBy":["/"],"_resolved":"https://registry.npmjs.org/@sentry/cli/-/cli-1.54.0.tgz","_shasum":"ac608347e5a740ee10fe4787310e5ad0b0912920","_spec":"@sentry/cli@^1.54.0","_where":"/Users/marcos/sentry/github-action-release","bin":{"sentry-cli":"bin/sentry-cli"},"bugs":{"url":"https://github.com/getsentry/sentry-cli/issues"},"bundleDependencies":false,"dependencies":{"https-proxy-agent":"^5.0.0","mkdirp":"^0.5.5","node-fetch":"^2.6.0","progress":"^2.0.3","proxy-from-env":"^1.1.0"},"deprecated":false,"description":"A command line utility to work with Sentry. https://docs.sentry.io/hosted/learn/cli/","devDependencies":{"eslint":"^6.8.0","eslint-config-airbnb-base":"^14.1.0","eslint-config-prettier":"^6.10.1","eslint-plugin-import":"^2.20.2","jest":"^25.3.0","npm-run-all":"^4.1.5","prettier":"^1.19.1"},"engines":{"node":">= 8"},"homepage":"https://docs.sentry.io/hosted/learn/cli/","jest":{"collectCoverage":true,"testEnvironment":"node"},"keywords":["sentry","sentry-cli","cli"],"license":"BSD-3-Clause","main":"js/index.js","name":"@sentry/cli","repository":{"type":"git","url":"git+https://github.com/getsentry/sentry-cli.git"},"scripts":{"fix":"npm-run-all fix:eslint fix:prettier","fix:eslint":"eslint --fix bin/* scripts/**/*.js js/**/*.js","fix:prettier":"prettier --write bin/* scripts/**/*.js js/**/*.js","install":"node scripts/install.js","test":"npm-run-all test:jest test:eslint test:prettier","test:eslint":"eslint bin/* scripts/**/*.js js/**/*.js","test:jest":"jest","test:prettier":"prettier --check  bin/* scripts/**/*.js js/**/*.js","test:watch":"jest --watch --notify"},"version":"1.54.0"};
+module.exports = {"name":"@sentry/cli","version":"1.55.0","description":"A command line utility to work with Sentry. https://docs.sentry.io/hosted/learn/cli/","homepage":"https://docs.sentry.io/hosted/learn/cli/","license":"BSD-3-Clause","keywords":["sentry","sentry-cli","cli"],"repository":{"type":"git","url":"https://github.com/getsentry/sentry-cli"},"bugs":{"url":"https://github.com/getsentry/sentry-cli/issues"},"engines":{"node":">= 8"},"main":"js/index.js","bin":{"sentry-cli":"bin/sentry-cli"},"scripts":{"install":"node scripts/install.js","fix":"npm-run-all fix:eslint fix:prettier","fix:eslint":"eslint --fix bin/* scripts/**/*.js js/**/*.js","fix:prettier":"prettier --write bin/* scripts/**/*.js js/**/*.js","test":"npm-run-all test:jest test:eslint test:prettier","test:jest":"jest","test:watch":"jest --watch --notify","test:eslint":"eslint bin/* scripts/**/*.js js/**/*.js","test:prettier":"prettier --check  bin/* scripts/**/*.js js/**/*.js"},"dependencies":{"https-proxy-agent":"^5.0.0","mkdirp":"^0.5.5","node-fetch":"^2.6.0","progress":"^2.0.3","proxy-from-env":"^1.1.0"},"devDependencies":{"eslint":"^6.8.0","eslint-config-airbnb-base":"^14.1.0","eslint-config-prettier":"^6.10.1","eslint-plugin-import":"^2.20.2","jest":"^25.3.0","npm-run-all":"^4.1.5","prettier":"^1.19.1"},"jest":{"collectCoverage":true,"testEnvironment":"node","testPathIgnorePatterns":["src/utils"]}};
 
 /***/ }),
 
@@ -886,8 +1023,15 @@ module.exports = Releases;
 
 /***/ }),
 
-/***/ 521:
-/***/ (function(__unusedmodule, exports) {
+/***/ 622:
+/***/ (function(module) {
+
+module.exports = require("path");
+
+/***/ }),
+
+/***/ 750:
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
 
@@ -900,27 +1044,32 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.wait = void 0;
-function wait(milliseconds) {
-    return __awaiter(this, void 0, void 0, function* () {
-        return new Promise(resolve => {
-            if (isNaN(milliseconds)) {
-                throw new Error('milliseconds not a number');
-            }
-            setTimeout(() => resolve('done!'), milliseconds);
-        });
-    });
-}
-exports.wait = wait;
+exports.getCLI = void 0;
+const cli_1 = __importDefault(__webpack_require__(928));
+/**
+ * CLI Singleton
+ *
+ * When the `MOCK` environment variable is set, stub out network calls.
+ */
+let cli;
+exports.getCLI = () => {
+    if (!cli) {
+        cli = new cli_1.default().releases;
+        if (process.env['MOCK']) {
+            cli.execute = (args, 
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            live) => __awaiter(void 0, void 0, void 0, function* () {
+                return Promise.resolve(args.join(' '));
+            });
+        }
+    }
+    return cli;
+};
 
-
-/***/ }),
-
-/***/ 622:
-/***/ (function(module) {
-
-module.exports = require("path");
 
 /***/ }),
 

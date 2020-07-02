@@ -1,27 +1,47 @@
-import {wait} from '../src/wait'
-import * as process from 'process'
-import * as cp from 'child_process'
-import * as path from 'path'
+import {execSync} from 'child_process';
+import * as path from 'path';
+import * as process from 'process';
+import {getShouldFinalize} from '../src/validate';
 
-test('throws invalid number', async () => {
-  const input = parseInt('foo', 10)
-  await expect(wait(input)).rejects.toThrow('milliseconds not a number')
-})
+describe('validate', () => {
+  describe('getShouldFinalize', () => {
+    afterEach(() => {
+      delete process.env['INPUT_FINALIZE'];
+    });
 
-test('wait 500 ms', async () => {
-  const start = new Date()
-  await wait(500)
-  const end = new Date()
-  var delta = Math.abs(end.getTime() - start.getTime())
-  expect(delta).toBeGreaterThan(450)
-})
+    test('should throw an error when finalize is invalid', async () => {
+      process.env['INPUT_FINALIZE'] = 'error';
+      expect(() => getShouldFinalize()).toThrow(
+        'finalize is not a boolean'
+      );
+    });
+
+    test('should return true when finalize is omitted', async () => {
+      expect(getShouldFinalize()).toBe(true);
+    });
+
+    test('should return false when finalize is false', () => {
+      process.env['INPUT_FINALIZE'] = 'false';
+      expect(getShouldFinalize()).toBe(false);
+    });
+  });
+});
 
 // shows how the runner will run a javascript action with env / stdout protocol
 test('test runs', () => {
-  process.env['INPUT_MILLISECONDS'] = '500'
-  const ip = path.join(__dirname, '..', 'lib', 'main.js')
-  const options: cp.ExecSyncOptions = {
-    env: process.env
-  }
-  console.log(cp.execSync(`node ${ip}`, options).toString())
-})
+  const output = execSync(
+    `node ${path.join(__dirname, '..', 'dist', 'index.js')}`,
+    {
+      env: {
+        ...process.env,
+        INPUT_ENVIRONMENT: 'production',
+        MOCK: 'true',
+        SENTRY_AUTH_TOKEN: 'test_token',
+        SENTRY_ORG: 'test_org',
+        SENTRY_PROJECT: 'test_project',
+      },
+    }
+  );
+
+  console.log(output.toString());
+});

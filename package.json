@@ -3,15 +3,14 @@
   "version": "0.0.1",
   "private": true,
   "description": "GitHub Action for creating a release on Sentry",
-  "main": "lib/main.js",
+  "main": "dist/index.js",
   "scripts": {
-    "build": "tsc",
+    "build": "ncc build src/main.ts",
     "format": "prettier --write **/*.ts",
     "format-check": "prettier --check **/*.ts",
     "lint": "eslint src/**/*.ts",
-    "pack": "ncc build",
     "test": "jest",
-    "all": "npm run build && npm run format && npm run lint && npm run pack && npm test"
+    "all": "yarn run format && yarn run lint && yarn run build && yarn test"
   },
   "repository": {
     "type": "git",
@@ -43,5 +42,9 @@
     "prettier": "^2.0.5",
     "ts-jest": "^26.1.0",
     "typescript": "^3.9.5"
+  },
+  "volta": {
+    "node": "12.17.0",
+    "yarn": "1.22.4"
   }
 }
