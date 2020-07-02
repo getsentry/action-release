@@ -65,23 +65,23 @@ export const getSourcemaps = (): string[] => {
  * @returns boolean
  */
 export const getShouldFinalize = (): boolean => {
-  const skipFinalizeOption = core.getInput('skip_finalize');
-  if (!skipFinalizeOption) {
+  const finalizeOption = core.getInput('finalize');
+  if (!finalizeOption) {
     return true;
   }
 
-  const skipFinalize = skipFinalizeOption.trim().toLowerCase();
-  switch (skipFinalize) {
+  const finalize = finalizeOption.trim().toLowerCase();
+  switch (finalize) {
     case 'true':
     case '1':
-      return false;
+      return true;
 
     case 'false':
     case '0':
-      return true;
+      return false;
   }
 
-  throw Error('skip_finalize is not a boolean');
+  throw Error('finalize is not a boolean');
 };
 
 /**

@@ -8,9 +8,9 @@ inputs:
   sourcemaps:
     description: 'Space-separated list of paths to JavaScript sourcemaps. Omit to skip _sending_ sourcemaps.'
     required: false
-  skip_finalize:
-    description: 'When true, omit setting the _TODO_ timestamp on the release.'
-    default: false
+  finalize:
+    description: 'When false, omit setting the _TODO_ timestamp on the release.'
+    default: true
   started_at:
     description: 'Unix timestamp '
     required: false

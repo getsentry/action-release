@@ -6,22 +6,22 @@ import {getShouldFinalize} from '../src/validate';
 describe('validate', () => {
   describe('getShouldFinalize', () => {
     afterEach(() => {
-      delete process.env['INPUT_SKIP_FINALIZE'];
+      delete process.env['INPUT_FINALIZE'];
     });
 
-    test('should throw an error when skip_finalize is invalid', async () => {
-      process.env['INPUT_SKIP_FINALIZE'] = 'error';
+    test('should throw an error when finalize is invalid', async () => {
+      process.env['INPUT_FINALIZE'] = 'error';
       expect(() => getShouldFinalize()).toThrow(
-        'skip_finalize is not a boolean'
+        'finalize is not a boolean'
       );
     });
 
-    test('should return true when skip_finalize is omitted', async () => {
+    test('should return true when finalize is omitted', async () => {
       expect(getShouldFinalize()).toBe(true);
     });
 
-    test('should return false when skip_finalize is true', () => {
-      process.env['INPUT_SKIP_FINALIZE'] = 'true';
+    test('should return false when finalize is false', () => {
+      process.env['INPUT_FINALIZE'] = 'false';
       expect(getShouldFinalize()).toBe(false);
     });
   });
