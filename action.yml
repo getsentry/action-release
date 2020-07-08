@@ -15,8 +15,8 @@ inputs:
     description: 'Unix timestamp '
     required: false
 runs:
-  using: 'node12'
-  main: 'dist/index.js'
+  using: 'docker'
+  image: 'Dockerfile'
 branding:
   icon: 'triangle'
   color: 'purple'
