@@ -14,10 +14,8 @@ RUN export YARN_CACHE_FOLDER="$(mktemp -d)" \
   && yarn install --frozen-lockfile --production --quiet \
   && rm -r "$YARN_CACHE_FOLDER"
 
-
 COPY --from=builder /app/dist /action-release/dist/
 RUN chmod +x /action-release/dist/index.js
-#RUN ln -s /action-release/dist/index.js ./dist/index.js
 
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
