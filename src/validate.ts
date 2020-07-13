@@ -26,10 +26,9 @@ export const getEnvironment = (): string => {
 };
 
 /**
- * TODO I don't want to duplicate logic here. How should I validate the timestamp?
- * TODO must be a UNIX timestamp
- * TODO what if this is in the future?
- * TODO FIRST it could also be a datetime.
+ * Optionally get a UNIX timestamp of when the deployment started.
+ * Input timestamp may also be ISO 8601.
+ *
  * @throws
  * @returns number
  */
@@ -39,11 +38,24 @@ export const getStartedAt = (): number | null => {
     return null;
   }
 
-  const startedAt = parseInt(startedAtOption);
-  if (isNaN(startedAt)) {
-    throw new Error('started_at is not a number');
+  // In sentry-cli, we parse integer first.
+  const startedAtTimestamp = parseInt(startedAtOption);
+  const startedAt8601 = Math.floor(Date.parse(startedAtOption) / 1000);
+
+  let outputTimestamp;
+  if (!isNaN(startedAtTimestamp)) {
+    outputTimestamp = startedAtTimestamp;
+  } else if (!isNaN(startedAt8601)) {
+    outputTimestamp = startedAt8601;
   }
-  return startedAt;
+
+  if (!outputTimestamp || outputTimestamp < 0) {
+    throw new Error(
+      'started_at not in valid format. Unix timestamp or ISO 8601 date expected'
+    );
+  }
+
+  return outputTimestamp;
 };
 
 /**
