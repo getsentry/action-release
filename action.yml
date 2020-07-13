@@ -3,16 +3,16 @@ description: 'GitHub Action for creating a release on Sentry'
 author: 'Sentry'
 inputs:
   environment:
-    description: 'The name of the environment. E.g. production. TODO'
+    description: 'Set the environment for this release. E.g. "production" or "staging".'
     required: true
   sourcemaps:
-    description: 'Space-separated list of paths to JavaScript sourcemaps. Omit to skip _sending_ sourcemaps.'
+    description: 'Space-separated list of paths to JavaScript sourcemaps. Omit to skip uploading sourcemaps.'
     required: false
   finalize:
-    description: 'When false, omit setting the _TODO_ timestamp on the release.'
+    description: 'When false, omit marking the release as finalized and released.'
     default: true
   started_at:
-    description: 'Unix timestamp '
+    description: 'Unix timestamp of the release start date.'
     required: false
 runs:
   using: 'docker'

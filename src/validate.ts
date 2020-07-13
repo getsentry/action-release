@@ -17,7 +17,7 @@ export const getVersion = async (): Promise<string> => {
 };
 
 /**
- * Environment is required.
+ * Get `environment`, a required parameter.
  * @throws
  * @returns string
  */
@@ -47,8 +47,7 @@ export const getStartedAt = (): number | null => {
 };
 
 /**
- * TODO EXPLAIN FORMAT IN THE README
- * TODO handle failure
+ * Source maps are optional, but there may be several as a space-separated list.
  * @returns string[]
  */
 export const getSourcemaps = (): string[] => {
