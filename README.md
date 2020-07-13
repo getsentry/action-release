@@ -32,12 +32,12 @@ env:
 ```
 
 ## Troubleshooting
-Building and running this action locally on unsupported environment yields an error that looks like:
+Building and running this action locally on an unsupported environment yields an error that looks like:
 ```
 Syntax error: end of file unexpected (expecting ")")
 ```
 
-Suggestions and issues can be posted on the repositories [issues page](https://github.com/getsentry/action-release/issues).
+Suggestions and issues can be posted on the repository's [issues page](https://github.com/getsentry/action-release/issues).
 
 ## Contributing
 See the [Contributing Guide](https://github.com/getsentry/action-release/blob/master/CONTRIBUTING).
