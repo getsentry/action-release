@@ -4,6 +4,8 @@ import * as validate from './validate';
 
 (async () => {
   try {
+    const cli = getCLI();
+
     // Validate parameters first so we can fail early.
     validate.checkEnvironmentVariables();
     const environment = validate.getEnvironment();
@@ -14,25 +16,25 @@ import * as validate from './validate';
     const version = await validate.getVersion();
 
     core.debug(`Version is ${version}`);
-    await getCLI().new(version);
+    await cli.new(version);
 
     core.debug(`Setting commits`);
-    await getCLI().setCommits(version, {auto: true});
+    await cli.setCommits(version, {auto: true});
 
     if (sourcemaps) {
       core.debug(`Adding sourcemaps`);
-      await getCLI().uploadSourceMaps(version, {include: sourcemaps});
+      await cli.uploadSourceMaps(version, {include: sourcemaps});
     }
 
     core.debug(`Adding deploy to release`);
-    await getCLI().newDeploy(version, {
+    await cli.newDeploy(version, {
       env: environment,
       ...(deployStartedAtOption && {started: deployStartedAtOption}),
     });
 
     core.debug(`Finalizing the release`);
     if (shouldFinalize) {
-      await getCLI().finalize(version);
+      await cli.finalize(version);
     }
 
     core.debug(`Done`);
