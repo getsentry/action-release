@@ -31,6 +31,8 @@ env:
   SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
 ```
 
+See [action.yml](https://github.com/getsentry/action-release/blob/master/action.yml) for more workflow options.
+
 ## Troubleshooting
 Building and running this action locally on an unsupported environment yields an error that looks like:
 ```
