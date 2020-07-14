@@ -1,4 +1,4 @@
-FROM node:12-buster as builder
+FROM node:12-alpine as builder
 WORKDIR /app
 COPY package.json yarn.lock ./
 RUN export YARN_CACHE_FOLDER="$(mktemp -d)" \
@@ -7,7 +7,7 @@ RUN export YARN_CACHE_FOLDER="$(mktemp -d)" \
 COPY . .
 RUN yarn build
 
-FROM node:12-buster
+FROM node:12-alpine
 COPY --from=builder /app/package.json /app/yarn.lock /action-release/
 RUN export YARN_CACHE_FOLDER="$(mktemp -d)" \
   && cd /action-release \
