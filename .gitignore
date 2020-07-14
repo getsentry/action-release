@@ -78,6 +78,9 @@ typings/
 # nuxt.js build output
 .nuxt
 
+# Vercel build output
+dist/
+
 # vuepress build output
 .vuepress/dist
 

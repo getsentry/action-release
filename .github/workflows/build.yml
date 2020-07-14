@@ -1,6 +1,6 @@
 name: "build"
 on:
-  pull_request:
+  push:
     branches:
       - master
 
@@ -13,18 +13,10 @@ jobs:
       with:
         ref: ${{ github.head_ref }}
 
-    - name: Set up Node.js
-      uses: actions/setup-node@v1
+    - name: Docker
+      uses: docker/build-push-action@v1
       with:
-        node-version: 12.x
-
-    - name: Install dependencies
-      run: yarn install --frozen-lockfile
-
-    - name: Build
-      run: yarn run build
-
-    - name: Commit changes
-      uses: stefanzweifel/git-auto-commit-action@v4
-      with:
-        commit_message: Automatic build commit from GitHub Actions
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+        repository: sentryintegrations/sentry-github-action-release
+        tags: latest
