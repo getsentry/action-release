@@ -1,4 +1,6 @@
 import SentryCli, {Releases} from '@sentry/cli';
+// @ts-ignore
+import {version} from '../package.json';
 
 /**
  * CLI Singleton
@@ -7,6 +9,9 @@ import SentryCli, {Releases} from '@sentry/cli';
  */
 let cli: Releases;
 export const getCLI = (): Releases => {
+  // Set the User-Agent string.
+  process.env['SENTRY_PIPELINE'] = `github-action-release/${version}`;
+
   if (!cli) {
     cli = new SentryCli().releases;
     if (process.env['MOCK']) {
