@@ -10,7 +10,7 @@ import {version} from '../package.json';
 let cli: Releases;
 export const getCLI = (): Releases => {
   // Set the User-Agent string.
-  process.env['SENTRY_PIPELINE'] = `action-release/${version}`;
+  process.env['SENTRY_PIPELINE'] = `github-action-release/${version}`;
 
   if (!cli) {
     cli = new SentryCli().releases;
