@@ -12,7 +12,10 @@ inputs:
     description: 'When false, omit marking the release as finalized and released.'
     default: true
   started_at:
-    description: 'Unix timestamp of the release start date.'
+    description: 'Unix timestamp of the release start date. Omit for current time.'
+    required: false
+  version:
+    description: 'Identifier that uniquely identifies the releases. Omit to auto-generate one.'
     required: false
 runs:
   using: 'docker'
