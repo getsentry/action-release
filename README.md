@@ -52,11 +52,11 @@ Click “Save” at the bottom of the page and grab your token, which you’ll n
 #### Environment Variables
 The following are all _required_.
 
-|Name|Description|
+|name|description|
 |---|---|
-|`SENTRY_AUTH_TOKEN`|See [authentication documentation](https://docs.sentry.io/api/auth). |
-|`SENTRY_ORG`|Your organization slug on your Sentry instance.|
-|`SENTRY_PROJECT`|The name of your project on Sentry.|
+|`SENTRY_AUTH_TOKEN`|Authentication token for Sentry. See [installation](#create-a-sentry-internal-integration).|
+|`SENTRY_ORG`|The slug of the organization name in Sentry.|
+|`SENTRY_PROJECT`|The slug of the project name in Sentry.|
 
 ### Examples
 - Create a new Sentry release for the `production` environment and upload 
