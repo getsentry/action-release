@@ -16,18 +16,14 @@ Adding the following to your workflow will create a new Sentry release for the
 `production` environment of your project with an automatically generated `version` name.
   
 ```yaml
-jobs:
-  release:
-    runs-on: ubuntu-latest
-    env:
-      SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-      SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
-      SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
-    steps:
-    - uses: actions/checkout@v2
-    - uses: getsentry/action-release@v1.0.0
-      with:
-        environment: production
+- name: Create Sentry release
+  uses: getsentry/action-release@v1.0.0
+  env:
+    SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+    SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
+    SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
+  with:
+    environment: production
 ```
 
 ### Inputs
@@ -54,7 +50,7 @@ The following are all _required_.
   JavaScript source maps from the `./lib` directory.
 
     ```yaml
-    - uses: getsentry/action-release@v1
+    - uses: getsentry/action-release@v1.0.0
       with:
         environment: 'production'
         sourcemaps: '.lib'
@@ -62,7 +58,7 @@ The following are all _required_.
 
 - Create a new Sentry release for the `production` environment of your project at version `v1.0.1`.
     ```yaml
-    - uses: getsentry/action-release@v1
+    - uses: getsentry/action-release@v1.0.0
       with:
         environment: 'production'
         version: 'v1.0.1'
