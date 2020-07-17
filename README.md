@@ -28,13 +28,13 @@ Adding the following to your workflow will create a new Sentry release for the
 
 ### Inputs
 #### Parameters
-|Name|Description|
-|---|---|
-|`environment`|_Required_. Set the environment for this release. E.g. "production" or "staging".|
-|`finalize`|When false, omit marking the release as finalized and released.|
-|`sourcemaps`|Space-separated list of paths to JavaScript sourcemaps. Omit to skip uploading sourcemaps.|
-|`started_at`|Unix timestamp of the release start date. Omit for current time.|
-|`version`|Identifier that uniquely identifies the releases. Omit to auto-generate one.|
+|name|description|default|
+|---|---|---|
+|`environment`|_Required_. Set the environment for this release. E.g. "production" or "staging".|-|
+|`finalize`|When false, omit marking the release as finalized and released.|True|
+|`sourcemaps`|Space-separated list of paths to JavaScript sourcemaps. Omit to skip uploading sourcemaps.|-|
+|`started_at`|Unix timestamp of the release start date. Omit for current time.|-|
+|`version`|Identifier that uniquely identifies the releases. Omit to auto-generate one.|-|
 
 #### Environment Variables
 The following are all _required_.
