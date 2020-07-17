@@ -1,6 +1,15 @@
 # Sentry Release GitHub Action
 Automatically create a Sentry release in a workflow. 
-You can learn more about releases in [releases documentation](https://docs.sentry.io/workflow/releases).
+
+A release is a version of your code that is deployed to an environment. 
+When you give Sentry information about your releases, you unlock a number of new features:
+ - Determine the issues and regressions introduced in a new release
+ - Predict which commit caused an issue and who is likely responsible
+ - Resolve issues by including the issue number in your commit message
+ - Receive email notifications when your code gets deployed
+
+Additionally, releases are used for applying source maps to minified JavaScript to view original, untransformed source code.
+You can learn more about releases in the [releases documentation](https://docs.sentry.io/workflow/releases).
 
 ## Usage
 Adding the following to your workflow will create a new Sentry release for the 
