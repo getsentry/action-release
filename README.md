@@ -66,7 +66,7 @@ The following are all _required_.
     - uses: getsentry/action-release@v1.0.0
       with:
         environment: 'production'
-        sourcemaps: '.lib'
+        sourcemaps: './lib'
     ```
 
 - Create a new Sentry release for the `production` environment of your project at version `v1.0.1`.
