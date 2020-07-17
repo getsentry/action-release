@@ -26,6 +26,19 @@ Adding the following to your workflow will create a new Sentry release for the
     environment: production
 ```
 
+### Installation
+#### Create a Sentry Internal Integration
+For this action to communicate securely with Sentry, you'll need to create a new
+internal integration. In Sentry, navigate to: 
+_Settings > Developer Settings > New Internal Integration_.
+
+Give your new integration a name (for example, "GitHub Action Release”) and specify the necessary permissions. 
+In this case, we need Admin access for “Release” and Read access for “Organization”.
+
+![View of internal integration permissions.](images/internal-integration-permissions.png)
+
+Click “Save” at the bottom of the page and grab your token, which you’ll need this in the next step.
+
 ### Inputs
 #### Parameters
 |name|description|default|
