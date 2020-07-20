@@ -1,7 +1,12 @@
 import {execSync} from 'child_process';
 import * as path from 'path';
 import * as process from 'process';
-import {getShouldFinalize, getSourcemaps, getStartedAt} from '../src/validate'
+import {
+  getShouldFinalize,
+  getSourcemaps,
+  getStartedAt,
+  getVersion,
+} from '../src/validate'
 
 describe('validate', () => {
   describe('getShouldFinalize', () => {
@@ -73,6 +78,26 @@ describe('validate', () => {
     test('should return an integer when started_at is an integer.', async () => {
       process.env['INPUT_STARTED_AT'] = '1500000000';
       expect(getStartedAt()).toEqual(1500000000);
+    });
+  });
+
+  describe('getVersion', () => {
+    afterEach(() => {
+      delete process.env['INPUT_VERSION'];
+    });
+
+    test('should strip refs from version', async () => {
+      process.env['INPUT_VERSION'] = 'refs/tags/v1.0.0';
+      expect(getVersion()).toBe('v1.0.0')
+    });
+
+    test('should get version from inputs', async () => {
+      process.env['INPUT_VERSION'] = 'v1.0.0';
+      expect(getVersion()).toBe('v1.0.0')
+    });
+
+    test('should propose-version when version is omitted', async () => {
+      expect(getVersion()).toBe('propose-version')
     });
   });
 });
