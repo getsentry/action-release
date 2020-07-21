@@ -49,7 +49,7 @@ The following are all _required_.
 |`finalize`|When false, omit marking the release as finalized and released.|`true`|
 |`sourcemaps`|Space-separated list of paths to JavaScript sourcemaps. Omit to skip uploading sourcemaps.|-|
 |`started_at`|Unix timestamp of the release start date. Omit for current time.|-|
-|`version`|Identifier that uniquely identifies the releases.|`${{ github.sha }}`|
+|`version`|Identifier that uniquely identifies the releases.|<code>${{&nbsp;github.sha&nbsp;}}</code>|
 
 ### Examples
 - Create a new Sentry release for the `production` environment and upload JavaScript source maps from the `./lib` directory.
