@@ -23,6 +23,7 @@ Click “Save” at the bottom of the page and grab your token, which you’ll u
 Adding the following to your workflow will create a new Sentry release and tell Sentry that you are deploying to the `production` environment.
   
 ```yaml
+- uses: actions/checkout@v2
 - name: Create Sentry release
   uses: getsentry/action-release@v1
   env:
@@ -79,6 +80,11 @@ Suggestions and issues can be posted on the repository's
 - Building and running this action locally on an unsupported environment yields an error that looks like:
     ```
     Syntax error: end of file unexpected (expecting ")")
+    ```
+- When adding the action, make sure to first checkout your repo with `actions/checkout@v2`.
+Otherwise it could fail at the `propose-version` step with the message:
+    ```
+    error: Could not automatically determine release name
     ```
 
 ## Contributing
