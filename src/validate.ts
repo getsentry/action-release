@@ -40,11 +40,12 @@ export const getStartedAt = (): number | null => {
   }
 
   // In sentry-cli, we parse integer first.
+  const isStartedAtAnInteger = /^-?[\d]+$/.test(startedAtOption);
   const startedAtTimestamp = parseInt(startedAtOption);
   const startedAt8601 = Math.floor(Date.parse(startedAtOption) / 1000);
 
   let outputTimestamp;
-  if (!isNaN(startedAtTimestamp)) {
+  if (isStartedAtAnInteger && !isNaN(startedAtTimestamp)) {
     outputTimestamp = startedAtTimestamp;
   } else if (!isNaN(startedAt8601)) {
     outputTimestamp = startedAt8601;
