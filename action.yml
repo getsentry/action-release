@@ -17,6 +17,9 @@ inputs:
   version:
     description: 'Identifier that uniquely identifies the releases. Omit to auto-generate one.'
     required: false
+  version_prefix:
+    description: 'Value prepended to auto-generated version.'
+    required: false
 runs:
   using: 'docker'
   image: 'docker://sentryintegrations/sentry-github-action-release:latest'

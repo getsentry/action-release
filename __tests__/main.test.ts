@@ -105,6 +105,10 @@ describe('validate', () => {
     test('should propose-version when version is omitted', async () => {
       expect(await getVersion()).toBe(MOCK_VERSION)
     });
+
+    test('should include prefix in version', async () => {
+      process.env['INPUT_VERSION_PREFIX'] = 'prefix-';
+      expect(await getVersion()).toBe(`prefix-${MOCK_VERSION}`)
     });
   });
 });
