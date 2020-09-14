@@ -8,13 +8,20 @@ import {getCLI} from './cli';
  */
 export const getVersion = async (): Promise<string> => {
   const versionOption: string = core.getInput('version');
+  const versionPrefixOption: string = core.getInput('version_prefix');
   if (versionOption) {
     // If the users passes in `${{github.ref}}, then it will have an unwanted prefix.
     return versionOption.replace(/^(refs\/tags\/)/, '');
   }
 
   core.debug('Version not provided, proposing one...');
-  return getCLI().proposeVersion();
+  const version = await getCLI().proposeVersion();
+
+  if (versionPrefixOption) {
+    return `${versionPrefixOption}${version}`;
+  }
+
+  return version;
 };
 
 /**
@@ -40,11 +47,12 @@ export const getStartedAt = (): number | null => {
   }
 
   // In sentry-cli, we parse integer first.
+  const isStartedAtAnInteger = /^-?[\d]+$/.test(startedAtOption);
   const startedAtTimestamp = parseInt(startedAtOption);
   const startedAt8601 = Math.floor(Date.parse(startedAtOption) / 1000);
 
   let outputTimestamp;
-  if (!isNaN(startedAtTimestamp)) {
+  if (isStartedAtAnInteger && !isNaN(startedAtTimestamp)) {
     outputTimestamp = startedAtTimestamp;
   } else if (!isNaN(startedAt8601)) {
     outputTimestamp = startedAt8601;

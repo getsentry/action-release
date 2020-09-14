@@ -9,6 +9,10 @@ import {
 } from '../src/validate'
 
 describe('validate', () => {
+  beforeAll(() => {
+    process.env['MOCK'] = "true";
+  });
+
   describe('getShouldFinalize', () => {
     const errorMessage = 'finalize is not a boolean';
     afterEach(() => {
@@ -82,22 +86,29 @@ describe('validate', () => {
   });
 
   describe('getVersion', () => {
+    const MOCK_VERSION = "releases propose-version";
     afterEach(() => {
       delete process.env['INPUT_VERSION'];
+      delete process.env['INPUT_VERSION_PREFIX'];
     });
 
     test('should strip refs from version', async () => {
       process.env['INPUT_VERSION'] = 'refs/tags/v1.0.0';
-      expect(getVersion()).toBe('v1.0.0')
+      expect(await getVersion()).toBe('v1.0.0')
     });
 
     test('should get version from inputs', async () => {
       process.env['INPUT_VERSION'] = 'v1.0.0';
-      expect(getVersion()).toBe('v1.0.0')
+      expect(await getVersion()).toBe('v1.0.0')
     });
 
     test('should propose-version when version is omitted', async () => {
-      expect(getVersion()).toBe('propose-version')
+      expect(await getVersion()).toBe(MOCK_VERSION)
+    });
+
+    test('should include prefix in version', async () => {
+      process.env['INPUT_VERSION_PREFIX'] = 'prefix-';
+      expect(await getVersion()).toBe(`prefix-${MOCK_VERSION}`)
     });
   });
 });
