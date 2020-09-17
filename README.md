@@ -9,6 +9,8 @@ A release is a version of your code that is deployed to an environment. When you
 
 Additionally, releases are used for applying source maps to minified JavaScript to view original, untransformed source code. You can learn more about releases in the [releases documentation](https://docs.sentry.io/workflow/releases).
 
+As an alternative to using this action, you can install the [GitHub Integration](https://sentry.io/integrations/github/) to tell Sentry about your releases.
+
 ## Prerequisites
 #### Create a Sentry Internal Integration
 For this action to communicate securely with Sentry, you'll need to create a new internal integration. In Sentry, navigate to: _Settings > Developer Settings > New Internal Integration_.
