@@ -132,3 +132,16 @@ export const checkEnvironmentVariables = (): void => {
     );
   }
 };
+
+/**
+ * Find out from input if we should set commits.
+ * @returns boolean
+ */
+export const getShouldSetCommits = (): boolean => {
+  const setCommitsOption = core.getInput('set_commits');
+  if (!setCommitsOption) {
+    return true;
+  }
+
+  return isTruthy(setCommitsOption, 'set_commits');
+};

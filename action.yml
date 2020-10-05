@@ -11,6 +11,9 @@ inputs:
   finalize:
     description: 'When false, omit marking the release as finalized and released.'
     default: true
+  set_commits:
+    description: 'When false, omit automatically setting commits. TODO'
+    default: true
   started_at:
     description: 'Unix timestamp of the release start date. Omit for current time.'
     required: false

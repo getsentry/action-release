@@ -48,6 +48,7 @@ The following are all _required_.
 |---|---|---|
 |`environment`|_Required_. Set the environment for this release. E.g. "production" or "staging".|-|
 |`finalize`|When false, omit marking the release as finalized and released.|`true`|
+|`set_commits`|When false, omit automatically setting commits. TODO.|`true`|
 |`sourcemaps`|Space-separated list of paths to JavaScript sourcemaps. Omit to skip uploading sourcemaps.|-|
 |`started_at`|Unix timestamp of the release start date. Omit for current time.|-|
 |`version`|Identifier that uniquely identifies the releases. _Note: the `refs/tags/` prefix is automatically stripped when `version` is `github.ref`._|<code>${{&nbsp;github.sha&nbsp;}}</code>|

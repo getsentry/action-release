@@ -11,6 +11,7 @@ import * as validate from './validate';
     const environment = validate.getEnvironment();
     const sourcemaps = validate.getSourcemaps();
     const shouldFinalize = validate.getShouldFinalize();
+    const shouldSetCommits = validate.getShouldSetCommits();
     const deployStartedAtOption = validate.getStartedAt();
 
     const version = await validate.getVersion();
@@ -18,8 +19,10 @@ import * as validate from './validate';
     core.debug(`Version is ${version}`);
     await cli.new(version);
 
-    core.debug(`Setting commits`);
-    await cli.setCommits(version, {auto: true});
+    if (shouldSetCommits) {
+      core.debug(`Setting commits`);
+      await cli.setCommits(version, {auto: true});
+    }
 
     if (sourcemaps) {
       core.debug(`Adding sourcemaps`);
