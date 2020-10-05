@@ -3,6 +3,7 @@ import * as path from 'path';
 import * as process from 'process';
 import {
   getShouldFinalize,
+  getShouldSetCommits,
   getSourcemaps,
   getStartedAt,
   getVersion,
@@ -31,6 +32,27 @@ describe('validate', () => {
     test('should return false when finalize is false', () => {
       process.env['INPUT_FINALIZE'] = 'false';
       expect(getShouldFinalize()).toBe(false);
+    });
+  });
+
+  describe('getSetCommits', () => {
+    const errorMessage = 'set_commits is not a boolean';
+    afterEach(() => {
+      delete process.env['INPUT_SET_COMMITS'];
+    });
+
+    test('should throw an error when set_commits is invalid', async () => {
+      process.env['INPUT_SET_COMMITS'] = 'error';
+      expect(() => getShouldSetCommits()).toThrow(errorMessage);
+    });
+
+    test('should return true when set_commits is omitted', async () => {
+      expect(getShouldSetCommits()).toBe(true);
+    });
+
+    test('should return false when set_commits is false', () => {
+      process.env['INPUT_SET_COMMITS'] = 'false';
+      expect(getShouldSetCommits()).toBe(false);
     });
   });
 
