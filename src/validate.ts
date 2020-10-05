@@ -2,6 +2,25 @@ import * as core from '@actions/core';
 import {getCLI} from './cli';
 
 /**
+ * Try to return where or not a user is trying to pass an affirmative value.
+ *
+ * @param stringValue
+ * @param name
+ */
+const isTruthy = (stringValue: string, name = 'value'): boolean => {
+  switch (stringValue.trim().toLowerCase()) {
+    case 'true':
+    case '1':
+      return true;
+
+    case 'false':
+    case '0':
+      return false;
+  }
+  throw Error(`${name} is not a boolean`);
+};
+
+/**
  * Get the release version string from parameter or propose one.
  * @throws
  * @returns Promise<string>
@@ -90,18 +109,7 @@ export const getShouldFinalize = (): boolean => {
     return true;
   }
 
-  const finalize = finalizeOption.trim().toLowerCase();
-  switch (finalize) {
-    case 'true':
-    case '1':
-      return true;
-
-    case 'false':
-    case '0':
-      return false;
-  }
-
-  throw Error('finalize is not a boolean');
+  return isTruthy(finalizeOption, 'finalize');
 };
 
 /**

@@ -32,8 +32,8 @@ import * as validate from './validate';
       ...(deployStartedAtOption && {started: deployStartedAtOption}),
     });
 
-    core.debug(`Finalizing the release`);
     if (shouldFinalize) {
+      core.debug(`Finalizing the release`);
       await cli.finalize(version);
     }
 
