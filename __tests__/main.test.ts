@@ -6,11 +6,12 @@ import {
   getSourcemaps,
   getStartedAt,
   getVersion,
-} from '../src/validate'
+  getSetCommitsOption,
+} from '../src/validate';
 
 describe('validate', () => {
   beforeAll(() => {
-    process.env['MOCK'] = "true";
+    process.env['MOCK'] = 'true';
   });
 
   describe('getShouldFinalize', () => {
@@ -50,7 +51,8 @@ describe('validate', () => {
   });
 
   describe('getStartedAt', () => {
-    const errorMessage = 'started_at not in valid format. Unix timestamp or ISO 8601 date expected';
+    const errorMessage =
+      'started_at not in valid format. Unix timestamp or ISO 8601 date expected';
     afterEach(() => {
       delete process.env['INPUT_STARTED_AT'];
     });
@@ -86,7 +88,7 @@ describe('validate', () => {
   });
 
   describe('getVersion', () => {
-    const MOCK_VERSION = "releases propose-version";
+    const MOCK_VERSION = 'releases propose-version';
     afterEach(() => {
       delete process.env['INPUT_VERSION'];
       delete process.env['INPUT_VERSION_PREFIX'];
@@ -94,21 +96,43 @@ describe('validate', () => {
 
     test('should strip refs from version', async () => {
       process.env['INPUT_VERSION'] = 'refs/tags/v1.0.0';
-      expect(await getVersion()).toBe('v1.0.0')
+      expect(await getVersion()).toBe('v1.0.0');
     });
 
     test('should get version from inputs', async () => {
       process.env['INPUT_VERSION'] = 'v1.0.0';
-      expect(await getVersion()).toBe('v1.0.0')
+      expect(await getVersion()).toBe('v1.0.0');
     });
 
     test('should propose-version when version is omitted', async () => {
-      expect(await getVersion()).toBe(MOCK_VERSION)
+      expect(await getVersion()).toBe(MOCK_VERSION);
     });
 
     test('should include prefix in version', async () => {
       process.env['INPUT_VERSION_PREFIX'] = 'prefix-';
-      expect(await getVersion()).toBe(`prefix-${MOCK_VERSION}`)
+      expect(await getVersion()).toBe(`prefix-${MOCK_VERSION}`);
+    });
+  });
+  describe('getSetCommitsOption', () => {
+    afterEach(() => {
+      delete process.env['INPUT_SET_COMMITS'];
+    });
+
+    it('no option', () => {
+      expect(getSetCommitsOption()).toBe('auto');
+    });
+    it('auto', () => {
+      process.env['INPUT_SET_COMMITS'] = 'auto';
+      expect(getSetCommitsOption()).toBe('auto');
+    });
+    it('skip', () => {
+      process.env['INPUT_SET_COMMITS'] = 'skip';
+      expect(getSetCommitsOption()).toBe('skip');
+    });
+    it('bad option', () => {
+      const errorMessage = 'set-commits must be "auto" or "skip"';
+      process.env['INPUT_SET_COMMITS'] = 'bad';
+      expect(() => getSetCommitsOption()).toThrow(errorMessage);
     });
   });
 });

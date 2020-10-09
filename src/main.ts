@@ -12,14 +12,17 @@ import * as validate from './validate';
     const sourcemaps = validate.getSourcemaps();
     const shouldFinalize = validate.getShouldFinalize();
     const deployStartedAtOption = validate.getStartedAt();
+    const setCommitsOption = validate.getSetCommitsOption();
 
     const version = await validate.getVersion();
 
     core.debug(`Version is ${version}`);
     await cli.new(version);
 
-    core.debug(`Setting commits`);
-    await cli.setCommits(version, {auto: true});
+    if (setCommitsOption !== 'skip') {
+      core.debug(`Setting commits`);
+      await cli.setCommits(version, {auto: true});
+    }
 
     if (sourcemaps) {
       core.debug(`Adding sourcemaps`);

@@ -104,6 +104,24 @@ export const getShouldFinalize = (): boolean => {
   throw Error('finalize is not a boolean');
 };
 
+export const getSetCommitsOption = (): 'auto' | 'skip' => {
+  let setCommitOption = core.getInput('set_commits');
+  // default to auto
+  if (!setCommitOption) {
+    return 'auto';
+  }
+  // convert to lower case
+  setCommitOption = setCommitOption.toLowerCase();
+  switch (setCommitOption) {
+    case 'auto':
+      return 'auto';
+    case 'skip':
+      return 'skip';
+    default:
+      throw Error('set-commits must be "auto" or "skip"');
+  }
+};
+
 /**
  * Check for required environment variables.
  */
