@@ -19,8 +19,8 @@ import * as validate from './validate';
     core.debug(`Version is ${version}`);
     await cli.new(version);
 
+    core.debug(`Setting commits with option ${setCommitsOption}`);
     if (setCommitsOption !== 'skip') {
-      core.debug(`Setting commits`);
       await cli.setCommits(version, {auto: true});
     }
 
