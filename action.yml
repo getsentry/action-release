@@ -22,7 +22,7 @@ inputs:
     required: false
 runs:
   using: 'docker'
-  image: 'docker://sentryintegrations/sentry-github-action-release:latest'
+  image: 'Dockerfile'
 branding:
   icon: 'triangle'
   color: 'purple'
