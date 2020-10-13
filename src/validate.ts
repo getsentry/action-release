@@ -1,14 +1,28 @@
 import * as core from '@actions/core';
 import {getCLI} from './cli';
 
+const snakeToCamel = (str: string): string =>
+  str.replace(/([-_][a-z])/g, group => group.toUpperCase().replace('_', ''));
+
+const getInput = (
+  inputStr: string,
+  options?: Parameters<typeof core.getInput>[1]
+): ReturnType<typeof core.getInput> => {
+  const camelCaseCommand = snakeToCamel(inputStr);
+  // look up both the snake case and the camel case
+  return (
+    core.getInput(inputStr, options) || core.getInput(camelCaseCommand, options)
+  );
+};
+
 /**
  * Get the release version string from parameter or propose one.
  * @throws
  * @returns Promise<string>
  */
 export const getVersion = async (): Promise<string> => {
-  const versionOption: string = core.getInput('version');
-  const versionPrefixOption: string = core.getInput('version_prefix');
+  const versionOption: string = getInput('version');
+  const versionPrefixOption: string = getInput('version_prefix');
   if (versionOption) {
     // If the users passes in `${{github.ref}}, then it will have an unwanted prefix.
     return versionOption.replace(/^(refs\/tags\/)/, '');
@@ -30,7 +44,7 @@ export const getVersion = async (): Promise<string> => {
  * @returns string
  */
 export const getEnvironment = (): string => {
-  return core.getInput('environment', {required: true});
+  return getInput('environment', {required: true});
 };
 
 /**
@@ -41,7 +55,7 @@ export const getEnvironment = (): string => {
  * @returns number
  */
 export const getStartedAt = (): number | null => {
-  const startedAtOption: string = core.getInput('started_at');
+  const startedAtOption: string = getInput('started_at');
   if (!startedAtOption) {
     return null;
   }
@@ -72,7 +86,7 @@ export const getStartedAt = (): number | null => {
  * @returns string[]
  */
 export const getSourcemaps = (): string[] => {
-  const sourcemapsOption: string = core.getInput('sourcemaps');
+  const sourcemapsOption: string = getInput('sourcemaps');
   if (!sourcemapsOption) {
     return [];
   }
@@ -85,7 +99,7 @@ export const getSourcemaps = (): string[] => {
  * @returns boolean
  */
 export const getShouldFinalize = (): boolean => {
-  const finalizeOption = core.getInput('finalize');
+  const finalizeOption = getInput('finalize');
   if (!finalizeOption) {
     return true;
   }
@@ -105,7 +119,7 @@ export const getShouldFinalize = (): boolean => {
 };
 
 export const getSetCommitsOption = (): 'auto' | 'skip' => {
-  let setCommitOption = core.getInput('set_commits');
+  let setCommitOption = getInput('set_commits');
   // default to auto
   if (!setCommitOption) {
     return 'auto';
@@ -118,7 +132,7 @@ export const getSetCommitsOption = (): 'auto' | 'skip' => {
     case 'skip':
       return 'skip';
     default:
-      throw Error('set-commits must be "auto" or "skip"');
+      throw Error('setCommits must be "auto" or "skip"');
   }
 };
 
