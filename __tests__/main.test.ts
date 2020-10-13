@@ -130,7 +130,7 @@ describe('validate', () => {
       expect(getSetCommitsOption()).toBe('skip');
     });
     it('bad option', () => {
-      const errorMessage = 'set-commits must be "auto" or "skip"';
+      const errorMessage = 'set_commits must be "auto" or "skip"';
       process.env['INPUT_SET_COMMITS'] = 'bad';
       expect(() => getSetCommitsOption()).toThrow(errorMessage);
     });
