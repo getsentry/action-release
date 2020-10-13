@@ -52,6 +52,7 @@ The following are all _required_.
 |`started_at`|Unix timestamp of the release start date. Omit for current time.|-|
 |`version`|Identifier that uniquely identifies the releases. _Note: the `refs/tags/` prefix is automatically stripped when `version` is `github.ref`._|<code>${{&nbsp;github.sha&nbsp;}}</code>|
 |`version_prefix`|Value prepended to auto-generated version. For example "v".|-|
+|`set_commits`|Specify whether to set commits for the release. Either "auto" or "skip".|
 
 ### Examples
 - Create a new Sentry release for the `production` environment and upload JavaScript source maps from the `./lib` directory.
