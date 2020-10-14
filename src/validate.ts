@@ -118,7 +118,7 @@ export const getSetCommitsOption = (): 'auto' | 'skip' => {
     case 'skip':
       return 'skip';
     default:
-      throw Error('set-commits must be "auto" or "skip"');
+      throw Error('set_commits must be "auto" or "skip"');
   }
 };
 
