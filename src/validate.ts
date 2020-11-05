@@ -140,7 +140,10 @@ export const checkEnvironmentVariables = (): void => {
 
 export const getProjects = (): string[] => {
   const projectsOption = core.getInput('projects') || '';
-  const projects = projectsOption.split(' ').filter(proj => !!proj);
+  const projects = projectsOption
+    .split(' ')
+    .map(proj => proj.trim())
+    .filter(proj => !!proj);
   if (projects.length > 0) {
     return projects;
   }
