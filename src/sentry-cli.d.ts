@@ -1,7 +1,7 @@
 declare module '@sentry/cli' {
   export class Releases {
     constructor(configFile?: string, options?: {silent?: boolean});
-    new(release: string): Promise<void>;
+    new(release: string, options?: {projects: string[]}): Promise<void>;
     setCommits(
       release: string,
       options: {
@@ -27,6 +27,7 @@ declare module '@sentry/cli' {
         urlPrefix?: string;
         urlSuffix?: string;
         ext?: string[];
+        projects?: [string]; //only one project allowed (for now)
       }
     ): Promise<void>;
     listDeploys(release: string): Promise<string[]>;
