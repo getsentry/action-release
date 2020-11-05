@@ -131,11 +131,6 @@ export const checkEnvironmentVariables = (): void => {
       'Environment variable SENTRY_ORG is missing an organization slug'
     );
   }
-  if (!process.env['SENTRY_PROJECT']) {
-    throw Error(
-      'Environment variable SENTRY_PROJECT is missing a project slug'
-    );
-  }
   if (!process.env['SENTRY_AUTH_TOKEN']) {
     throw Error(
       'Environment variable SENTRY_AUTH_TOKEN is missing an auth token'
