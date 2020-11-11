@@ -149,6 +149,11 @@ describe('validate', () => {
       process.env['INPUT_PROJECTS'] = 'my-proj1 my-proj2';
       expect(getProjects()).toEqual(['my-proj1', 'my-proj2']);
     });
+    it('option overwites env variable', () => {
+      process.env['SENTRY_PROJECT'] = 'my-proj';
+      process.env['INPUT_PROJECTS'] = 'my-proj1 my-proj2';
+      expect(getProjects()).toEqual(['my-proj1', 'my-proj2']);
+    });
     it('throws error if no project', () => {
       expect(() => getProjects()).toThrowError(
         'Environment variable SENTRY_PROJECT is missing a project slug and no projects are specified with the "projects" option'
