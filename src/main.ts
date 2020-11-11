@@ -13,11 +13,12 @@ import * as validate from './validate';
     const shouldFinalize = validate.getShouldFinalize();
     const deployStartedAtOption = validate.getStartedAt();
     const setCommitsOption = validate.getSetCommitsOption();
+    const projects = validate.getProjects();
 
     const version = await validate.getVersion();
 
     core.debug(`Version is ${version}`);
-    await cli.new(version);
+    await cli.new(version, {projects});
 
     if (setCommitsOption !== 'skip') {
       core.debug(`Setting commits with option '${setCommitsOption}'`);
@@ -26,7 +27,17 @@ import * as validate from './validate';
 
     if (sourcemaps) {
       core.debug(`Adding sourcemaps`);
-      await cli.uploadSourceMaps(version, {include: sourcemaps});
+      await Promise.all(
+        projects.map(async project => {
+          // upload source maps can only do one project at a time
+          const localProjects: [string] = [project];
+          const sourceMapOptions = {
+            include: sourcemaps,
+            projects: localProjects,
+          };
+          return cli.uploadSourceMaps(version, sourceMapOptions);
+        })
+      );
     }
 
     core.debug(`Adding deploy to release`);

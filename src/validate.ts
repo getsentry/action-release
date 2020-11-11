@@ -131,14 +131,27 @@ export const checkEnvironmentVariables = (): void => {
       'Environment variable SENTRY_ORG is missing an organization slug'
     );
   }
-  if (!process.env['SENTRY_PROJECT']) {
-    throw Error(
-      'Environment variable SENTRY_PROJECT is missing a project slug'
-    );
-  }
   if (!process.env['SENTRY_AUTH_TOKEN']) {
     throw Error(
       'Environment variable SENTRY_AUTH_TOKEN is missing an auth token'
     );
   }
+};
+
+export const getProjects = (): string[] => {
+  const projectsOption = core.getInput('projects') || '';
+  const projects = projectsOption
+    .split(' ')
+    .map(proj => proj.trim())
+    .filter(proj => !!proj);
+  if (projects.length > 0) {
+    return projects;
+  }
+  const project = process.env['SENTRY_PROJECT'];
+  if (!project) {
+    throw Error(
+      'Environment variable SENTRY_PROJECT is missing a project slug and no projects are specified with the "projects" option'
+    );
+  }
+  return [project];
 };

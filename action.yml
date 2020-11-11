@@ -23,6 +23,9 @@ inputs:
   set_commits:
     description: 'Specify whether to set commits for the release. Either "auto" or "skip".'
     required: false
+  projects:
+    description: 'Space-separated list of projects. Defaults to the env variable "SENTRY_PROJECT" if not provided.'
+    required: false
 runs:
   using: 'docker'
   image: 'docker://sentryintegrations/sentry-github-action-release:latest'
