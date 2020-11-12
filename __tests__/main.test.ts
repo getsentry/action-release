@@ -8,6 +8,7 @@ import {
   getVersion,
   getSetCommitsOption,
   getProjects,
+  getUrlPrefixOption,
 } from '../src/validate';
 
 describe('validate', () => {
@@ -160,6 +161,15 @@ describe('validate', () => {
       );
     });
   });
+  describe('getUrlPrefixOption', () => {
+    afterEach(() => {
+      delete process.env['URL_PREFIX'];
+    });
+    it('get url prefix', () => {
+      process.env['INPUT_URL_PREFIX'] = 'build';
+      expect(getUrlPrefixOption()).toEqual('build');
+    })
+  })
 });
 
 // shows how the runner will run a javascript action with env / stdout protocol

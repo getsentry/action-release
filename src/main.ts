@@ -26,7 +26,7 @@ import * as validate from './validate';
       await cli.setCommits(version, {auto: true});
     }
 
-    if (sourcemaps) {
+    if (sourcemaps.length) {
       core.debug(`Adding sourcemaps`);
       await Promise.all(
         projects.map(async project => {
