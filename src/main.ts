@@ -14,6 +14,7 @@ import * as validate from './validate';
     const deployStartedAtOption = validate.getStartedAt();
     const setCommitsOption = validate.getSetCommitsOption();
     const projects = validate.getProjects();
+    const urlPrefix = validate.getUrlPrefixOption();
 
     const version = await validate.getVersion();
 
@@ -25,7 +26,7 @@ import * as validate from './validate';
       await cli.setCommits(version, {auto: true});
     }
 
-    if (sourcemaps) {
+    if (sourcemaps.length) {
       core.debug(`Adding sourcemaps`);
       await Promise.all(
         projects.map(async project => {
@@ -34,6 +35,7 @@ import * as validate from './validate';
           const sourceMapOptions = {
             include: sourcemaps,
             projects: localProjects,
+            urlPrefix,
           };
           return cli.uploadSourceMaps(version, sourceMapOptions);
         })

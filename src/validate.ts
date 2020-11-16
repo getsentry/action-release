@@ -155,3 +155,7 @@ export const getProjects = (): string[] => {
   }
   return [project];
 };
+
+export const getUrlPrefixOption = (): string => {
+  return core.getInput('url_prefix');
+}
