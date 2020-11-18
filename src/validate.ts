@@ -31,7 +31,7 @@ export const getVersion = async (): Promise<string> => {
  * @returns string
  */
 export const getEnvironment = (): string => {
-  return core.getInput('environment', {required: true});
+  return core.getInput('environment');
 };
 
 /**
