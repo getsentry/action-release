@@ -1,7 +1,7 @@
 # Sentry Release GitHub Action
 Automatically create a Sentry release in a workflow. 
 
-A release is a version of your code that is deployed to an environment. When you give Sentry information about your releases, you unlock a number of new features:
+A release is a version of your code that can be deployed to an environment. When you give Sentry information about your releases, you unlock a number of new features:
  - Determine the issues and regressions introduced in a new release
  - Predict which commit caused an issue and who is likely responsible
  - Resolve issues by including the issue number in your commit message
@@ -46,7 +46,7 @@ The following are all _required_.
 #### Parameters
 |name|description|default|
 |---|---|---|
-|`environment`|_Required_. Set the environment for this release. E.g. "production" or "staging".|-|
+|`environment`|Set the environment for this release. E.g. "production" or "staging". Omit to skip adding deploy to release.|-|
 |`finalize`|When false, omit marking the release as finalized and released.|`true`|
 |`sourcemaps`|Space-separated list of paths to JavaScript sourcemaps. Omit to skip uploading sourcemaps.|-|
 |`started_at`|Unix timestamp of the release start date. Omit for current time.|-|

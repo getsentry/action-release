@@ -3,8 +3,8 @@ description: 'GitHub Action for creating a release on Sentry'
 author: 'Sentry'
 inputs:
   environment:
-    description: 'Set the environment for this release. E.g. "production" or "staging".'
-    required: true
+    description: 'Set the environment for this release. E.g. "production" or "staging". Omit to skip adding deploy to release.'
+    required: false
   sourcemaps:
     description: 'Space-separated list of paths to JavaScript sourcemaps. Omit to skip uploading sourcemaps.'
     required: false
