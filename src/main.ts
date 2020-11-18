@@ -5,6 +5,7 @@ import * as validate from './validate';
 (async () => {
   try {
     const cli = getCLI();
+    console.log('start')
 
     // Validate parameters first so we can fail early.
     validate.checkEnvironmentVariables();
