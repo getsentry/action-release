@@ -114,6 +114,12 @@ describe('validate', () => {
       process.env['INPUT_VERSION_PREFIX'] = 'prefix-';
       expect(await getVersion()).toBe(`prefix-${MOCK_VERSION}`);
     });
+
+    test('should include prefix in version with user provided version', async () => {
+      process.env['INPUT_VERSION'] = 'v1.0.0';
+      process.env['INPUT_VERSION_PREFIX'] = 'prefix-';
+      expect(await getVersion()).toBe(`prefix-v1.0.0`);
+    });
   });
   describe('getSetCommitsOption', () => {
     afterEach(() => {

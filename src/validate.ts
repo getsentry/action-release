@@ -9,16 +9,17 @@ import {getCLI} from './cli';
 export const getVersion = async (): Promise<string> => {
   const versionOption: string = core.getInput('version');
   const versionPrefixOption: string = core.getInput('version_prefix');
+  let version = ''
   if (versionOption) {
     // If the users passes in `${{github.ref}}, then it will have an unwanted prefix.
-    return versionOption.replace(/^(refs\/tags\/)/, '');
+    version = versionOption.replace(/^(refs\/tags\/)/, '');
+  } else {
+    core.debug('Version not provided, proposing one...');
+    version = await getCLI().proposeVersion();
   }
 
-  core.debug('Version not provided, proposing one...');
-  const version = await getCLI().proposeVersion();
-
   if (versionPrefixOption) {
-    return `${versionPrefixOption}${version}`;
+    version = `${versionPrefixOption}${version}`;
   }
 
   return version;
