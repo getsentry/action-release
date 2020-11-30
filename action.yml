@@ -26,6 +26,9 @@ inputs:
   projects:
     description: 'Space-separated list of projects. Defaults to the env variable "SENTRY_PROJECT" if not provided.'
     required: false
+  url_prefix:
+    description: 'Adds a prefix to source map urls after stripping them.'
+    required: false
 runs:
   using: 'docker'
   image: 'docker://sentryintegrations/sentry-github-action-release:latest'
