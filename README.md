@@ -90,6 +90,16 @@ Otherwise it could fail at the `propose-version` step with the message:
     ```
     error: Could not automatically determine release name
     ```
+- In `actions/checkout@v2` the default fetch depth is 1. If you're getting the error message:
+    ```
+    error: Could not find the SHA of the previous release in the git history. Increase your git clone depth.
+    ```
+    you can fetch all history for all branches and tags by setting the `fetch-depth` to zero like so:
+    ```
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+    ```
 
 ## Contributing
 See the [Contributing Guide](https://github.com/getsentry/action-release/blob/master/CONTRIBUTING).
