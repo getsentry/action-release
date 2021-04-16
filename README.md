@@ -52,7 +52,8 @@ The following are all _required_.
 |`started_at`|Unix timestamp of the release start date. Omit for current time.|-|
 |`version`|Identifier that uniquely identifies the releases. _Note: the `refs/tags/` prefix is automatically stripped when `version` is `github.ref`._|<code>${{&nbsp;github.sha&nbsp;}}</code>|
 |`version_prefix`|Value prepended to auto-generated version. For example "v".|-|
-|`set_commits`|Specify whether to set commits for the release. Either "auto" or "skip".|"auto"|
+|`set_commits`|Specify whether to set commits for the release. Either "auto", "skip" or "options".|"auto"|
+|`commit_options`|Specify commit options in JSON string format|-|
 |`projects`|Space-separated list of paths of projects. When omitted, falls back to the environment variable `SENTRY_PROJECT` to determine the project.|-|
 |`url_prefix`|Adds a prefix to source map urls after stripping them.|-|
 

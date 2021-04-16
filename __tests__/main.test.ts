@@ -9,6 +9,8 @@ import {
   getSetCommitsOption,
   getProjects,
   getUrlPrefixOption,
+  getCommitOptions,
+  commitOptions,
 } from '../src/validate';
 
 describe('validate', () => {
@@ -137,10 +139,33 @@ describe('validate', () => {
       process.env['INPUT_SET_COMMITS'] = 'skip';
       expect(getSetCommitsOption()).toBe('skip');
     });
+    it('options', () => {
+      process.env['INPUT_SET_COMMITS'] = 'options';
+      expect(getSetCommitsOption()).toBe('options');
+    });
     it('bad option', () => {
-      const errorMessage = 'set_commits must be "auto" or "skip"';
+      const errorMessage = 'set_commits must be "auto", "skip" or "options"';
       process.env['INPUT_SET_COMMITS'] = 'bad';
       expect(() => getSetCommitsOption()).toThrow(errorMessage);
+    });
+  });
+  describe('getCommitOptions', () => {
+    afterEach(() => {
+      delete process.env['INPUT_COMMIT_OPTIONS'];
+    });
+    it('no option', () => {
+      process.env['INPUT_SET_COMMITS'] = 'options';
+      expect(getCommitOptions()).toBe('');
+    });
+    it('options', () => {
+      const options: commitOptions = {
+        repo: 'repo_name',
+        commit: 'hklahjfkhakfaw',
+        previousCommit: 'lskhhzritkybnvajlgwifhzlohgluaf',
+      };
+      process.env['INPUT_COMMIT_OPTIONS'] = JSON.stringify(options);
+      process.env['INPUT_SET_COMMITS'] = 'options';
+      expect(getCommitOptions()).toStrictEqual(options);
     });
   });
   describe('getProjects', () => {
@@ -174,8 +199,8 @@ describe('validate', () => {
     it('get url prefix', () => {
       process.env['INPUT_URL_PREFIX'] = 'build';
       expect(getUrlPrefixOption()).toEqual('build');
-    })
-  })
+    });
+  });
 });
 
 // shows how the runner will run a javascript action with env / stdout protocol

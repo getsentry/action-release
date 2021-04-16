@@ -9,7 +9,7 @@ import {getCLI} from './cli';
 export const getVersion = async (): Promise<string> => {
   const versionOption: string = core.getInput('version');
   const versionPrefixOption: string = core.getInput('version_prefix');
-  let version = ''
+  let version = '';
   if (versionOption) {
     // If the users passes in `${{github.ref}}, then it will have an unwanted prefix.
     version = versionOption.replace(/^(refs\/tags\/)/, '');
@@ -61,7 +61,7 @@ export const getStartedAt = (): number | null => {
 
   if (!outputTimestamp || outputTimestamp < 0) {
     throw new Error(
-      'started_at not in valid format. Unix timestamp or ISO 8601 date expected'
+      'started_at not in valid format. Unix timestamp or ISO 8601 date expected',
     );
   }
 
@@ -105,7 +105,13 @@ export const getShouldFinalize = (): boolean => {
   throw Error('finalize is not a boolean');
 };
 
-export const getSetCommitsOption = (): 'auto' | 'skip' => {
+export enum CommitsOptions {
+  auto = 'auto',
+  skip = 'skip',
+  options = 'options',
+}
+
+export const getSetCommitsOption = (): keyof typeof CommitsOptions => {
   let setCommitOption = core.getInput('set_commits');
   // default to auto
   if (!setCommitOption) {
@@ -114,13 +120,31 @@ export const getSetCommitsOption = (): 'auto' | 'skip' => {
   // convert to lower case
   setCommitOption = setCommitOption.toLowerCase();
   switch (setCommitOption) {
-    case 'auto':
+    case CommitsOptions.auto:
       return 'auto';
-    case 'skip':
+    case CommitsOptions.skip:
       return 'skip';
+    case CommitsOptions.options:
+      return 'options';
     default:
-      throw Error('set_commits must be "auto" or "skip"');
+      throw Error('set_commits must be "auto", "skip" or "options"');
   }
+};
+
+export interface commitOptions {
+  repo?: string;
+  commit?: string;
+  previousCommit?: string;
+}
+
+export const getCommitOptions = (): commitOptions => {
+  const setCommitOptions = getSetCommitsOption();
+  if (setCommitOptions !== CommitsOptions.options) {
+    throw Error('set_commits must be "options"');
+  }
+  const commitOptions = core.getInput('commit_options');
+
+  return commitOptions ? JSON.parse(commitOptions) : '';
 };
 
 /**
@@ -129,12 +153,12 @@ export const getSetCommitsOption = (): 'auto' | 'skip' => {
 export const checkEnvironmentVariables = (): void => {
   if (!process.env['SENTRY_ORG']) {
     throw Error(
-      'Environment variable SENTRY_ORG is missing an organization slug'
+      'Environment variable SENTRY_ORG is missing an organization slug',
     );
   }
   if (!process.env['SENTRY_AUTH_TOKEN']) {
     throw Error(
-      'Environment variable SENTRY_AUTH_TOKEN is missing an auth token'
+      'Environment variable SENTRY_AUTH_TOKEN is missing an auth token',
     );
   }
 };
@@ -151,7 +175,7 @@ export const getProjects = (): string[] => {
   const project = process.env['SENTRY_PROJECT'];
   if (!project) {
     throw Error(
-      'Environment variable SENTRY_PROJECT is missing a project slug and no projects are specified with the "projects" option'
+      'Environment variable SENTRY_PROJECT is missing a project slug and no projects are specified with the "projects" option',
     );
   }
   return [project];
@@ -159,4 +183,4 @@ export const getProjects = (): string[] => {
 
 export const getUrlPrefixOption = (): string => {
   return core.getInput('url_prefix');
-}
+};

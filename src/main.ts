@@ -1,6 +1,7 @@
 import * as core from '@actions/core';
 import {getCLI} from './cli';
 import * as validate from './validate';
+import {CommitsOptions} from './validate';
 
 (async () => {
   try {
@@ -13,6 +14,7 @@ import * as validate from './validate';
     const shouldFinalize = validate.getShouldFinalize();
     const deployStartedAtOption = validate.getStartedAt();
     const setCommitsOption = validate.getSetCommitsOption();
+    const commitOptions = validate.getCommitOptions();
     const projects = validate.getProjects();
     const urlPrefix = validate.getUrlPrefixOption();
 
@@ -21,9 +23,17 @@ import * as validate from './validate';
     core.debug(`Version is ${version}`);
     await cli.new(version, {projects});
 
-    if (setCommitsOption !== 'skip') {
-      core.debug(`Setting commits with option '${setCommitsOption}'`);
-      await cli.setCommits(version, {auto: true});
+    switch (setCommitsOption) {
+      case CommitsOptions.auto: {
+        core.debug(`Setting commits with option '${setCommitsOption}'`);
+        await cli.setCommits(version, {auto: true});
+        break;
+      }
+      case CommitsOptions.options: {
+        core.debug(`Setting commits with option '${setCommitsOption}'`);
+        await cli.setCommits(version, {auto: false, ...commitOptions});
+        break;
+      }
     }
 
     if (sourcemaps.length) {
