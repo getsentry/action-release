@@ -82,7 +82,7 @@ export const getSourcemaps = (): string[] => {
 };
 
 /**
- * Find out from input if we should perform an action.
+ * Fetch boolean option from input. Throws error if option value is not a boolean.
  * @param input string
  * @param defaultValue boolean
  * @returns boolean
