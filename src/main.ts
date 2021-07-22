@@ -1,22 +1,24 @@
 import * as core from '@actions/core';
 import {getCLI} from './cli';
-import * as validate from './validate';
+import * as options from './options';
 
 (async () => {
   try {
     const cli = getCLI();
 
-    // Validate parameters first so we can fail early.
-    validate.checkEnvironmentVariables();
-    const environment = validate.getEnvironment();
-    const sourcemaps = validate.getSourcemaps();
-    const shouldFinalize = validate.getBooleanOption('finalize', true);
-    const deployStartedAtOption = validate.getStartedAt();
-    const setCommitsOption = validate.getSetCommitsOption();
-    const projects = validate.getProjects();
-    const urlPrefix = validate.getUrlPrefixOption();
+    // Validate options first so we can fail early.
+    options.checkEnvironmentVariables();
 
-    const version = await validate.getVersion();
+    const environment = options.getEnvironment();
+    const sourcemaps = options.getSourcemaps();
+    const shouldFinalize = options.getBooleanOption('finalize', true);
+    const ignoreMissing = options.getBooleanOption('ignore_missing', false);
+    const ignoreEmpty = options.getBooleanOption('ignore_empty', false);
+    const deployStartedAtOption = options.getStartedAt();
+    const setCommitsOption = options.getSetCommitsOption();
+    const projects = options.getProjects();
+    const urlPrefix = options.getUrlPrefixOption();
+    const version = await options.getVersion();
 
     core.debug(`Version is ${version}`);
     await cli.new(version, {projects});
@@ -25,8 +27,8 @@ import * as validate from './validate';
       core.debug(`Setting commits with option '${setCommitsOption}'`);
       await cli.setCommits(version, {
         auto: true,
-        ignoreMissing: validate.getBooleanOption('ignore_missing', false),
-        ignoreEmpty: validate.getBooleanOption('ignore_empty', false),
+        ignoreMissing,
+        ignoreEmpty,
       });
     }
 

@@ -9,9 +9,9 @@ import {
   getSetCommitsOption,
   getProjects,
   getUrlPrefixOption,
-} from '../src/validate';
+} from '../src/options';
 
-describe('validate', () => {
+describe('options', () => {
   beforeAll(() => {
     process.env['MOCK'] = 'true';
   });
