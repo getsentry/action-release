@@ -11,6 +11,12 @@ inputs:
   finalize:
     description: 'When false, omit marking the release as finalized and released.'
     default: true
+  ignore_missing:
+    description: 'When the flag is set and the previous release commit was not found in the repository, will create a release with the default commits count instead of failing the command.'
+    required: false
+  ignore_empty:
+    description: 'When the flag is set, command will not fail and just exit silently if no new commits for a given release have been found.'
+    required: false
   started_at:
     description: 'Unix timestamp of the release start date. Omit for current time.'
     required: false
@@ -29,11 +35,8 @@ inputs:
   url_prefix:
     description: 'Adds a prefix to source map urls after stripping them.'
     required: false
-  ignore_missing:
-    description: 'When the flag is set and the previous release commit was not found in the repository, will create a release with the default commits count instead of failing the command.'
-    required: false
-  ignore_empty:
-    description: 'When the flag is set, command will not fail and just exit silently if no new commits for a given release have been found.'
+  strip_common_prefix:
+    description: 'Will remove a common prefix from uploaded filenames. Useful for removing a path that is build-machine-specific.'
     required: false
 runs:
   using: 'docker'

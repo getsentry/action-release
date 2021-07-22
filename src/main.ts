@@ -18,6 +18,10 @@ import * as options from './options';
     const setCommitsOption = options.getSetCommitsOption();
     const projects = options.getProjects();
     const urlPrefix = options.getUrlPrefixOption();
+    const stripCommonPrefix = options.getBooleanOption(
+      'strip_common_prefix',
+      false
+    );
     const version = await options.getVersion();
 
     core.debug(`Version is ${version}`);
@@ -42,6 +46,7 @@ import * as options from './options';
             include: sourcemaps,
             projects: localProjects,
             urlPrefix,
+            stripCommonPrefix,
           };
           return cli.uploadSourceMaps(version, sourceMapOptions);
         })
