@@ -2,7 +2,7 @@ import {execSync} from 'child_process';
 import * as path from 'path';
 import * as process from 'process';
 import {
-  getShouldFinalize,
+  getBooleanOption,
   getSourcemaps,
   getStartedAt,
   getVersion,
@@ -16,24 +16,38 @@ describe('validate', () => {
     process.env['MOCK'] = 'true';
   });
 
-  describe('getShouldFinalize', () => {
-    const errorMessage = 'finalize is not a boolean';
+  describe('getBooleanOption', () => {
+    const option = 'finalize';
+    const defaultValue = true;
+    const errorMessage = `${option} is not a boolean`;
+
     afterEach(() => {
       delete process.env['INPUT_FINALIZE'];
     });
 
-    test('should throw an error when finalize is invalid', async () => {
+    test('should throw an error when option type is not a boolean', () => {
       process.env['INPUT_FINALIZE'] = 'error';
-      expect(() => getShouldFinalize()).toThrow(errorMessage);
+      expect(() => getBooleanOption(option, defaultValue)).toThrow(
+        errorMessage
+      );
     });
 
-    test('should return true when finalize is omitted', async () => {
-      expect(getShouldFinalize()).toBe(true);
+    test('should return defaultValue if option is omitted', () => {
+      expect(getBooleanOption(option, defaultValue)).toBe(true);
     });
 
-    test('should return false when finalize is false', () => {
+    test('should return true when option is true or 1', () => {
+      process.env['INPUT_FINALIZE'] = 'true';
+      expect(getBooleanOption(option, defaultValue)).toBe(true);
+      process.env['INPUT_FINALIZE'] = '1';
+      expect(getBooleanOption(option, defaultValue)).toBe(true);
+    });
+
+    test('should return false when option is false or 0', () => {
       process.env['INPUT_FINALIZE'] = 'false';
-      expect(getShouldFinalize()).toBe(false);
+      expect(getBooleanOption(option, defaultValue)).toBe(false);
+      process.env['INPUT_FINALIZE'] = '0';
+      expect(getBooleanOption(option, defaultValue)).toBe(false);
     });
   });
 
@@ -121,6 +135,7 @@ describe('validate', () => {
       expect(await getVersion()).toBe(`prefix-v1.0.0`);
     });
   });
+
   describe('getSetCommitsOption', () => {
     afterEach(() => {
       delete process.env['INPUT_SET_COMMITS'];
@@ -143,6 +158,7 @@ describe('validate', () => {
       expect(() => getSetCommitsOption()).toThrow(errorMessage);
     });
   });
+
   describe('getProjects', () => {
     afterEach(() => {
       delete process.env['SENTRY_PROJECT'];
@@ -167,6 +183,7 @@ describe('validate', () => {
       );
     });
   });
+
   describe('getUrlPrefixOption', () => {
     afterEach(() => {
       delete process.env['URL_PREFIX'];
@@ -174,8 +191,8 @@ describe('validate', () => {
     it('get url prefix', () => {
       process.env['INPUT_URL_PREFIX'] = 'build';
       expect(getUrlPrefixOption()).toEqual('build');
-    })
-  })
+    });
+  });
 });
 
 // shows how the runner will run a javascript action with env / stdout protocol

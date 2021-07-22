@@ -55,6 +55,8 @@ The following are all _required_.
 |`set_commits`|Specify whether to set commits for the release. Either "auto" or "skip".|"auto"|
 |`projects`|Space-separated list of paths of projects. When omitted, falls back to the environment variable `SENTRY_PROJECT` to determine the project.|-|
 |`url_prefix`|Adds a prefix to source map urls after stripping them.|-|
+|`ignore_missing`|When the flag is set and the previous release commit was not found in the repository, will create a release with the default commits count instead of failing the command.|`false`|
+|`ignore_empty`|When the flag is set, command will not fail and just exit silently if no new commits for a given release have been found.|`false`|
 
 ### Examples
 - Create a new Sentry release for the `production` environment and upload JavaScript source maps from the `./lib` directory.

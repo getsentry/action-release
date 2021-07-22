@@ -10,7 +10,7 @@ import * as validate from './validate';
     validate.checkEnvironmentVariables();
     const environment = validate.getEnvironment();
     const sourcemaps = validate.getSourcemaps();
-    const shouldFinalize = validate.getShouldFinalize();
+    const shouldFinalize = validate.getBooleanOption('finalize', true);
     const deployStartedAtOption = validate.getStartedAt();
     const setCommitsOption = validate.getSetCommitsOption();
     const projects = validate.getProjects();
@@ -23,7 +23,11 @@ import * as validate from './validate';
 
     if (setCommitsOption !== 'skip') {
       core.debug(`Setting commits with option '${setCommitsOption}'`);
-      await cli.setCommits(version, {auto: true});
+      await cli.setCommits(version, {
+        auto: true,
+        ignoreMissing: validate.getBooleanOption('ignore_missing', false),
+        ignoreEmpty: validate.getBooleanOption('ignore_empty', false),
+      });
     }
 
     if (sourcemaps.length) {

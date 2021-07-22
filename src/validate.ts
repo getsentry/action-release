@@ -9,7 +9,7 @@ import {getCLI} from './cli';
 export const getVersion = async (): Promise<string> => {
   const versionOption: string = core.getInput('version');
   const versionPrefixOption: string = core.getInput('version_prefix');
-  let version = ''
+  let version = '';
   if (versionOption) {
     // If the users passes in `${{github.ref}}, then it will have an unwanted prefix.
     version = versionOption.replace(/^(refs\/tags\/)/, '');
@@ -82,17 +82,22 @@ export const getSourcemaps = (): string[] => {
 };
 
 /**
- * Find out from input if we should finalize the release.
+ * Find out from input if we should perform an action.
+ * @param input string
+ * @param defaultValue boolean
  * @returns boolean
  */
-export const getShouldFinalize = (): boolean => {
-  const finalizeOption = core.getInput('finalize');
-  if (!finalizeOption) {
-    return true;
+export const getBooleanOption = (
+  input: string,
+  defaultValue: boolean
+): boolean => {
+  const option = core.getInput(input);
+  if (!option) {
+    return defaultValue;
   }
 
-  const finalize = finalizeOption.trim().toLowerCase();
-  switch (finalize) {
+  const value = option.trim().toLowerCase();
+  switch (value) {
     case 'true':
     case '1':
       return true;
@@ -102,7 +107,7 @@ export const getShouldFinalize = (): boolean => {
       return false;
   }
 
-  throw Error('finalize is not a boolean');
+  throw Error(`${input} is not a boolean`);
 };
 
 export const getSetCommitsOption = (): 'auto' | 'skip' => {
@@ -159,4 +164,4 @@ export const getProjects = (): string[] => {
 
 export const getUrlPrefixOption = (): string => {
   return core.getInput('url_prefix');
-}
+};

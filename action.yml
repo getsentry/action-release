@@ -29,6 +29,12 @@ inputs:
   url_prefix:
     description: 'Adds a prefix to source map urls after stripping them.'
     required: false
+  ignore_missing:
+    description: 'When the flag is set and the previous release commit was not found in the repository, will create a release with the default commits count instead of failing the command.'
+    required: false
+  ignore_empty:
+    description: 'When the flag is set, command will not fail and just exit silently if no new commits for a given release have been found.'
+    required: false
 runs:
   using: 'docker'
   image: 'docker://sentryintegrations/sentry-github-action-release:latest'
