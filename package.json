@@ -25,8 +25,7 @@
   "license": "MIT",
   "dependencies": {
     "@actions/core": "^1.2.4",
-    "@sentry/cli": "^1.59.0",
-    "@sentry/types": "^5.17.0"
+    "@sentry/cli": "^1.67.2"
   },
   "devDependencies": {
     "@types/jest": "^26.0.0",

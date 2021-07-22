@@ -48,6 +48,8 @@ The following are all _required_.
 |---|---|---|
 |`environment`|Set the environment for this release. E.g. "production" or "staging". Omit to skip adding deploy to release.|-|
 |`finalize`|When false, omit marking the release as finalized and released.|`true`|
+|`ignore_missing`|When the flag is set and the previous release commit was not found in the repository, will create a release with the default commits count instead of failing the command.|`false`|
+|`ignore_empty`|When the flag is set, command will not fail and just exit silently if no new commits for a given release have been found.|`false`|
 |`sourcemaps`|Space-separated list of paths to JavaScript sourcemaps. Omit to skip uploading sourcemaps.|-|
 |`started_at`|Unix timestamp of the release start date. Omit for current time.|-|
 |`version`|Identifier that uniquely identifies the releases. _Note: the `refs/tags/` prefix is automatically stripped when `version` is `github.ref`._|<code>${{&nbsp;github.sha&nbsp;}}</code>|
@@ -55,6 +57,7 @@ The following are all _required_.
 |`set_commits`|Specify whether to set commits for the release. Either "auto" or "skip".|"auto"|
 |`projects`|Space-separated list of paths of projects. When omitted, falls back to the environment variable `SENTRY_PROJECT` to determine the project.|-|
 |`url_prefix`|Adds a prefix to source map urls after stripping them.|-|
+|`strip_common_prefix`|Will remove a common prefix from uploaded filenames. Useful for removing a path that is build-machine-specific.|`false`|
 
 ### Examples
 - Create a new Sentry release for the `production` environment and upload JavaScript source maps from the `./lib` directory.
