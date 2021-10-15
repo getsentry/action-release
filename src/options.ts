@@ -163,5 +163,10 @@ export const getProjects = (): string[] => {
 };
 
 export const getUrlPrefixOption = (): string => {
-  return core.getInput('url_prefix');
+  const urlPrefix = core.getInput('url_prefix');
+  // Default to ~, the default in the CLI.
+  if (!urlPrefix) {
+    return '~';
+  }
+  return urlPrefix;
 };
