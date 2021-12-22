@@ -165,3 +165,7 @@ export const getProjects = (): string[] => {
 export const getUrlPrefixOption = (): string => {
   return core.getInput('url_prefix');
 };
+
+export const getStripPrefixOption = (): string => {
+  return core.getInput('strip_prefix');
+};

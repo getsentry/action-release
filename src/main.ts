@@ -22,6 +22,7 @@ import * as options from './options';
       'strip_common_prefix',
       false
     );
+    const stripPrefix = options.getStripPrefixOption();
     const version = await options.getVersion();
 
     core.debug(`Version is ${version}`);
@@ -47,6 +48,7 @@ import * as options from './options';
             projects: localProjects,
             urlPrefix,
             stripCommonPrefix,
+            stripPrefix,
           };
           return cli.uploadSourceMaps(version, sourceMapOptions);
         })

@@ -58,6 +58,7 @@ The following are all _required_.
 |`projects`|Space-separated list of paths of projects. When omitted, falls back to the environment variable `SENTRY_PROJECT` to determine the project.|-|
 |`url_prefix`|Adds a prefix to source map urls after stripping them.|-|
 |`strip_common_prefix`|Will remove a common prefix from uploaded filenames. Useful for removing a path that is build-machine-specific.|`false`|
+|`strip_prefix`|Will chop-off a prefix from all sources references inside uploaded source maps. For instance, you can use this to remove a path that is build machine specific.|-|
 
 ### Examples
 - Create a new Sentry release for the `production` environment and upload JavaScript source maps from the `./lib` directory.
