@@ -195,3 +195,7 @@ export const getUrlPrefixOption = (): string => {
 export const getWorkingDirectory = (): string => {
   return core.getInput('working_directory');
 };
+
+export const getStripPrefixOption = (): string => {
+  return core.getInput('strip_prefix');
+};

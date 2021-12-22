@@ -30,6 +30,7 @@ withTelemetry(
       const setCommitsOption = options.getSetCommitsOption();
       const projects = options.getProjects();
       const urlPrefix = options.getUrlPrefixOption();
+      const stripPrefix = options.getStripPrefixOption();
       const stripCommonPrefix = options.getBooleanOption(
         'strip_common_prefix',
         false
@@ -90,6 +91,7 @@ withTelemetry(
                 projects: localProjects,
                 dist,
                 urlPrefix,
+                stripPrefix,
                 stripCommonPrefix,
               };
               return getCLI().uploadSourceMaps(version, sourceMapOptions);
