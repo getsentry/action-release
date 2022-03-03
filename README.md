@@ -19,6 +19,9 @@ Give your new integration a name (for example, "GitHub Action Release Integratio
 
 Click “Save” at the bottom of the page and grab your token, which you’ll use as your `SENTRY_AUTH_TOKEN`. We recommend you store this as an [encrypted secret](https://docs.github.com/en/actions/configuring-and-managing-workflows/creating-and-storing-encrypted-secrets).
 
+#### Create a GitHub repository integration
+For this action to find your commits, your GitHub repository needs to be added. In Sentry, navigate to _Settings > Integrations > GitHub_. Go to the "Configurations" tab and click "Configure". Confirm that your repository is there, if not click "Add Repository".
+
 ## Usage
 Adding the following to your workflow will create a new Sentry release and tell Sentry that you are deploying to the `production` environment.
   
