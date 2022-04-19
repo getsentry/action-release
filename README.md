@@ -76,6 +76,13 @@ The following are all _required_.
         version: 'v1.0.1'
     ```
 
+- Create a new Sentry release for [Self-Hosted Sentry](https://develop.sentry.dev/self-hosted/)
+    ```yaml
+    - uses: getsentry/action-release@v1
+      env:
+        SENTRY_URL: https://sentry.example.com/
+    ```
+
 ## Troubleshooting
 Suggestions and issues can be posted on the repository's 
 [issues page](https://github.com/getsentry/action-release/issues).
