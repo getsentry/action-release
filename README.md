@@ -30,19 +30,20 @@ Adding the following to your workflow will create a new Sentry release and tell 
     SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
     SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
     SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
+    # SENTRY_URL: https://sentry.io/
   with:
     environment: production
 ```
 
 ### Inputs
 #### Environment Variables
-The following are all _required_.
+|name|description|default|
+|---|---|---|
+|`SENTRY_AUTH_TOKEN`|**[Required]** Authentication token for Sentry. See [installation](#create-a-sentry-internal-integration).|-|
+|`SENTRY_ORG`|**[Required]** The slug of the organization name in Sentry.|-|
+|`SENTRY_PROJECT`|The slug of the project name in Sentry. One of `SENTRY_PROJECT` or `projects` is required.|-|
+|`SENTRY_URL`|The URL used to connect to Sentry. (Only required for [Self-Hosted Sentry](https://develop.sentry.dev/self-hosted/))|`https://sentry.io/`|
 
-|name|description|
-|---|---|
-|`SENTRY_AUTH_TOKEN`|Authentication token for Sentry. See [installation](#create-a-sentry-internal-integration).|
-|`SENTRY_ORG`|The slug of the organization name in Sentry.|
-|`SENTRY_PROJECT`|The slug of the project name in Sentry.|
 #### Parameters
 |name|description|default|
 |---|---|---|
