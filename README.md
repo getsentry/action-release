@@ -15,7 +15,7 @@ For this action to communicate securely with Sentry, you'll need to create a new
 
 Give your new integration a name (for example, "GitHub Action Release Integration”) and specify the necessary permissions. In this case, we need Admin access for “Release” and Read access for “Organization”.
 
-![View of internal integration permissions.](images/internal-integration-permissions.png)
+![View of internal integration permissions.](https://raw.githubusercontent.com/getsentry/action-release/master/images/internal-integration-permissions.png)
 
 Click “Save” at the bottom of the page and grab your token, which you’ll use as your `SENTRY_AUTH_TOKEN`. We recommend you store this as an [encrypted secret](https://docs.github.com/en/actions/configuring-and-managing-workflows/creating-and-storing-encrypted-secrets).
 
