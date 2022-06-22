@@ -1,0 +1,30 @@
+name: "check"
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+      - 'releases/*'
+
+jobs:
+  dry_run: # make sure the action works on a clean machine without building
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - uses: './.github/actions/setup-docker'
+    - name: Create a mock Sentry release
+      uses: ./
+      env:
+        MOCK: true
+      with:
+        environment: production
+  fail_real: # make sure the action works on a clean machine without building
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - uses: './.github/actions/setup-docker'
+    - name: Create a real Sentry release
+      uses: ./
+      with:
+        environment: production
+      
