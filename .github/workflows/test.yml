@@ -7,16 +7,13 @@ on: # rebuild any PRs and main branch changes
       - 'releases/*'
 
 jobs:
-  test: # make sure the action works on a clean machine without building
+  dry_run: # make sure the action works on a clean machine without building
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
     - name: Create Sentry release
       uses: ./
       env:
-        SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-        SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
-        SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
         MOCK: true
       with:
         environment: production

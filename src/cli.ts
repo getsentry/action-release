@@ -1,5 +1,4 @@
 import SentryCli, {SentryCliReleases} from '@sentry/cli';
-// @ts-ignore
 import {version} from '../package.json';
 
 /**
@@ -15,11 +14,10 @@ export const getCLI = (): SentryCliReleases => {
   if (!cli) {
     cli = new SentryCli().releases;
     if (process.env['MOCK']) {
-      cli.execute = async (
-        args: string[],
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        live: boolean
-      ): Promise<string> => {
+      process.env['SENTRY_ORG'] = `acme`;
+      process.env['SENTRY_PROJECT'] = `project1`;
+      process.env['SENTRY_AUTH_TOKEN'] = `abc123`;
+      cli.execute = async (args: string[], live: boolean): Promise<string> => {
         return Promise.resolve(args.join(' '));
       };
     }
