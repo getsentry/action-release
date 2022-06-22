@@ -69,8 +69,6 @@ import * as options from './options';
     core.debug(`Done`);
     core.setOutput('version', version);
   } catch (error) {
-    if (error instanceof Error) {
-      core.setFailed(error.message);
-    }
+    core.setFailed(error.message);
   }
 })();

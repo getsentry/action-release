@@ -1,11 +1,11 @@
 {
-    "arrowParens": "avoid",
-    "bracketSpacing": false,
-    "parser": "typescript",
     "printWidth": 80,
+    "tabWidth": 2,
+    "useTabs": false,
     "semi": true,
     "singleQuote": true,
-    "tabWidth": 2,
     "trailingComma": "es5",
-    "useTabs": false
-}
+    "bracketSpacing": false,
+    "arrowParens": "avoid",
+    "parser": "typescript"
+  }
