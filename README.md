@@ -56,7 +56,7 @@ Adding the following to your workflow will create a new Sentry release and tell 
 |`version`|Identifier that uniquely identifies the releases. _Note: the `refs/tags/` prefix is automatically stripped when `version` is `github.ref`._|<code>${{&nbsp;github.sha&nbsp;}}</code>|
 |`version_prefix`|Value prepended to auto-generated version. For example "v".|-|
 |`set_commits`|Specify whether to set commits for the release. Either "auto" or "skip".|"auto"|
-|`projects`|Space-separated list of paths of projects. When omitted, falls back to the environment variable `SENTRY_PROJECT` to determine the project.|-|
+|`projects`|Space-separated list of project slugs. When omitted, falls back to the environment variable `SENTRY_PROJECT` to determine the project.|-|
 |`url_prefix`|Adds a prefix to source map urls after stripping them.|-|
 |`strip_common_prefix`|Will remove a common prefix from uploaded filenames. Useful for removing a path that is build-machine-specific.|`false`|
 
@@ -76,14 +76,23 @@ Adding the following to your workflow will create a new Sentry release and tell 
         environment: 'production'
         version: 'v1.0.1'
     ```
-
+    
 - Create a new Sentry release for [Self-Hosted Sentry](https://develop.sentry.dev/self-hosted/)
     ```yaml
     - uses: getsentry/action-release@v1
       env:
         SENTRY_URL: https://sentry.example.com/
     ```
-
+    
+- Create a new Sentry release for the `staging` environment of multiple projects at version `v1.0.1`.
+    ```yaml
+    - uses: getsentry/action-release@v1
+      with:
+        environment: 'staging'
+        version: 'v1.0.1'
+        projects: 'project-one project-two' # Will override SENTRY_PROJECT environment variable
+    ```
+    
 ## Troubleshooting
 Suggestions and issues can be posted on the repository's 
 [issues page](https://github.com/getsentry/action-release/issues).
