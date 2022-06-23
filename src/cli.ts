@@ -15,6 +15,14 @@ export const getCLI = (): SentryCliReleases => {
   if (!cli) {
     cli = new SentryCli().releases;
     if (process.env['MOCK']) {
+      // Set environment variables if they aren't already
+      for (const variable of [
+        'SENTRY_AUTH_TOKEN',
+        'SENTRY_ORG',
+        'SENTRY_PROJECT',
+      ])
+        !(variable in process.env) && (process.env[variable] = variable);
+
       cli.execute = async (
         args: string[],
         // eslint-disable-next-line @typescript-eslint/no-unused-vars

@@ -1,0 +1,13 @@
+name: "Setup Docker"
+description: "Use the local Dockerfile to test the action instead of the one on DockerHub"
+
+runs: 
+  using: "composite"
+  steps:
+    - name: Replace image on action.yml
+      shell: bash
+      env:
+        ESC_DOCKER_IMAGE_LINK: 'docker\:\/\/sentryintegrations\/sentry-github-action-release\:latest'
+      run: | 
+        mv action.yml previous.yml 
+        sed "s/$ESC_DOCKER_IMAGE_LINK/Dockerfile/" previous.yml >> action.yml
