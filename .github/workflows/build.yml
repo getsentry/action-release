@@ -37,7 +37,7 @@ jobs:
     
     - name: Docker push images
       run: |
-      docker push ghcr.io/getsentry/action-release-image:${{ github.sha }}
+        docker push ghcr.io/getsentry/action-release-image:${{ github.sha }}
         # XXX: For now
         docker push ghcr.io/getsentry/action-release-image:latest
         if [ "$GITHUB_REF" == 'refs/head/master' ]; then
