@@ -28,7 +28,8 @@ jobs:
           -t ghcr.io/getsentry/action-release-builder-image:latest \
           --cache-from ghcr.io/getsentry/action-release-builder-image:latest \
           --target builder
-        echo "$GITHUB_REF"
+        # XXX: For now
+        docker push ghcr.io/getsentry/action-release-builder-image:latest
         if [ "$GITHUB_REF" == 'refs/head/master' ]; then
           # The latest tag should only be published on `master`
           docker push ghcr.io/getsentry/action-release-builder-image:latest
@@ -39,4 +40,8 @@ jobs:
         docker build . \
           --build-arg BUILDKIT_INLINE_CACHE=1 \
           -t ghcr.io/getsentry/action-release-image:latest \
+          -t ghcr.io/getsentry/action-release-image:${{ github.sha }} \
           --cache-from ghcr.io/getsentry/action-release-image:latest
+        docker push ghcr.io/getsentry/action-release-image:${{ github.sha }}
+        # XXX: For now
+        docker push ghcr.io/getsentry/action-release-image:latest
