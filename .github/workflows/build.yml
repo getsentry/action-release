@@ -23,11 +23,12 @@ jobs:
 
     # BUILDKIT_INLINE_CACHE creates the image in such a way that you can
     # then use --cache-from (think of a remote cache)
+    # This feature can be used because of using the buildx plugin
     # In the case of the Docker builder iamge, we should always see that it's using the remote cache
     # XXX: Would a Docker push notice that is already there?
     - name: Docker builder image
       run: |
-        docker build . \
+        docker buildx build . \
           --build-arg BUILDKIT_INLINE_CACHE=1 \
           -t ghcr.io/getsentry/action-release-builder-image:latest \
           --cache-from ghcr.io/getsentry/action-release-builder-image:latest \
