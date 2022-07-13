@@ -1,5 +1,7 @@
 name: "build"
 on:
+  # XXX: Temp change
+  pull_request:
   push:
     branches:
       - master
