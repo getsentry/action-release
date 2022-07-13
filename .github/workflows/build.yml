@@ -42,7 +42,7 @@ jobs:
     
     - name: Docker action-release image
       run: |
-        docker build . \
+        docker buildx build . \
           --build-arg BUILDKIT_INLINE_CACHE=1 \
           -t ghcr.io/getsentry/action-release-image:latest \
           -t ghcr.io/getsentry/action-release-image:${{ github.sha }} \
