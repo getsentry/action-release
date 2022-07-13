@@ -17,6 +17,10 @@ jobs:
         # XXX: Why is this necessary?
         ref: ${{ github.head_ref }}
 
+    - name: Registry login
+      run: |
+        echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u $GITHUB_ACTOR --password-stdin
+
     # BUILDKIT_INLINE_CACHE creates the image in such a way that you can
     # then use --cache-from (think of a remote cache)
     # In the case of the Docker builder iamge, we should always see that it's using the remote cache
