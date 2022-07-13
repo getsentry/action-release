@@ -25,21 +25,20 @@ jobs:
     # then use --cache-from (think of a remote cache)
     # This feature can be used because of using the buildx plugin
     # In the case of the Docker builder iamge, we should always see that it's using the remote cache
-    # XXX: Would a Docker push notice that is already there?
+    # NOTE: Sadly, the COPY line from the builder image (in the Dockerfile) always invalidates the cache,
+    # thus, we do not benefit from using --cache-from. The multi-stage build still gives us a smaller footprint
+    # TODO: Optimize the Dockerfile to take advantage of proper caching
     - name: Docker build images
       run: |
         docker buildx build . \
           --build-arg BUILDKIT_INLINE_CACHE=1 \
           -t ghcr.io/getsentry/action-release-image:latest \
-          -t ghcr.io/getsentry/action-release-image:${{ github.sha }} \
           --cache-from ghcr.io/getsentry/action-release-image:latest \
           --target app
     
     - name: Docker push images
       run: |
-        docker push ghcr.io/getsentry/action-release-image:${{ github.sha }}
-        # XXX: For now
-        docker push ghcr.io/getsentry/action-release-image:latest
+        # XXX: Fix this condition
         if [ "$GITHUB_REF" == 'refs/head/master' ]; then
           # The latest tag should only be published on `master`
           docker push ghcr.io/getsentry/action-release-image:latest
