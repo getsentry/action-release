@@ -7,7 +7,7 @@ RUN export YARN_CACHE_FOLDER="$(mktemp -d)" \
 COPY . .
 RUN yarn build
 
-FROM node:12-alpine
+FROM node:12-alpine as app
 COPY --from=builder /app/package.json /app/yarn.lock /action-release/
 RUN export YARN_CACHE_FOLDER="$(mktemp -d)" \
   && cd /action-release \
