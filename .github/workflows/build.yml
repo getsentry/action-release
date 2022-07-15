@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - master
-      # releases branch?
 
 jobs:
   test-local-image: # Make sure that the action works on a clean machine without building
@@ -21,10 +20,9 @@ jobs:
       with:
         environment: production
 
-  # XXX: Only run on master
+  # Building the Dockerfile is tested as part of test-local-image, thus,
+  # we can run this job only on master
   docker-build:
-    # XXX: Remove comment
-    # needs: test
     runs-on: ubuntu-latest
     steps:
     - name: Checkout repo
@@ -32,10 +30,6 @@ jobs:
       with:
         # XXX: Why is this necessary?
         ref: ${{ github.head_ref }}
-
-    - name: Registry login
-      run: |
-        echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u $GITHUB_ACTOR --password-stdin
 
     # BUILDKIT_INLINE_CACHE creates the image in such a way that you can
     # then use --cache-from (think of a remote cache)
@@ -52,18 +46,25 @@ jobs:
           --cache-from ghcr.io/getsentry/action-release-image:latest \
           --target app
     
+    # XXX: Run only if in master
+    # Test before publishing
     - uses: './.github/actions/use-local-dockerfile'
     
-    - name: Docker push images
-      run: |
-        # XXX: Fix this condition for master
-        if [ "$GITHUB_REF" == 'refs/head/master' ]; then
-          # The latest tag should only be published on `master`
-          docker push ghcr.io/getsentry/action-release-image:latest
-        fi
+    - name: Mock creating a Sentry release
+      uses: ./
+      env:
+        MOCK: true
+      with:
+        environment: production
     
+    - name: Login and publish
+      run: |
+        echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u $GITHUB_ACTOR --password-stdin
+        # The latest tag should only be published on `master`
+        #docker push ghcr.io/getsentry/action-release-image:latest
+  
+  # XXX: Run only in master
   test-published-image:
-    needs: docker-build
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
