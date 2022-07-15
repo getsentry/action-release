@@ -1,0 +1,22 @@
+name: "test"
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+
+jobs:
+  mock: # Make sure that the action works on a clean machine without building
+    name: "Build image & mock a release"
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+
+    - uses: './.github/actions/use-local-dockerfile'
+
+    - name: Mock creating a Sentry release
+      uses: ./
+      env:
+        MOCK: true
+      with:
+        environment: production

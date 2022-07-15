@@ -1,27 +1,12 @@
-name: "ci"
+name: "build"
 on:
+  # XXX: remove before merging
   pull_request:
   push:
     branches:
       - master
 
 jobs:
-  test-local-image: # Make sure that the action works on a clean machine without building
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v3
-
-    - uses: './.github/actions/use-local-dockerfile'
-
-    - name: Mock creating a Sentry release
-      uses: ./
-      env:
-        MOCK: true
-      with:
-        environment: production
-
-  # Building the Dockerfile is tested as part of test-local-image, thus,
-  # we can run this job only on master
   docker-build:
     runs-on: ubuntu-latest
     steps:
@@ -45,10 +30,10 @@ jobs:
           -t ghcr.io/getsentry/action-release-image:latest \
           --cache-from ghcr.io/getsentry/action-release-image:latest \
           --target app
-    
-    # XXX: Run only if in master
-    # Test before publishing
-    - uses: './.github/actions/use-local-dockerfile'
+
+    # Test Docker build before publishing
+    - name: Use local Dockerfile for action
+      uses: './.github/actions/use-local-dockerfile'
     
     - name: Mock creating a Sentry release
       uses: ./
@@ -63,8 +48,9 @@ jobs:
         # The latest tag should only be published on `master`
         #docker push ghcr.io/getsentry/action-release-image:latest
   
-  # XXX: Run only in master
-  test-published-image:
+  # Mock published image to test what users would do
+  mock-published-image:
+    needs: docker-build
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
@@ -75,3 +61,39 @@ jobs:
         MOCK: true
       with:
         environment: production
+  
+  # Mock published image to test what users would do
+  mock-published-image:
+    needs: docker-build
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Mock creating a Sentry release
+      uses: ./
+      env:
+        MOCK: true
+      with:
+        environment: production
+
+  # End to end testing
+  create-release:
+    name: Create a Sentry release
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        # This is necessary in order to determine what commits are to be included
+        # in a release
+        with:
+          fetch-depth: 0
+
+      - name: Create Sentry release
+        uses: getsentry/action-release@v1
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
+        with:
+          projects: "action-release"
+          environment: production
