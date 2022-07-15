@@ -1,14 +1,30 @@
-name: "build"
+name: "ci"
 on:
-  # XXX: Temp change
   pull_request:
   push:
     branches:
       - master
+      # releases branch?
 
 jobs:
+  test-local-image: # Make sure that the action works on a clean machine without building
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+
+    - uses: './.github/actions/use-local-dockerfile'
+
+    - name: Mock creating a Sentry release
+      uses: ./
+      env:
+        MOCK: true
+      with:
+        environment: production
+
   # XXX: Only run on master
   docker:
+    # XXX: Remove comment
+    # requires: test
     runs-on: ubuntu-latest
     steps:
     - name: Checkout repo
@@ -36,11 +52,26 @@ jobs:
           --cache-from ghcr.io/getsentry/action-release-image:latest \
           --target app
     
+    - uses: './.github/actions/use-local-dockerfile'
+    
     - name: Docker push images
       run: |
-        # XXX: Fix this condition
+        # XXX: Fix this condition for master
         if [ "$GITHUB_REF" == 'refs/head/master' ]; then
           # The latest tag should only be published on `master`
           docker push ghcr.io/getsentry/action-release-image:latest
         fi
     
+  test-published:
+    requires: docker-build
+    test-local: # Make sure that the action works on a clean machine without building
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Mock creating a Sentry release
+      uses: ./
+      env:
+        MOCK: true
+      with:
+        environment: production
