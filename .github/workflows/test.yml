@@ -11,7 +11,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
+
     - uses: './.github/actions/setup-docker'
+
     - name: Mock creating a Sentry release
       uses: ./
       env:

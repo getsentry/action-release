@@ -7,12 +7,12 @@ on:
       - master
 
 jobs:
-  # XXX: Create and publish the builder image separatedly
+  # XXX: Only run on master
   docker:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout repo
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         # XXX: Why is this necessary?
         ref: ${{ github.head_ref }}
