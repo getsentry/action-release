@@ -22,7 +22,7 @@ jobs:
         environment: production
 
   # XXX: Only run on master
-  docker:
+  docker-build:
     # XXX: Remove comment
     # needs: test
     runs-on: ubuntu-latest
