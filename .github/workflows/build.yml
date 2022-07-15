@@ -24,7 +24,7 @@ jobs:
   # XXX: Only run on master
   docker:
     # XXX: Remove comment
-    # requires: test
+    # needs: test
     runs-on: ubuntu-latest
     steps:
     - name: Checkout repo
@@ -63,7 +63,7 @@ jobs:
         fi
     
   test-published:
-    requires: docker-build
+    needs: docker-build
     test-local: # Make sure that the action works on a clean machine without building
     runs-on: ubuntu-latest
     steps:
