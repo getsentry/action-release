@@ -40,6 +40,7 @@ inputs:
     required: false
 runs:
   using: 'docker'
+  # If you change this, update setup-docker
   image: 'ghcr.io/getsentry/action-release-image:latest'
 branding:
   icon: 'triangle'

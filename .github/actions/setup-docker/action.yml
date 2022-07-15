@@ -7,7 +7,7 @@ runs:
     - name: Replace image on action.yml
       shell: bash
       env:
-        ESC_DOCKER_IMAGE_LINK: 'docker\:\/\/sentryintegrations\/sentry-github-action-release\:latest'
+        ESCAPED_DOCKER_IMAGE_LINK: 'ghcr.io\/getsentry\/action-release-image\:latest'
       run: | 
         mv action.yml previous.yml 
-        sed "s/$ESC_DOCKER_IMAGE_LINK/Dockerfile/" previous.yml >> action.yml
+        sed "s/$ESCAPED_DOCKER_IMAGE_LINK/Dockerfile/" previous.yml >> action.yml
