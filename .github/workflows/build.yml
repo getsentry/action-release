@@ -3,17 +3,17 @@ on:
   push:
     branches:
       - master
-      # XXX: Remove this
+      # XXX: Remove this before merging
       - armenzg/ci/docker-release-to-ghr
 
 jobs:
   docker-build:
+    name: Build & pubish Docker image
     runs-on: ubuntu-latest
     steps:
     - name: Checkout repo
       uses: actions/checkout@v3
       with:
-        # XXX: Why is this necessary?
         ref: ${{ github.head_ref }}
 
     # BUILDKIT_INLINE_CACHE creates the image in such a way that you can
