@@ -3,8 +3,6 @@ on:
   push:
     branches:
       - master
-      # XXX: Remove this before merging
-      - armenzg/ci/docker-release-to-ghr
 
 jobs:
   docker-build:
@@ -67,8 +65,7 @@ jobs:
       - name: Create Sentry release
         # XXX: We need to test both master and v1 (official one)
         # XXX: We need to create a v1 tag for the release to be completed
-        # XXX: Change this to master
-        uses: getsentry/action-release@armenzg/ci/docker-release-to-ghr
+        uses: getsentry/action-release@master
         env:
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
           SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
