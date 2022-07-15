@@ -48,20 +48,6 @@ jobs:
         # The latest tag should only be published on `master`
         docker push ghcr.io/getsentry/action-release-image:latest
 
-  # Mock published image to test what users would do
-  mock-published-image:
-    needs: docker-build
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v3
-
-    - name: Mock creating a Sentry release
-      uses: ./
-      env:
-        MOCK: true
-      with:
-        environment: production
-
   # End to end testing: what the users would
   # XXX: TODO: Notify the team if this fails
   test-action-release:
