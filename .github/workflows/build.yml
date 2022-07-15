@@ -62,9 +62,8 @@ jobs:
           docker push ghcr.io/getsentry/action-release-image:latest
         fi
     
-  test-published:
+  test-published-image:
     needs: docker-build
-    test-local: # Make sure that the action works on a clean machine without building
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
