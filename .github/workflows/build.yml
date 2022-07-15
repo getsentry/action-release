@@ -1,7 +1,5 @@
 name: "build"
 on:
-  # XXX: remove before merging
-  pull_request:
   push:
     branches:
       - master
@@ -34,20 +32,20 @@ jobs:
     # Test Docker build before publishing
     - name: Use local Dockerfile for action
       uses: './.github/actions/use-local-dockerfile'
-    
+
     - name: Mock creating a Sentry release
       uses: ./
       env:
         MOCK: true
       with:
         environment: production
-    
+
     - name: Login and publish
       run: |
         echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u $GITHUB_ACTOR --password-stdin
         # The latest tag should only be published on `master`
         #docker push ghcr.io/getsentry/action-release-image:latest
-  
+
   # Mock published image to test what users would do
   mock-published-image:
     needs: docker-build
