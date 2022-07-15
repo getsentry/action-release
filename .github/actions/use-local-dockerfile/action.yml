@@ -11,3 +11,4 @@ runs:
       run: | 
         mv action.yml previous.yml 
         sed "s/$ESCAPED_DOCKER_IMAGE_LINK/Dockerfile/" previous.yml >> action.yml
+        grep "image" action.yml
