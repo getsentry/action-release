@@ -48,7 +48,7 @@ jobs:
         # The latest tag should only be published on `master`
         docker push ghcr.io/getsentry/action-release-image:latest
 
-  # End to end testing: what the users would
+  # End to end testing: what the users would do
   # XXX: TODO: Notify the team if this fails
   test-action-release:
     needs: docker-build
