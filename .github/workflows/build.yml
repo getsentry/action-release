@@ -3,6 +3,8 @@ on:
   push:
     branches:
       - master
+      # XXX: Remove this
+      - armenzg/ci/docker-release-to-ghr
 
 jobs:
   docker-build:
@@ -44,7 +46,7 @@ jobs:
       run: |
         echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u $GITHUB_ACTOR --password-stdin
         # The latest tag should only be published on `master`
-        #docker push ghcr.io/getsentry/action-release-image:latest
+        docker push ghcr.io/getsentry/action-release-image:latest
 
   # Mock published image to test what users would do
   mock-published-image:
@@ -59,36 +61,28 @@ jobs:
         MOCK: true
       with:
         environment: production
-  
-  # Mock published image to test what users would do
-  mock-published-image:
+
+  # End to end testing: what the users would
+  # XXX: TODO: Notify the team if this fails
+  test-action-release:
     needs: docker-build
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v3
-
-    - name: Mock creating a Sentry release
-      uses: ./
-      env:
-        MOCK: true
-      with:
-        environment: production
-
-  # End to end testing
-  create-release:
     name: Create a Sentry release
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-        # This is necessary in order to determine what commits are to be included
-        # in a release
+        # This is necessary in order for the action to determine what commits
+        # are part of the release
         with:
           fetch-depth: 0
 
+      # Created "End to end action-release Integration" integration under Ecosystem's org
       - name: Create Sentry release
-        uses: getsentry/action-release@v1
+        # XXX: We need to test both master and v1 (official one)
+        # XXX: We need to create a v1 tag for the release to be completed
+        # XXX: Change this to master
+        uses: getsentry/action-release@armenzg/ci/docker-release-to-ghr
         env:
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
           SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
