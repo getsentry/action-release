@@ -1,12 +1,8 @@
 name: "test"
 on:
   pull_request:
-    paths:
-      - Dockerfile
-      - action.yml
-      - '*.json'
-      - '*.lock'
-      - 'src/**'
+    paths-ignore:
+      - '*.md'
   push:
     branches:
       - master
