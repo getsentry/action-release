@@ -51,11 +51,8 @@ jobs:
     - name: Login and publish
       run: |
         docker login ghcr.io -u $GITHUB_ACTOR --password-stdin <<< ${{ secrets.GITHUB_TOKEN }}
-        docker push ghcr.io/getsentry/action-release-builder-image:latest || rm .docker/config.json
-        docker push ghcr.io/getsentry/action-release-image:latest || rm .docker/config.json
-        # WARNING! Your password will be stored unencrypted in /home/runner/.docker/config.json.
-        # Read https://docs.docker.com/engine/reference/commandline/login/#credentials-store
-        rm .docker/config.json
+        docker push ghcr.io/getsentry/action-release-builder-image:latest
+        docker push ghcr.io/getsentry/action-release-image:latest
 
   # End to end testing: what the users would do
   # XXX: TODO: Notify the team if this fails
