@@ -1,5 +1,7 @@
 name: "build"
 on:
+  # XXX: For now
+  pull_request:
   push:
     branches:
       - master
@@ -13,6 +15,12 @@ jobs:
     steps:
     - name: Checkout repo
       uses: actions/checkout@v3
+
+    - name: Build Docker image
+      run: |
+        echo ${{ github.ref }}
+        echo ${{ github.head_ref }}
+        echo ${{ github.sha }}
 
     # BUILDKIT_INLINE_CACHE creates the image in such a way that you can
     # then use --cache-from (think of a remote cache)
