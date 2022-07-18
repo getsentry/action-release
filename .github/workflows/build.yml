@@ -1,10 +1,10 @@
 name: "build"
 on:
-  # XXX: For now
-  pull_request:
   push:
     branches:
       - master
+      # XXX: For now
+      - armenzg*
 
 jobs:
   docker-build:
