@@ -135,6 +135,10 @@ Otherwise it could fail at the `propose-version` step with the message:
         fetch-depth: 0
     ```
 
+## Releases
+
+Open a [new release checklist issue](https://github.com/getsentry/action-release/issues/new?assignees=&labels=&template=release-checklist.md&title=New+release+checklist+for+%5Bversion+number%5D) and follow the steps in there.
+
 ## Contributing
 
 See the [Contributing Guide](https://github.com/getsentry/action-release/blob/master/CONTRIBUTING).
