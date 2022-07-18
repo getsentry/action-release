@@ -1,3 +1,5 @@
+# The multi stage set up *saves* up image size by avoiding the dev dependencies
+# required to produce dist/
 FROM node:12-alpine as builder
 WORKDIR /app
 # This layer will invalidate upon new dependencies
