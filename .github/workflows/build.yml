@@ -4,7 +4,7 @@ on:
     branches:
       - master
       # XXX: For now
-      - armenzg*
+      - armenzg/ci/docker-release-to-ghr
 
 jobs:
   docker-build:
