@@ -5,18 +5,38 @@ on:
       - master
 
 jobs:
-  build:
+  docker-build:
+    name: Build & pubish Docker images
     runs-on: ubuntu-latest
     steps:
     - name: Checkout repo
-      uses: actions/checkout@v2
-      with:
-        ref: ${{ github.head_ref }}
+      uses: actions/checkout@v3
 
-    - name: Docker
-      uses: docker/build-push-action@v1
-      with:
-        username: ${{ secrets.DOCKER_USERNAME }}
-        password: ${{ secrets.DOCKER_PASSWORD }}
-        repository: sentryintegrations/sentry-github-action-release
-        tags: latest
+    # BUILDKIT_INLINE_CACHE creates the image in such a way that you can
+    # then use --cache-from (think of a remote cache)
+    # This feature is allowed thanks to using the buildx plugin
+    #
+    # There's a COPY command in the builder stage that can easily invalidate the cache
+    # If you notice, please add more exceptions to .dockerignore since we loose the value
+    # of using --cache-from on the app stage
+    - name: Build Docker builder image
+      run: |
+        docker buildx build . \
+          --build-arg BUILDKIT_INLINE_CACHE=1 \
+          -t ghcr.io/getsentry/action-release-builder-image:latest \
+          --cache-from ghcr.io/getsentry/action-release-builder-image:latest \
+          --target builder
+
+    - name: Build Docker image
+      run: |
+        docker buildx build . \
+          --build-arg BUILDKIT_INLINE_CACHE=1 \
+          -t ghcr.io/getsentry/action-release-image:latest \
+          --cache-from ghcr.io/getsentry/action-release-image:latest \
+          --target app
+
+    - name: Login and publish
+      run: |
+        docker login ghcr.io -u $GITHUB_ACTOR --password-stdin <<< ${{ secrets.GITHUB_TOKEN }}
+        docker push ghcr.io/getsentry/action-release-builder-image:latest
+        docker push ghcr.io/getsentry/action-release-image:latest

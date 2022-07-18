@@ -1,0 +1,12 @@
+name: "Use local Dockerfile"
+description: "Use the local Dockerfile to test the action instead of the one on DockerHub"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Replace image on action.yml
+      shell: bash
+      run: |
+        mv action.yml previous.yml
+        sed "s|docker://ghcr.io/getsentry/action-release-image:latest|Dockerfile|" previous.yml >> action.yml
+        grep "image" action.yml

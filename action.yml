@@ -40,7 +40,8 @@ inputs:
     required: false
 runs:
   using: 'docker'
-  image: 'docker://sentryintegrations/sentry-github-action-release:latest'
+  # If you change this, update the use-local-dockerfile action
+  image: 'docker://ghcr.io/getsentry/action-release-image:latest'
 branding:
   icon: 'triangle'
   color: 'purple'
