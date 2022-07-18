@@ -1,5 +1,7 @@
 name: "build"
 on:
+  # XXX: For now
+  pull_request:
   push:
     branches:
       - master
@@ -11,17 +13,23 @@ jobs:
     steps:
     - name: Checkout repo
       uses: actions/checkout@v3
-      with:
-        ref: ${{ github.head_ref }}
 
     # BUILDKIT_INLINE_CACHE creates the image in such a way that you can
     # then use --cache-from (think of a remote cache)
-    # This feature can be used because of using the buildx plugin
-    # In the case of the Docker builder iamge, we should always see that it's using the remote cache
-    # NOTE: Sadly, the COPY line from the builder image (in the Dockerfile) always invalidates the cache,
-    # thus, we do not benefit from using --cache-from. The multi-stage build still gives us a smaller footprint
-    # TODO: Optimize the Dockerfile to take advantage of proper caching
-    - name: Docker build images
+    # This feature is allowed thanks to using the buildx plugin
+    #
+    # There's a COPY command in the builder stage that can easily invalidate the cache
+    # If you notice, please add more exceptions to .dockerignore since we loose the value
+    # of using --cache-from on the app stage
+    - name: Build Docker builder image
+      run: |
+        docker buildx build . \
+          --build-arg BUILDKIT_INLINE_CACHE=1 \
+          -t ghcr.io/getsentry/action-release-builder-image:latest \
+          --cache-from ghcr.io/getsentry/action-release-builder-image:latest \
+          --target builder
+
+    - name: Build Docker image
       run: |
         docker buildx build . \
           --build-arg BUILDKIT_INLINE_CACHE=1 \
@@ -42,8 +50,8 @@ jobs:
 
     - name: Login and publish
       run: |
-        echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u $GITHUB_ACTOR --password-stdin
-        # The latest tag should only be published on `master`
+        docker login ghcr.io -u $GITHUB_ACTOR --password-stdin <<< ${{ secrets.GITHUB_TOKEN }}
+        docker push ghcr.io/getsentry/action-release-build-image:latest
         docker push ghcr.io/getsentry/action-release-image:latest
 
   # End to end testing: what the users would do
