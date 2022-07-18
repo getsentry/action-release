@@ -1,16 +1,20 @@
 # Sentry Release GitHub Action
-Automatically create a Sentry release in a workflow. 
+
+Automatically create a Sentry release in a workflow.
 
 A release is a version of your code that can be deployed to an environment. When you give Sentry information about your releases, you unlock a number of new features:
- - Determine the issues and regressions introduced in a new release
- - Predict which commit caused an issue and who is likely responsible
- - Resolve issues by including the issue number in your commit message
- - Receive email notifications when your code gets deployed
+
+- Determine the issues and regressions introduced in a new release
+- Predict which commit caused an issue and who is likely responsible
+- Resolve issues by including the issue number in your commit message
+- Receive email notifications when your code gets deployed
 
 Additionally, releases are used for applying source maps to minified JavaScript to view original, untransformed source code. You can learn more about releases in the [releases documentation](https://docs.sentry.io/workflow/releases).
 
 ## Prerequisites
-#### Create a Sentry Internal Integration
+
+### Create a Sentry Internal Integration
+
 For this action to communicate securely with Sentry, you'll need to create a new internal integration. In Sentry, navigate to: _Settings > Developer Settings > New Internal Integration_.
 
 Give your new integration a name (for example, "GitHub Action Release Integration”) and specify the necessary permissions. In this case, we need Admin access for “Release” and Read access for “Organization”.
@@ -20,6 +24,7 @@ Give your new integration a name (for example, "GitHub Action Release Integratio
 Click “Save” at the bottom of the page and grab your token, which you’ll use as your `SENTRY_AUTH_TOKEN`. We recommend you store this as an [encrypted secret](https://docs.github.com/en/actions/configuring-and-managing-workflows/creating-and-storing-encrypted-secrets).
 
 ## Usage
+
 Adding the following to your workflow will create a new Sentry release and tell Sentry that you are deploying to the `production` environment.
   
 ```yaml
@@ -36,7 +41,9 @@ Adding the following to your workflow will create a new Sentry release and tell 
 ```
 
 ### Inputs
+
 #### Environment Variables
+
 |name|description|default|
 |---|---|---|
 |`SENTRY_AUTH_TOKEN`|**[Required]** Authentication token for Sentry. See [installation](#create-a-sentry-internal-integration).|-|
@@ -45,6 +52,7 @@ Adding the following to your workflow will create a new Sentry release and tell 
 |`SENTRY_URL`|The URL used to connect to Sentry. (Only required for [Self-Hosted Sentry](https://develop.sentry.dev/self-hosted/))|`https://sentry.io/`|
 
 #### Parameters
+
 |name|description|default|
 |---|---|---|
 |`environment`|Set the environment for this release. E.g. "production" or "staging". Omit to skip adding deploy to release.|-|
@@ -61,7 +69,9 @@ Adding the following to your workflow will create a new Sentry release and tell 
 |`strip_common_prefix`|Will remove a common prefix from uploaded filenames. Useful for removing a path that is build-machine-specific.|`false`|
 
 ### Examples
+
 - Create a new Sentry release for the `production` environment and upload JavaScript source maps from the `./lib` directory.
+
     ```yaml
     - uses: getsentry/action-release@v1
       with:
@@ -70,6 +80,7 @@ Adding the following to your workflow will create a new Sentry release and tell 
     ```
 
 - Create a new Sentry release for the `production` environment of your project at version `v1.0.1`.
+
     ```yaml
     - uses: getsentry/action-release@v1
       with:
@@ -78,6 +89,7 @@ Adding the following to your workflow will create a new Sentry release and tell 
     ```
 
 - Create a new Sentry release for [Self-Hosted Sentry](https://develop.sentry.dev/self-hosted/)
+
     ```yaml
     - uses: getsentry/action-release@v1
       env:
@@ -85,35 +97,48 @@ Adding the following to your workflow will create a new Sentry release and tell 
     ```
 
 ## Troubleshooting
-Suggestions and issues can be posted on the repository's 
+
+Suggestions and issues can be posted on the repository's
 [issues page](https://github.com/getsentry/action-release/issues).
-- Forgetting to include the required environment variables 
-  (`SENTRY_AUTH_TOKEN`, `SENTRY_ORG`, and `SENTRY_PROJECT`), yields an error that looks like: 
-    ```
+
+- Forgetting to include the required environment variables
+  (`SENTRY_AUTH_TOKEN`, `SENTRY_ORG`, and `SENTRY_PROJECT`), yields an error that looks like:
+
+    ```text
     Environment variable SENTRY_ORG is missing an organization slug
     ```
+
 - Building and running this action locally on an unsupported environment yields an error that looks like:
-    ```
+
+    ```text
     Syntax error: end of file unexpected (expecting ")")
     ```
+
 - When adding the action, make sure to first checkout your repo with `actions/checkout@v2`.
 Otherwise it could fail at the `propose-version` step with the message:
-    ```
+
+    ```text
     error: Could not automatically determine release name
     ```
+
 - In `actions/checkout@v2` the default fetch depth is 1. If you're getting the error message:
-    ```
+
+    ```text
     error: Could not find the SHA of the previous release in the git history. Increase your git clone depth.
     ```
+
     you can fetch all history for all branches and tags by setting the `fetch-depth` to zero like so:
-    ```
+
+    ```text
     - uses: actions/checkout@v2
       with:
         fetch-depth: 0
     ```
 
 ## Contributing
+
 See the [Contributing Guide](https://github.com/getsentry/action-release/blob/master/CONTRIBUTING).
 
 ## License
+
 See the [License File](https://github.com/getsentry/action-release/blob/master/LICENSE).
