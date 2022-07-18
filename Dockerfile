@@ -13,8 +13,7 @@ COPY . .
 RUN yarn build
 
 FROM node:12-alpine as app
-# XXX: This could simply be copied from the source code; no?
-COPY --from=builder /app/package.json /app/yarn.lock /action-release/
+COPY package.json yarn.lock /action-release/
 # On the builder image, we install both types of dependencies rather than
 # just the production ones. This generates /action-release/node_modules
 RUN export YARN_CACHE_FOLDER="$(mktemp -d)" \
