@@ -1,7 +1,5 @@
 name: "build"
 on:
-  # XXX: For now
-  pull_request:
   push:
     branches:
       - master
@@ -50,30 +48,3 @@ jobs:
         docker login ghcr.io -u $GITHUB_ACTOR --password-stdin <<< ${{ secrets.GITHUB_TOKEN }}
         docker push ghcr.io/getsentry/action-release-builder-image:latest
         docker push ghcr.io/getsentry/action-release-image:latest
-
-  # End to end testing: what the users would do
-  # XXX: TODO: Notify the team if this fails
-  test-action-release:
-    needs: docker-build
-    name: Create a Sentry release
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-        # This is necessary in order for the action to determine what commits
-        # are part of the release
-        with:
-          fetch-depth: 0
-
-      # Created "End to end action-release Integration" integration under Ecosystem's org
-      - name: Create Sentry release
-        # XXX: We need to test both master and v1 (official one)
-        # XXX: We need to create a v1 tag for the release to be completed
-        uses: getsentry/action-release@master
-        env:
-          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-          SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
-        with:
-          projects: "action-release"
-          environment: production
