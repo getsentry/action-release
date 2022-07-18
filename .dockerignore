@@ -1,5 +1,10 @@
-# These files will be ignore by Docker when creating a build context
+# Docs: https://docs.docker.com/engine/reference/builder/#dockerignore-file
+# These files will be ignore by Docker for COPY and ADD commands when creating a build context
 # In other words, if a file should not be inside of the Docker container it should be
 # added to the list, otherwise, it will invalidate cache layers and have to rebuild
 # all layers after a COPY command
+.git
 .github
+Dockerfile
+.dockerignore
+*.md

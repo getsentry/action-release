@@ -8,7 +8,7 @@ on:
 
 jobs:
   docker-build:
-    name: Build & pubish Docker image
+    name: Build & pubish Docker images
     runs-on: ubuntu-latest
     steps:
     - name: Checkout repo
