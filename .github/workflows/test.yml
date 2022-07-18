@@ -6,7 +6,7 @@ on:
       - master
 
 jobs:
-  mock: # Make sure that the action works on a clean machine without building
+  mock-release: # Make sure that the action works on a clean machine without building
     name: "Build image & mock a release"
     runs-on: ubuntu-latest
     steps:
@@ -20,3 +20,27 @@ jobs:
         MOCK: true
       with:
         environment: production
+
+  test-as-action:
+    needs: mock-release
+    name: Create *staging* Sentry release
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        # This is necessary in order for the action to determine what commits
+        # are part of the release
+        with:
+          fetch-depth: 0
+
+      # Created "End to end action-release Integration" integration under Ecosystem's org
+      - name: Create Sentry release
+        # Try to use the PR's branch as an action
+        uses: getsentry/action-release@${{ github.head_ref}}
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
+        with:
+          projects: "action-release"
+          environment: staging

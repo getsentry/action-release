@@ -37,17 +37,6 @@ jobs:
           --cache-from ghcr.io/getsentry/action-release-image:latest \
           --target app
 
-    # Test Docker build before publishing
-    - name: Use local Dockerfile for action
-      uses: './.github/actions/use-local-dockerfile'
-
-    - name: Mock creating a Sentry release
-      uses: ./
-      env:
-        MOCK: true
-      with:
-        environment: production
-
     - name: Login and publish
       run: |
         docker login ghcr.io -u $GITHUB_ACTOR --password-stdin <<< ${{ secrets.GITHUB_TOKEN }}
