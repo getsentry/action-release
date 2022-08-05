@@ -1,5 +1,7 @@
 # Sentry Release GitHub Action
 
+**NOTE**: Currently only available for Linux runners. See [this issue](https://github.com/getsentry/action-release/issues/58) for more details.
+
 Automatically create a Sentry release in a workflow.
 
 A release is a version of your code that can be deployed to an environment. When you give Sentry information about your releases, you unlock a number of new features:
