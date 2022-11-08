@@ -24,4 +24,4 @@ Checklist for a new release:
 - [ ] Once published, visit [the marketplace](https://github.com/marketplace/actions/sentry-release) to see that the release is showing up
 - Update existing major tag (i.e. v1, v2 etc)
   - [ ] Run `git tag -f v<Major Release Num>`
-  - [ ] Run `git push origin master --tags`
+  - [ ] Run `git push origin master --tags -f`
