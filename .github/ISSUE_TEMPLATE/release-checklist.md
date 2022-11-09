@@ -22,3 +22,6 @@ Checklist for a new release:
     - [ ] If there are _breaking_ changes, tag it as a major release
       - [ ] Figure out if we need to do an external annoucement of sorts
 - [ ] Once published, visit [the marketplace](https://github.com/marketplace/actions/sentry-release) to see that the release is showing up
+- Update existing major tag (i.e. v1, v2 etc)
+  - [ ] Run `git tag -f v<Major Release Num>`
+  - [ ] Run `git push origin master --tags -f`
