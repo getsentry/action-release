@@ -36,7 +36,7 @@ jobs:
       with:
         path: test/
 
-    - uses: './.github/actions/use-local-dockerfile'
+    - uses: 'main/.github/actions/use-local-dockerfile'
       with:
         working_directory: main
 
