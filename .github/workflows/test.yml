@@ -24,10 +24,11 @@ jobs:
         environment: production
 
   mock-release-working-directory:
-    name: Checkout directory we'll be running from
+    name: "Build image & mock a release in a different working directory"
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - name: Checkout directory we'll be running from
+      uses: actions/checkout@v3
       with:
         path: main/
 
