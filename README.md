@@ -62,6 +62,7 @@ Adding the following to your workflow will create a new Sentry release and tell 
 |`ignore_missing`|When the flag is set and the previous release commit was not found in the repository, will create a release with the default commits count instead of failing the command.|`false`|
 |`ignore_empty`|When the flag is set, command will not fail and just exit silently if no new commits for a given release have been found.|`false`|
 |`sourcemaps`|Space-separated list of paths to JavaScript sourcemaps. Omit to skip uploading sourcemaps.|-|
+|`dist`|Unique identifier for the distribution, used to further segment your release. Usually your build number. _Note: Required when uploading sourcemaps._|-|
 |`started_at`|Unix timestamp of the release start date. Omit for current time.|-|
 |`version`|Identifier that uniquely identifies the releases. _Note: the `refs/tags/` prefix is automatically stripped when `version` is `github.ref`._|<code>${{&nbsp;github.sha&nbsp;}}</code>|
 |`version_prefix`|Value prepended to auto-generated version. For example "v".|-|
@@ -79,6 +80,7 @@ Adding the following to your workflow will create a new Sentry release and tell 
       with:
         environment: 'production'
         sourcemaps: './lib'
+        dist: ${{ github.sha }}
     ```
 
 - Create a new Sentry release for the `production` environment of your project at version `v1.0.1`.

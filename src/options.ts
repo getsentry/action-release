@@ -82,6 +82,19 @@ export const getSourcemaps = (): string[] => {
 };
 
 /**
+ * Dist is optional, but should be a string when provided.
+ * @returns string
+ */
+export const getDist = (): string | undefined => {
+  const distOption: string = core.getInput('dist');
+  if (!distOption) {
+    return undefined;
+  }
+
+  return distOption;
+};
+
+/**
  * Fetch boolean option from input. Throws error if option value is not a boolean.
  * @param input string
  * @param defaultValue boolean
