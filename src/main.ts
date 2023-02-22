@@ -1,6 +1,7 @@
 import * as core from '@actions/core';
 import {getCLI} from './cli';
 import * as options from './options';
+import * as process from 'process';
 
 (async () => {
   try {
@@ -23,9 +24,15 @@ import * as options from './options';
       false
     );
     const version = await options.getVersion();
+    const workingDirectory = options.getWorkingDirectory();
 
     core.debug(`Version is ${version}`);
     await cli.new(version, {projects});
+
+    const currentWorkingDirectory = process.cwd();
+    if (workingDirectory !== null && workingDirectory.length > 0) {
+      process.chdir(workingDirectory);
+    }
 
     if (setCommitsOption !== 'skip') {
       core.debug(`Setting commits with option '${setCommitsOption}'`);
@@ -64,6 +71,10 @@ import * as options from './options';
     core.debug(`Finalizing the release`);
     if (shouldFinalize) {
       await cli.finalize(version);
+    }
+
+    if (workingDirectory !== null && workingDirectory.length > 0) {
+      process.chdir(currentWorkingDirectory);
     }
 
     core.debug(`Done`);
