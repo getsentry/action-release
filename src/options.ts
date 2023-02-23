@@ -88,7 +88,7 @@ export const getSourcemaps = (): string[] => {
 export const getDist = (): string | undefined => {
   const distOption: string = core.getInput('dist');
   if (!distOption) {
-    return undefined;
+    return null;
   }
 
   return distOption;
