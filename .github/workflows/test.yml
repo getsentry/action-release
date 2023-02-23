@@ -22,3 +22,29 @@ jobs:
         MOCK: true
       with:
         environment: production
+
+  mock-release-working-directory:
+    name: "Build image & mock a release in a different working directory"
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout directory we'll be running from
+      uses: actions/checkout@v3
+      with:
+        path: main/
+
+    - name: Checkout directory we'll be testing
+      uses: actions/checkout@v3
+      with:
+        path: test/
+
+    - uses: './main/.github/actions/use-local-dockerfile'
+      with:
+        working_directory: main
+
+    - name: Mock creating a Sentry release in a different directory
+      uses: ./main
+      env:
+        MOCK: true
+      with:
+        environment: production
+        working_directory: ./test

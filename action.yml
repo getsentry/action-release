@@ -41,6 +41,9 @@ inputs:
   strip_common_prefix:
     description: 'Will remove a common prefix from uploaded filenames. Useful for removing a path that is build-machine-specific.'
     required: false
+  working_directory:
+    description: 'Directory to collect sentry release information from. Useful when collecting information from a non-standard checkout directory.'
+    required: false
 runs:
   using: 'docker'
   # If you change this, update the use-local-dockerfile action
