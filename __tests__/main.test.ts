@@ -72,8 +72,8 @@ describe('options', () => {
       delete process.env['INPUT_DIST'];
     });
 
-    test('should return undefined when dist is omitted', async () => {
-      expect(getDist()).toBeUndefined();
+    test('should return null when dist is omitted', async () => {
+      expect(getDist()).toBeNull();
     });
 
     test('should return a string when dist is provided', () => {
