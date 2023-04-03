@@ -85,7 +85,7 @@ export const getSourcemaps = (): string[] => {
  * Dist is optional, but should be a string when provided.
  * @returns string
  */
-export const getDist = (): string | undefined => {
+export const getDist = (): string | null => {
   const distOption: string = core.getInput('dist');
   if (!distOption) {
     return null;
