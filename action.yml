@@ -8,6 +8,9 @@ inputs:
   sourcemaps:
     description: 'Space-separated list of paths to JavaScript sourcemaps. Omit to skip uploading sourcemaps.'
     required: false
+  dist:
+    description: 'Unique identifier for the distribution, used to further segment your release. Usually your build number.'
+    required: false
   finalize:
     description: 'When false, omit marking the release as finalized and released.'
     default: true

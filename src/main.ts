@@ -12,6 +12,7 @@ import * as process from 'process';
 
     const environment = options.getEnvironment();
     const sourcemaps = options.getSourcemaps();
+    const dist = options.getDist();
     const shouldFinalize = options.getBooleanOption('finalize', true);
     const ignoreMissing = options.getBooleanOption('ignore_missing', false);
     const ignoreEmpty = options.getBooleanOption('ignore_empty', false);
@@ -52,6 +53,7 @@ import * as process from 'process';
           const sourceMapOptions = {
             include: sourcemaps,
             projects: localProjects,
+            dist,
             urlPrefix,
             stripCommonPrefix,
           };

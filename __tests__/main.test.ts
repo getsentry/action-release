@@ -3,6 +3,7 @@ import * as path from 'path';
 import * as process from 'process';
 import {
   getBooleanOption,
+  getDist,
   getSourcemaps,
   getStartedAt,
   getVersion,
@@ -63,6 +64,21 @@ describe('options', () => {
     test('should return array when sourcemaps is false', () => {
       process.env['INPUT_SOURCEMAPS'] = './lib';
       expect(getSourcemaps()).toEqual(['./lib']);
+    });
+  });
+
+  describe('getDist', () => {
+    afterEach(() => {
+      delete process.env['INPUT_DIST'];
+    });
+
+    test('should return null when dist is omitted', async () => {
+      expect(getDist()).toBeNull();
+    });
+
+    test('should return a string when dist is provided', () => {
+      process.env['INPUT_DIST'] = 'foo-dist';
+      expect(getDist()).toEqual('foo-dist');
     });
   });
 
