@@ -53,7 +53,7 @@ import * as process from 'process';
           const sourceMapOptions = {
             include: sourcemaps,
             projects: localProjects,
-            dist,
+            dist: dist || undefined,
             urlPrefix,
             stripCommonPrefix,
           };
