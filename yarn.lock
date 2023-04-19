@@ -562,7 +562,7 @@
     "@nodelib/fs.scandir" "2.1.5"
     fastq "^1.6.0"
 
-"@sentry/cli@2.17.3":
+"@sentry/cli@^2.17.3":
   version "2.17.3"
   resolved "https://registry.yarnpkg.com/@sentry/cli/-/cli-2.17.3.tgz#6710a019cfdd1ce82aa40a31e2ca668e22353280"
   integrity sha512-/ROsfPcNcmj//Hc3k/g3Q7OFEEJdFCzFFSaaWoUV7k1o1i3+LxV+gCntJ28Og08z8MTSmDiC8kqqdYpuaFqJQg==
