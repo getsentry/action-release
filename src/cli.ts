@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import SentryCli, {SentryCliReleases} from '@sentry/cli';
 // @ts-ignore
 import {version} from '../package.json';

@@ -8,6 +8,16 @@ on:
       - master
 
 jobs:
+  all-tests:
+    name: "Run linting and tests"
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Install dependencies
+      run: yarn install
+    - name: Login and publish
+      run: yarn run all
+
   mock-release: # Make sure that the action works on a clean machine without building
     name: "Build image & mock a release"
     runs-on: ubuntu-latest
