@@ -73,7 +73,7 @@ describe('options', () => {
     });
 
     test('should return null when dist is omitted', async () => {
-      expect(getDist()).toBeNull();
+      expect(getDist()).toBeUndefined();
     });
 
     test('should return a string when dist is provided', () => {
