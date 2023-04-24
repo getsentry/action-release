@@ -17,6 +17,9 @@ jobs:
     - uses: actions/checkout@v3
       with:
         fetch-depth: 0
+    
+    # Because PRs always do a merge with the default branch
+    - run: git checkout HEAD^
 
     # You can make your changes to your PR, then make changes to this step to test out
     # different options. You would need
