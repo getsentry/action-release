@@ -25,6 +25,7 @@ jobs:
         SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
         SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
         SENTRY_PROJECT: 6576594
+        SENTRY_LOG_LEVEL: debug
       with:
         environment: production
         url_prefix: ~/static/js
