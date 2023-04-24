@@ -18,13 +18,18 @@ jobs:
       with:
         repository: 'sentry-demos/react'
 
+    - name: Install
+      run: npm install
+
+    - name: Build assets
+      run: npm run build
+
     # Tweak this step to test various scenarios
     - name: Sentry Release
       uses: getsentry/action-release@v1 # Change the version for testing
       env:
         SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
         SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
-        SENTRY_PROJECT: action-release
         SENTRY_LOG_LEVEL: debug
       with:
         environment: production
