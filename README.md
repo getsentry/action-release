@@ -109,7 +109,6 @@ Adding the following to your workflow will create a new Sentry release and tell 
 
 If your change impacts the options used for the action, you need to update the README.md with the new options.
 
-<<<<<<< Updated upstream
 ### Manual testing
 
 This section is if you want to fully test the action since we lack integration tests.
@@ -135,22 +134,11 @@ NOTE: You should not run this on the action-release repo but your own repo that 
 You can use [act](https://github.com/nektos/act) to run the action locally.
 
 Step 1 - Install in Mac with:
-=======
-### Locally with act
-
-You can use [act](https://github.com/nektos/act) to run the action locally.
-
-Install in Mac with:
->>>>>>> Stashed changes
 ```bash
 brew install act
 ```
 
-<<<<<<< Updated upstream
 Step 2 - Force the action to run in local mode by running this command:
-=======
-Force the action to run in local mode by running this command:
->>>>>>> Stashed changes
 
 ```bash
 sed -i .backup 's|docker://ghcr.io/getsentry/action-release-image:latest|Dockerfile|' action.yml
@@ -158,7 +146,6 @@ sed -i .backup 's|docker://ghcr.io/getsentry/action-release-image:latest|Dockerf
 
 NOTE: Make sure you commit your changes in your branch before running `act`.
 
-<<<<<<< Updated upstream
 Step 3 - Create an integration and set the SENTRY_AUTH_TOKEN
 
 NOTE: If you have `direnv` installed, you can define the variable within your repo with `.env`.
@@ -179,11 +166,6 @@ Step 5 - Choose Medium Docker builds
 
 NOTE: The "Build & publish Docker images" will fail
 
-=======
-### Remotely on Github
-
-TBD
->>>>>>> Stashed changes
 
 ## Releases
 
