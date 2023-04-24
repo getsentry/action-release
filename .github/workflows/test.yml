@@ -26,7 +26,7 @@ jobs:
 
     # Tweak this step to test various scenarios
     - name: Sentry Release
-      uses: getsentry/action-release@v1 # Change the version for testing
+      uses: getsentry/action-release@${{ github.sha }} # Change the version for testing
       env:
         SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
         SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
