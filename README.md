@@ -17,6 +17,8 @@ Additionally, releases are used for applying source maps to minified JavaScript 
 
 ### Create a Sentry Internal Integration
 
+NOTE: You have to be an admin in your Sentry org to create this.
+
 For this action to communicate securely with Sentry, you'll need to create a new internal integration. In Sentry, navigate to: _Settings > Developer Settings > New Internal Integration_.
 
 Give your new integration a name (for example, "GitHub Action Release Integration”) and specify the necessary permissions. In this case, we need Admin access for “Release” and Read access for “Organization”.
@@ -101,6 +103,80 @@ Adding the following to your workflow will create a new Sentry release and tell 
         SENTRY_URL: https://sentry.example.com/
     ```
 
+## Development
+
+If your change impacts the options used for the action, you need to update the README.md with the new options.
+
+### Manual testing
+
+This section is if you want to fully test the action since we lack integration tests.
+
+NOTE: Since you need to create an internal integration in your Sentry org you will need to be an admin.
+
+
+#### Remotely on Github
+
+You can open a PR and it will create a release every time you push. Look for the details in `test.yml`.
+
+This repo has `SENTRY_AUTH_TOKEN` and `SENTRY_ORG` defined as secrets
+https://sentry-ecosystem.sentry.io/settings/developer-settings/end-to-end-action-release-integration-416eb2/
+
+#### Local Action Execution via act
+
+NOTE: You should really test out this whole section to see if it still makes sense to use this testing approach and-or if it even works
+
+NOTE: You should not run this on the action-release repo but your own repo that uses action-release.
+
+[Here's a repo](https://github.com/scefali/github-actions-react/blob/master/.github/workflows/deploy.yml) you can clone to test out this action against.
+
+You can use [act](https://github.com/nektos/act) to run the action locally.
+
+Step 1 - Install in Mac with:
+```bash
+brew install act
+```
+
+Step 2 - Force the action to run in local mode by running this command:
+
+```bash
+sed -i .backup 's|docker://ghcr.io/getsentry/action-release-image:latest|Dockerfile|' action.yml
+```
+
+NOTE: Make sure you commit your changes in your branch before running `act`.
+
+Step 3 - Create an integration and set the SENTRY_AUTH_TOKEN
+
+NOTE: If you have `direnv` installed, you can define the variable within your repo with `.env`.
+
+Step 4 - Run the action
+
+```bash
+act -s SENTRY_ORG={your_org_slug} -s SENTRY_PROJECT={your_project_slug}
+```
+
+NOTE: Make sure that `SENTRY_AUTH_TOKEN` is loaded as an env variable.
+NOTE: If you're running and M1 chipset instead of Intel you will see this:
+```
+WARN  ⚠ You are using Apple M1 chip and you have not specified container architecture, you might encounter issues while running act. If so, try running it with '--container-architecture linux/amd64'
+```
+
+Step 5 - Choose Medium Docker builds
+
+NOTE: The "Build & publish Docker images" will fail
+
+
+## Releases
+
+When you are ready to make a release, epen a [new release checklist issue](https://github.com/getsentry/action-release/issues/new?assignees=&labels=&template=release-checklist.md&title=New+release+checklist+for+%5Bversion+number%5D) and follow the steps in there.
+
+## Contributing
+
+See the [Contributing Guide](https://github.com/getsentry/action-release/blob/master/CONTRIBUTING).
+
+## License
+
+See the [License File](https://github.com/getsentry/action-release/blob/master/LICENSE).
+
 ## Troubleshooting
 
 Suggestions and issues can be posted on the repository's
@@ -140,14 +216,4 @@ Otherwise it could fail at the `propose-version` step with the message:
         fetch-depth: 0
     ```
 
-## Releases
 
-Open a [new release checklist issue](https://github.com/getsentry/action-release/issues/new?assignees=&labels=&template=release-checklist.md&title=New+release+checklist+for+%5Bversion+number%5D) and follow the steps in there.
-
-## Contributing
-
-See the [Contributing Guide](https://github.com/getsentry/action-release/blob/master/CONTRIBUTING).
-
-## License
-
-See the [License File](https://github.com/getsentry/action-release/blob/master/LICENSE).

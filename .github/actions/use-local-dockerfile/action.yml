@@ -11,6 +11,5 @@ runs:
     - name: Replace image on action.yml
       shell: bash
       run: |
-        mv ${{inputs.working_directory}}/action.yml ${{inputs.working_directory}}/previous.yml
-        sed "s|docker://ghcr.io/getsentry/action-release-image:latest|Dockerfile|" ${{inputs.working_directory}}/previous.yml >> ${{inputs.working_directory}}/action.yml
+        sed -i .backup 's|docker://ghcr.io/getsentry/action-release-image:latest|Dockerfile|' ${{inputs.working_directory}}/action.yml
         grep "image" ${{inputs.working_directory}}/action.yml

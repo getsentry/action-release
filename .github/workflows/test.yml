@@ -8,6 +8,24 @@ on:
       - master
 
 jobs:
+  # This job creates real release for the action-release project
+  # https://sentry-ecosystem.sentry.io/releases/?project=6576594
+  create-a-release-on-push:
+    name: "Test current action"
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        repository: 'sentry-demos/react'
+
+    # Tweak this step to test various scenarios
+    - name: Sentry Release
+      uses: getsentry/action-release@v1 # Change the version for testing
+      with:
+        environment: production
+        url_prefix: ~/static/js
+        sourcemaps: build/static/js
+
   mock-release: # Make sure that the action works on a clean machine without building
     name: "Build image & mock a release"
     runs-on: ubuntu-latest

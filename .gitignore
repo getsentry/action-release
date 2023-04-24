@@ -103,3 +103,6 @@ lib/**/*
 
 # IDE settings
 .idea/
+
+# Back up files
+.backup
