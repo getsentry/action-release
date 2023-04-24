@@ -8,9 +8,9 @@ on:
       - master
 
 jobs:
-  # This job creates a real release for the action itself:
+  # This job creates a staging release for the action itself:
   # https://sentry-ecosystem.sentry.io/releases/?project=6576594
-  create-a-release-on-push:
+  create-a-release-per-push:
     name: "Test current action"
     runs-on: ubuntu-latest
     steps:
@@ -18,7 +18,8 @@ jobs:
       with:
         fetch-depth: 0
 
-    # Tweak this step to test various scenarios
+    # You can make your changes to your PR, then make changes to this step to test out
+    # different options. You would need
     - name: Sentry Release
       uses: getsentry/action-release@v1 # Change the version for testing
       env:
@@ -28,6 +29,7 @@ jobs:
       with:
         projects: action-release
         ignore_missing: true
+        environment: 'staging'
 
   mock-release: # Make sure that the action works on a clean machine without building
     name: "Build image & mock a release"

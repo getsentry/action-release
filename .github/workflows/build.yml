@@ -11,6 +11,8 @@ jobs:
     steps:
     - name: Checkout repo
       uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
 
     # BUILDKIT_INLINE_CACHE creates the image in such a way that you can
     # then use --cache-from (think of a remote cache)
@@ -40,3 +42,16 @@ jobs:
         docker login ghcr.io -u $GITHUB_ACTOR --password-stdin <<< ${{ secrets.GITHUB_TOKEN }}
         docker push ghcr.io/getsentry/action-release-builder-image:latest
         docker push ghcr.io/getsentry/action-release-image:latest
+
+    # This job creates a real release for the action itself:
+    # https://sentry-ecosystem.sentry.io/releases/?project=6576594
+    - name: Sentry Release
+      uses: getsentry/action-release@v1 # Change the version for testing
+      env:
+        SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+        SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
+        SENTRY_LOG_LEVEL: debug
+      with:
+        projects: action-release
+        environment: 'production'
+        ignore_missing: true
