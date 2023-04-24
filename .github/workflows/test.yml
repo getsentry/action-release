@@ -35,6 +35,7 @@ jobs:
         SENTRY_LOG_LEVEL: debug
       with:
         projects: action-release
+        ignore_missing: true
 
   mock-release: # Make sure that the action works on a clean machine without building
     name: "Build image & mock a release"
