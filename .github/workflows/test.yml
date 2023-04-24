@@ -17,14 +17,6 @@ jobs:
     - uses: actions/checkout@v3
       with:
         fetch-depth: 0
-    #   with:
-    #     repository: 'sentry-demos/react'
-
-    # - name: Install
-    #   run: npm install
-
-    # - name: Build assets
-    #   run: npm run build
 
     # Tweak this step to test various scenarios
     - name: Sentry Release
