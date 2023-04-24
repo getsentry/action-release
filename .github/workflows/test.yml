@@ -30,11 +30,8 @@ jobs:
       env:
         SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
         SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
+        SENTRY_PROJECT: action-release
         SENTRY_LOG_LEVEL: debug
-      # with:
-      #   environment: production
-      #   url_prefix: ~/static/js
-      #   sourcemaps: build/static/js
 
   mock-release: # Make sure that the action works on a clean machine without building
     name: "Build image & mock a release"
