@@ -19,12 +19,12 @@ jobs:
         fetch-depth: 0
         # Because PRs always do a merge with the default branch
         ref: ${{ github.event.pull_request.head.sha }}
-    
 
-    - uses: './main/.github/actions/use-local-dockerfile'
+    # This allows calling the action without needing to generated a Docker build
+    - uses: './.github/actions/use-local-dockerfile'
 
     - name: Create a staging release
-      uses: ./main
+      uses: ./
       env:
         SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
         SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
