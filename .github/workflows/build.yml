@@ -3,6 +3,10 @@ on:
   push:
     branches:
       - master
+env:
+  # Variables defined in the repository
+  SENTRY_ORG: ${{ vars.SENTRY_ORG }}
+  SENTRY_PROJECT: ${{ vars.SENTRY_PROJECT }}
 
 jobs:
   docker-build:
@@ -49,8 +53,6 @@ jobs:
       uses: getsentry/action-release@v1
       env:
         SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-        SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
         SENTRY_LOG_LEVEL: debug
       with:
-        projects: action-release
         environment: 'production'

@@ -9,7 +9,10 @@ on:
 env:
   # Variables defined in the repository
   SENTRY_ORG: ${{ vars.SENTRY_ORG }}
-  SENTRY_PROJECT: ${{ vars.SENTRY_PROJECT }}
+  # For PRs, we post to a different project since you can't have different commits based on environments
+  # https://sentry-ecosystem.sentry.io/releases/?project=4505075304693760
+  # XXX: We need to define different variables in the repo based if we're running for a PR or the master branch
+  SENTRY_PROJECT: action-release-prs
 
 jobs:
   # You're welcome to make changes on this job as part of your PR in ourder to test out your changes

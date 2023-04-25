@@ -111,7 +111,7 @@ If your change impacts the options used for the action, you need to update the R
 
 ### Unit tests
 
-
+You can run the unit tests with `yarn test`.
 
 ### Integration tests
 
