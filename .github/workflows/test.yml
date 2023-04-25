@@ -50,7 +50,7 @@ jobs:
         SENTRY_LOG_LEVEL: debug
       with:
         ignore_missing: true
-        environment: ${{ format('{0}.pr.{1}', github.actor, github.event.pull_request.head.ref ) }}
+        environment: ${{ format('{0}.pr.{1}', github.actor, github.ref ) }}
 
   mock-release: # Make sure that the action works on a clean machine without building Docker
     name: "Build image & mock a release"
