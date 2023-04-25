@@ -17,9 +17,9 @@ jobs:
   #
   # Uncomment and tweak the commented out step
   #
-  # Secrets on this repo do not get shared with PRs openeed on a fork, thus,
-  # add SENTRY_AUTH_TOKEN and SENTRY_ORG to your fork if you want to use this job.
-  # Checkout the README.md in how to create the internal integration
+  # Secrets and variables on this repo do not get shared with PRs openeed on a fork, thus,
+  # add SENTRY_ORG and SENTRY_PROJECT as variables to your fork and SENTRY_AUTH_TOKEN as a secret
+  # if you want to use this job. Checkout the README.md in how to create the internal integration
   create-real-release-per-push:
     name: "Test current action"
     runs-on: ubuntu-latest
@@ -36,6 +36,7 @@ jobs:
 
     # If you want this step to be mocked you can add "MOCK: true" to the env
     - name: Create a staging release
+      # XXX: Skip this step on fork and let contributors tweak it when ready
       if: github.ref != 'refs/heads/master'
       uses: ./
       env:
@@ -43,7 +44,7 @@ jobs:
         SENTRY_LOG_LEVEL: debug
       with:
         ignore_missing: true
-        environment: 'staging'
+        environment: ${{ github.ref }}
 
   mock-release: # Make sure that the action works on a clean machine without building Docker
     name: "Build image & mock a release"

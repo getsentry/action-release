@@ -109,21 +109,23 @@ Adding the following to your workflow will create a new Sentry release and tell 
 
 If your change impacts the options used for the action, you need to update the README.md with the new options.
 
-### Manual testing
-
-This section is if you want to fully test the action since we lack integration tests.
-
-NOTE: Since you need to create an internal integration in your Sentry org you will need to be an admin.
+### Unit tests
 
 
-#### Remotely on Github
 
-When you open a PR `test.yml`.
+### Integration tests
 
-This repo has `SENTRY_AUTH_TOKEN` and `SENTRY_ORG` defined as secrets
-https://sentry-ecosystem.sentry.io/settings/developer-settings/end-to-end-action-release-integration-416eb2/
+In order to test your changes to the action, you can do so by either tweaking a job in the CI or using act (see next two sections).
 
-#### Local Action Execution via act
+#### Test changes on Github's CI
+
+The first job in `test.yml` has instructions on how to tweak a job in order to execute your changes as part of the PR.
+
+NOTE: Contributors will need to create an internal integration in their Sentry org and need to be an admin. See `Prerequisites` section above.
+
+Members of this repo will not have to set anything up since [the integration](https://sentry-ecosystem.sentry.io/settings/developer-settings/end-to-end-action-release-integration-416eb2/) is already set-up. Just open the PR and you will see [a release created](https://sentry-ecosystem.sentry.io/releases/?project=6576594) for your PR.
+
+#### Test changes  Local Action Execution via act
 
 NOTE: You should really test out this whole section to see if it still makes sense to use this testing approach and-or if it even works
 
