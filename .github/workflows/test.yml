@@ -19,11 +19,12 @@ jobs:
         fetch-depth: 0
         # Because PRs always do a merge with the default branch
         ref: ${{ github.event.pull_request.head.sha }}
+    
 
-    # You can make your changes to your PR, then make changes to this step to test out
-    # different options. You would need
-    - name: Sentry Release
-      uses: getsentry/action-release@v1 # Change the version for testing
+    - uses: './main/.github/actions/use-local-dockerfile'
+
+    - name: Create a staging release
+      uses: ./main
       env:
         SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
         SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
@@ -32,6 +33,19 @@ jobs:
         projects: action-release
         ignore_missing: true
         environment: 'staging'
+
+    # You can make your changes to your PR, then make changes to this step to test out
+    # # different options. You would need
+    # - name: Sentry Release
+    #   uses: getsentry/action-release@v1 # Change the version for testing
+    #   env:
+    #     SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+    #     SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
+    #     SENTRY_LOG_LEVEL: debug
+    #   with:
+    #     projects: action-release
+    #     ignore_missing: true
+    #     environment: 'staging'
 
   mock-release: # Make sure that the action works on a clean machine without building
     name: "Build image & mock a release"
