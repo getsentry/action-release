@@ -43,10 +43,10 @@ jobs:
         docker push ghcr.io/getsentry/action-release-builder-image:latest
         docker push ghcr.io/getsentry/action-release-image:latest
 
-    # This job creates a real release for the action itself:
+    # This step creates real Sentry releases for the action itself:
     # https://sentry-ecosystem.sentry.io/releases/?project=6576594
     - name: Sentry Release
-      uses: getsentry/action-release@v1 # Change the version for testing
+      uses: getsentry/action-release@v1
       env:
         SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
         SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
@@ -54,4 +54,3 @@ jobs:
       with:
         projects: action-release
         environment: 'production'
-        ignore_missing: true

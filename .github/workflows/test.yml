@@ -1,4 +1,4 @@
-name: "test"
+name: "integration tests"
 on:
   pull_request:
     paths-ignore:
@@ -6,11 +6,21 @@ on:
   push:
     branches:
       - master
+env:
+  # Variables defined in the repository
+  SENTRY_ORG: ${{ vars.SENTRY_ORG }}
+  SENTRY_PROJECT: ${{ vars.SENTRY_PROJECT }}
 
 jobs:
-  # This job creates a staging release for the action itself:
-  # https://sentry-ecosystem.sentry.io/releases/?project=6576594
-  create-a-release-per-push:
+  # You're welcome to make changes on this job as part of your PR in ourder to test out your changes
+  # We can always undo the changes once we're satisfied with the results
+  #
+  # Uncomment and tweak the commented out step
+  #
+  # Secrets on this repo do not get shared with PRs openeed on a fork, thus,
+  # add SENTRY_AUTH_TOKEN and SENTRY_ORG to your fork if you want to use this job.
+  # Checkout the README.md in how to create the internal integration
+  create-real-release-per-push:
     name: "Test current action"
     runs-on: ubuntu-latest
     steps:
@@ -18,36 +28,24 @@ jobs:
       with:
         fetch-depth: 0
         # Because PRs always do a merge with the default branch
+        # This supports creating a release using the commits from the branch
         ref: ${{ github.event.pull_request.head.sha }}
 
-    # This allows calling the action without needing to generated a Docker build
+    # This allows executing the action's code in the next step rather than a specific tag
     - uses: './.github/actions/use-local-dockerfile'
 
+    # If you want this step to be mocked you can add "MOCK: true" to the env
     - name: Create a staging release
+      if: github.ref != 'refs/heads/master'
       uses: ./
       env:
         SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-        SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
         SENTRY_LOG_LEVEL: debug
       with:
-        projects: action-release
         ignore_missing: true
         environment: 'staging'
 
-    # You can make your changes to your PR, then make changes to this step to test out
-    # # different options. You would need
-    # - name: Sentry Release
-    #   uses: getsentry/action-release@v1 # Change the version for testing
-    #   env:
-    #     SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-    #     SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
-    #     SENTRY_LOG_LEVEL: debug
-    #   with:
-    #     projects: action-release
-    #     ignore_missing: true
-    #     environment: 'staging'
-
-  mock-release: # Make sure that the action works on a clean machine without building
+  mock-release: # Make sure that the action works on a clean machine without building Docker
     name: "Build image & mock a release"
     runs-on: ubuntu-latest
     steps:

@@ -118,7 +118,7 @@ NOTE: Since you need to create an internal integration in your Sentry org you wi
 
 #### Remotely on Github
 
-You can open a PR and it will create a release every time you push. Look for the details in `test.yml`.
+When you open a PR `test.yml`.
 
 This repo has `SENTRY_AUTH_TOKEN` and `SENTRY_ORG` defined as secrets
 https://sentry-ecosystem.sentry.io/settings/developer-settings/end-to-end-action-release-integration-416eb2/
