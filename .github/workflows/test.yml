@@ -44,7 +44,7 @@ jobs:
         SENTRY_LOG_LEVEL: debug
       with:
         ignore_missing: true
-        environment: ${{ github.ref }}
+        environment: ${{ GITHUB_REF_NAME }}
 
   mock-release: # Make sure that the action works on a clean machine without building Docker
     name: "Build image & mock a release"
