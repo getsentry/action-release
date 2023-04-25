@@ -34,6 +34,9 @@ jobs:
     # This allows executing the action's code in the next step rather than a specific tag
     - uses: './.github/actions/use-local-dockerfile'
 
+    - name: Env
+      run: env
+
     # If you want this step to be mocked you can add "MOCK: true" to the env
     - name: Create a staging release
       # XXX: Skip this step on fork and let contributors tweak it when ready
@@ -44,7 +47,7 @@ jobs:
         SENTRY_LOG_LEVEL: debug
       with:
         ignore_missing: true
-        environment: $GITHUB_REF_NAME
+        environment: ${{ github.event.pull_request.head.ref || github.ref }}
 
   mock-release: # Make sure that the action works on a clean machine without building Docker
     name: "Build image & mock a release"
