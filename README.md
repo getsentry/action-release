@@ -105,8 +105,15 @@ Adding the following to your workflow will create a new Sentry release and tell 
         SENTRY_URL: https://sentry.example.com/
     ```
 
-## Build and releasing
+## Releases
 
+The `build.yml` workflow will build a Docker image every time a pull request merges to `master` and upload it to [the Github registry](https://github.com/orgs/getsentry/packages?repo_name=action-release), thus, effectively being live for everyone even if we do not bump the version.
+
+NOTE: Unfortunately, we only use the `latest` tag for the Docker image, thus, making use of a version with the action innefective (e.g. `v1` vs `v1.3.0`). See #129 on how to fix this.
+
+NOTE: Right now, our Docker image publishing is decoupled from `tag` creation in the repository. We should only publish a specific Docker tag when we create a tag (you can make GitHub workflows listen to this). See #102 for details.
+
+The Docker build is [multi-staged](https://github.com/getsentry/action-release/blob/master/Dockerfile) in order to make the final image that is used in the action as small as possible to reduce network transfer (use `docker images` to see the sizes of the images).
 
 ## Development
 
