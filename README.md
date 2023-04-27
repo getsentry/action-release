@@ -144,7 +144,23 @@ Otherwise it could fail at the `propose-version` step with the message:
 
 ## Releases
 
-Open a [new release checklist issue](https://github.com/getsentry/action-release/issues/new?assignees=&labels=&template=release-checklist.md&title=New+release+checklist+for+%5Bversion+number%5D) and follow the steps in there.
+The `build.yml` workflow will build a Docker image every time a pull request merges to `master` and upload it to [the Github registry](https://github.com/orgs/getsentry/packages?repo_name=action-release), thus, effectively being live for everyone even if we do not bump the version.
+
+NOTE: Unfortunately, we only use the `latest` tag for the Docker image, thus, making use of a version with the action innefective (e.g. `v1` vs `v1.3.0`). See #129 on how to fix this.
+
+NOTE: Right now, our Docker image publishing is decoupled from `tag` creation in the repository. We should only publish a specific Docker tag when we create a tag (you can make GitHub workflows listen to this). See #102 for details. Once this is fixed merges to `master` will not make the Docker image live and the following paragraph will be legit.
+
+When you are ready to make a release, open a [new release checklist issue](https://github.com/getsentry/action-release/issues/new?assignees=&labels=&template=release-checklist.md&title=New+release+checklist+for+%5Bversion+number%5D) and follow the steps in there.
+
+The Docker build is [multi-staged](https://github.com/getsentry/action-release/blob/master/Dockerfile) in order to make the final image used by the action as small as possible to reduce network transfer (use `docker images` to see the sizes of the images).
+
+### End to end testing on Github's CI
+
+The first job in `test.yml` has instructions on how to tweak a job in order to execute your changes as part of the PR.
+
+NOTE: Contributors will need to create an internal integration in their Sentry org and need to be an admin. See `Prerequisites` section above.
+
+Members of this repo will not have to set anything up since [the integration](https://sentry-ecosystem.sentry.io/settings/developer-settings/end-to-end-action-release-integration-416eb2/) is already set-up. Just open the PR and you will see [a release created](https://sentry-ecosystem.sentry.io/releases/?project=4505075304693760) for your PR.
 
 ## Contributing
 
