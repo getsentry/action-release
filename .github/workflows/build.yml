@@ -3,10 +3,6 @@ on:
   push:
     branches:
       - master
-env:
-  # Variables defined in the repository
-  SENTRY_ORG: ${{ vars.SENTRY_ORG }}
-  SENTRY_PROJECT: ${{ vars.SENTRY_PROJECT }}
 
 jobs:
   docker-build:
@@ -15,8 +11,6 @@ jobs:
     steps:
     - name: Checkout repo
       uses: actions/checkout@v3
-      with:
-        fetch-depth: 0
 
     # BUILDKIT_INLINE_CACHE creates the image in such a way that you can
     # then use --cache-from (think of a remote cache)
@@ -46,13 +40,3 @@ jobs:
         docker login ghcr.io -u $GITHUB_ACTOR --password-stdin <<< ${{ secrets.GITHUB_TOKEN }}
         docker push ghcr.io/getsentry/action-release-builder-image:latest
         docker push ghcr.io/getsentry/action-release-image:latest
-
-    # This step creates real Sentry releases for the action itself:
-    # https://sentry-ecosystem.sentry.io/releases/?project=6576594
-    - name: Sentry Release
-      uses: getsentry/action-release@v1
-      env:
-        SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-        SENTRY_LOG_LEVEL: debug
-      with:
-        environment: 'production'
