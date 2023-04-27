@@ -17,8 +17,6 @@ Additionally, releases are used for applying source maps to minified JavaScript 
 
 ### Create a Sentry Internal Integration
 
-NOTE: You have to be an admin in your Sentry org to create this.
-
 For this action to communicate securely with Sentry, you'll need to create a new internal integration. In Sentry, navigate to: _Settings > Developer Settings > New Internal Integration_.
 
 Give your new integration a name (for example, "GitHub Action Release Integration”) and specify the necessary permissions. In this case, we need Admin access for “Release” and Read access for “Organization”.
@@ -32,10 +30,7 @@ Click “Save” at the bottom of the page and grab your token, which you’ll u
 Adding the following to your workflow will create a new Sentry release and tell Sentry that you are deploying to the `production` environment.
   
 ```yaml
-- uses: actions/checkout@v3
-  with:
-    fetch-depth: 0
-
+- uses: actions/checkout@v2
 - name: Create Sentry release
   uses: getsentry/action-release@v1
   env:
@@ -105,64 +100,75 @@ Adding the following to your workflow will create a new Sentry release and tell 
         SENTRY_URL: https://sentry.example.com/
     ```
 
-## Releases
+### Testing
+#### Test your own repo against an action-release PR
 
-The `build.yml` workflow will build a Docker image every time a pull request merges to `master` and upload it to [the Github registry](https://github.com/orgs/getsentry/packages?repo_name=action-release), thus, effectively being live for everyone even if we do not bump the version.
+NOTE: This section has not been fully tested but it should work with a bit of investment.
 
-NOTE: Unfortunately, we only use the `latest` tag for the Docker image, thus, making use of a version with the action innefective (e.g. `v1` vs `v1.3.0`). See #129 on how to fix this.
+NOTE: This assumes that you have gone through the `Usage` section and have managed to get your Github repository to have worked with this action.
 
-NOTE: Right now, our Docker image publishing is decoupled from `tag` creation in the repository. We should only publish a specific Docker tag when we create a tag (you can make GitHub workflows listen to this). See #102 for details. Once this is fixed merges to `master` will not make the Docker image live and the following paragraph will be legit.
+NOTE: Once we start producing Docker images for PRs we can get rid of the need of using the `sed` command below.
 
-When you are ready to make a release, open a [new release checklist issue](https://github.com/getsentry/action-release/issues/new?assignees=&labels=&template=release-checklist.md&title=New+release+checklist+for+%5Bversion+number%5D) and follow the steps in there.
+Step 1 - action-release changes (This is your PR with your code changes):
+* Make changes to your action-release branch and push it
+* Run this command, commit the changes and push it
+  * This will cause the action-release to be built using the `Dockerfile`
+  * You will need to revert this change once your changes are approved and ready to be merged
 
-The Docker build is [multi-staged](https://github.com/getsentry/action-release/blob/master/Dockerfile) in order to make the final image used by the action as small as possible to reduce network transfer (use `docker images` to see the sizes of the images).
+```shell
+sed -i .backup 's|docker://ghcr.io/getsentry/action-release-image:latest|Dockerfile|' action.yml`
+```
 
-## Development
+Step 2 - Test out your action-release changes on your own repo
+* Get the sha for the latest commit on Step 1
+* Modify your usage of action-release to point to that commit
+  * If you're using a fork, edit the getsentry org in the string below
 
-If your change impacts the options used for the action, you need to update the README.md with the new options.
+```yml
+  - name: Sentry Release
+    uses: getsentry/action-release@<github_action_commit>
+    env:
+      # You will remove this in the next steps when ready
+      MOCK: true
+      SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+      SENTRY_ORG: ${{ vars.SENTRY_ORG }}
+      # If you specify a Github environment for the branch from where you create
+      # releases from (e.g. master), you can then specify a repository-level variable
+      # for all other branches. This allows using a second project for end-to-end testing
+      SENTRY_PROJECT: ${{ vars.SENTRY_PROJECT }}
+```
 
-### Unit tests
+NOTE: If you want to do local testing read the next section, otherwise, keep reading.
 
-You can run the unit tests with `yarn test`.
+NOTE: Only remove `MOCK: true` once you follow the steps below that will allow you to use two different projects. This will avoid polutting your Sentry releases for your existing Sentry project.
 
-### Integration tests
+<!-- Add link to test.yml after PR 153 merges -->
 
-In order to test your changes to the action, you can do so by either tweaking a job in the CI or using act (see next two sections).
+Step 3 - Create a new Sentry project under your existing Sentry org (only this one time)
+Step 4 - Create an environment variable in Github for the branch you release from (e.g. `master`) and define the same variable as a repository variable which all other branches will use (read: your PRs)
 
-#### Test changes on Github's CI
+<!-- <TODO add screenshot here> -->
+Step 5 - Comment out the MOCK env variable from step 2
+Step 6 - Push to Github and the CI will do an end-to-end run!
 
-The first job in `test.yml` has instructions on how to tweak a job in order to execute your changes as part of the PR.
+NOTE: As mentioned, this section not been tested. Please try it out and let me know if it works for you.
 
-NOTE: Contributors will need to create an internal integration in their Sentry org and need to be an admin. See `Prerequisites` section above.
+#### Local testing via act
 
-Members of this repo will not have to set anything up since [the integration](https://sentry-ecosystem.sentry.io/settings/developer-settings/end-to-end-action-release-integration-416eb2/) is already set-up. Just open the PR and you will see [a release created](https://sentry-ecosystem.sentry.io/releases/?project=4505075304693760) for your PR.
+NOTE: You should test out this whole section to see if it still makes sense to use this testing approach and/or if to only use the one above.
 
-#### Test changes  Local Action Execution via act
+[Here's a repo](https://github.com/scefali/github-actions-react/blob/master/.github/workflows/deploy.yml) you can clone to test out this section.
 
-NOTE: You should really test out this whole section to see if it still makes sense to use this testing approach and-or if it even works
-
-NOTE: You should not run this on the action-release repo but your own repo that uses action-release.
-
-[Here's a repo](https://github.com/scefali/github-actions-react/blob/master/.github/workflows/deploy.yml) you can clone to test out this action against.
-
-You can use [act](https://github.com/nektos/act) to run the action locally.
-
-Step 1 - Install in Mac with:
+Step 1 - Install `act` in Mac with:
 ```bash
 brew install act
 ```
 
-Step 2 - Force the action to run in local mode by running this command:
-
-```bash
-sed -i .backup 's|docker://ghcr.io/getsentry/action-release-image:latest|Dockerfile|' action.yml
-```
-
 NOTE: Make sure you commit your changes in your branch before running `act`.
 
-Step 3 - Create an integration and set the SENTRY_AUTH_TOKEN
+Step 3 - Create an integration and set the SENTRY_AUTH_TOKEN (see `Usage` section in this doc)
 
-NOTE: If you have `direnv` installed, you can define the variable within your repo with `.env`.
+NOTE: If you have `direnv` installed, you can define the variable within your repo in an `.env` file.
 
 Step 4 - Run the action
 
@@ -177,16 +183,6 @@ WARN  ⚠ You are using Apple M1 chip and you have not specified container archi
 ```
 
 Step 5 - Choose Medium Docker builds
-
-NOTE: The "Build & publish Docker images" will fail
-
-## Contributing
-
-See the [Contributing Guide](https://github.com/getsentry/action-release/blob/master/CONTRIBUTING).
-
-## License
-
-See the [License File](https://github.com/getsentry/action-release/blob/master/LICENSE).
 
 ## Troubleshooting
 
@@ -206,14 +202,14 @@ Suggestions and issues can be posted on the repository's
     Syntax error: end of file unexpected (expecting ")")
     ```
 
-- When adding the action, make sure to first checkout your repo with `actions/checkout@v3`.
+- When adding the action, make sure to first checkout your repo with `actions/checkout@v2`.
 Otherwise it could fail at the `propose-version` step with the message:
 
     ```text
     error: Could not automatically determine release name
     ```
 
-- In `actions/checkout@v3` the default fetch depth is 1. If you're getting the error message:
+- In `actions/checkout@v2` the default fetch depth is 1. If you're getting the error message:
 
     ```text
     error: Could not find the SHA of the previous release in the git history. Increase your git clone depth.
@@ -222,9 +218,19 @@ Otherwise it could fail at the `propose-version` step with the message:
     you can fetch all history for all branches and tags by setting the `fetch-depth` to zero like so:
 
     ```text
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v2
       with:
         fetch-depth: 0
     ```
 
+## Releases
 
+Open a [new release checklist issue](https://github.com/getsentry/action-release/issues/new?assignees=&labels=&template=release-checklist.md&title=New+release+checklist+for+%5Bversion+number%5D) and follow the steps in there.
+
+## Contributing
+
+See the [Contributing Guide](https://github.com/getsentry/action-release/blob/master/CONTRIBUTING).
+
+## License
+
+See the [License File](https://github.com/getsentry/action-release/blob/master/LICENSE).
