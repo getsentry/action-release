@@ -17,6 +17,8 @@ Additionally, releases are used for applying source maps to minified JavaScript 
 
 ### Create a Sentry Internal Integration
 
+NOTE: You have to be an admin in your Sentry org to create this.
+
 For this action to communicate securely with Sentry, you'll need to create a new internal integration. In Sentry, navigate to: _Settings > Developer Settings > New Internal Integration_.
 
 Give your new integration a name (for example, "GitHub Action Release Integration”) and specify the necessary permissions. In this case, we need Admin access for “Release” and Read access for “Organization”.
@@ -100,6 +102,26 @@ Adding the following to your workflow will create a new Sentry release and tell 
         SENTRY_URL: https://sentry.example.com/
     ```
 
+## Releases
+
+When you are ready to make a release, open a [new release checklist issue](https://github.com/getsentry/action-release/issues/new?assignees=&labels=&template=release-checklist.md&title=New+release+checklist+for+%5Bversion+number%5D) and follow the steps in there.
+
+## Development
+
+If your change impacts the options used for the action, you need to update the README.md with the new options.
+
+### Unit tests
+
+You can run the unit tests with `yarn test`.
+
+## Contributing
+
+See the [Contributing Guide](https://github.com/getsentry/action-release/blob/master/CONTRIBUTING).
+
+## License
+
+See the [License File](https://github.com/getsentry/action-release/blob/master/LICENSE).
+
 ## Troubleshooting
 
 Suggestions and issues can be posted on the repository's
@@ -139,14 +161,4 @@ Otherwise it could fail at the `propose-version` step with the message:
         fetch-depth: 0
     ```
 
-## Releases
 
-Open a [new release checklist issue](https://github.com/getsentry/action-release/issues/new?assignees=&labels=&template=release-checklist.md&title=New+release+checklist+for+%5Bversion+number%5D) and follow the steps in there.
-
-## Contributing
-
-See the [Contributing Guide](https://github.com/getsentry/action-release/blob/master/CONTRIBUTING).
-
-## License
-
-See the [License File](https://github.com/getsentry/action-release/blob/master/LICENSE).
