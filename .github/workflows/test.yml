@@ -9,40 +9,39 @@ on:
 env:
   # Variables defined in the repository
   SENTRY_ORG: ${{ vars.SENTRY_ORG }}
-  # For PRs, we post to a different project since you can't have different commits based on environments
-  # https://sentry-ecosystem.sentry.io/releases/?project=4505075304693760
-  # XXX: We need to define different variables in the repo based if we're running for a PR or the master branch
-  SENTRY_PROJECT: action-release-prs
+  # For master we have an environment variable that selects the action-release project
+  # instead of action-release-prs
+  # For other branches: https://sentry-ecosystem.sentry.io/releases/?project=4505075304693760
+  # For master branch: https://sentry-ecosystem.sentry.io/releases/?project=6576594
+  SENTRY_PROJECT: ${{ vars.SENTRY_PROJECT }}
 
 jobs:
-  # You're welcome to make changes on this job as part of your PR in ourder to test out your changes
+  # You're welcome to make changes on this job as part of your PR in order to test out your changes
   # We can always undo the changes once we're satisfied with the results
   #
-  # Uncomment and tweak the commented out step
-  #
-  # Secrets and variables on this repo do not get shared with PRs openeed on a fork, thus,
-  # add SENTRY_ORG and SENTRY_PROJECT as variables to your fork and SENTRY_AUTH_TOKEN as a secret
-  # if you want to use this job. Checkout the README.md in how to create the internal integration
+  # Secrets on this repo do not get shared with PRs openeed on a fork, thus,
+  # Add SENTRY_AUTH_TOKEN as a secret to your fork if you want to use this job.
+  # Checkout the README.md in how to create the internal integration (read: auth token)
   create-real-release-per-push:
     name: "Test current action"
     runs-on: ubuntu-latest
+    # XXX: This job will fail for forks, skip step on forks and let contributors tweak it when ready
+    if: github.ref != 'refs/heads/master'
     steps:
     - uses: actions/checkout@v3
       with:
         fetch-depth: 0
-        # Because PRs always do a merge with the default branch
-        # This supports creating a release using the commits from the branch
-        ref: ${{ github.event.pull_request.head.sha }}
+        # For PRs, this supports creating a release using the commits from the branch (rather than the merge commit)
+        ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
     # This allows executing the action's code in the next step rather than a specific tag
     - uses: './.github/actions/use-local-dockerfile'
 
-    # If you want this step to be mocked you can add "MOCK: true" to the env
     - name: Create a staging release
-      # XXX: This step will fail for forks, skip step on forks and let contributors tweak it when ready
-      if: github.ref != 'refs/heads/master'
       uses: ./
       env:
+        # If you want this step to be mocked you can uncomment this variable
+        # MOCK: true
         SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
         SENTRY_LOG_LEVEL: debug
       with:
