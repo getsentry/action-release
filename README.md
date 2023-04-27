@@ -30,7 +30,10 @@ Click “Save” at the bottom of the page and grab your token, which you’ll u
 Adding the following to your workflow will create a new Sentry release and tell Sentry that you are deploying to the `production` environment.
   
 ```yaml
-- uses: actions/checkout@v2
+- uses: actions/checkout@v3
+  with:
+    fetch-depth: 0
+
 - name: Create Sentry release
   uses: getsentry/action-release@v1
   env:
@@ -118,14 +121,14 @@ Suggestions and issues can be posted on the repository's
     Syntax error: end of file unexpected (expecting ")")
     ```
 
-- When adding the action, make sure to first checkout your repo with `actions/checkout@v2`.
+- When adding the action, make sure to first checkout your repo with `actions/checkout@v3`.
 Otherwise it could fail at the `propose-version` step with the message:
 
     ```text
     error: Could not automatically determine release name
     ```
 
-- In `actions/checkout@v2` the default fetch depth is 1. If you're getting the error message:
+- In `actions/checkout@v3` the default fetch depth is 1. If you're getting the error message:
 
     ```text
     error: Could not find the SHA of the previous release in the git history. Increase your git clone depth.
@@ -134,7 +137,7 @@ Otherwise it could fail at the `propose-version` step with the message:
     you can fetch all history for all branches and tags by setting the `fetch-depth` to zero like so:
 
     ```text
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
       with:
         fetch-depth: 0
     ```
