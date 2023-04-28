@@ -19,9 +19,9 @@ jobs:
   # You're welcome to make changes on this job as part of your PR in order to test out your changes
   # We can always undo the changes once we're satisfied with the results
   #
-  # Secrets on this repo do not get shared with PRs openeed on a fork, thus,
-  # Add SENTRY_AUTH_TOKEN as a secret to your fork if you want to use this job.
-  # Checkout the README.md in how to create the internal integration (read: auth token)
+  # Secrets on this repo do not get shared with PRs opened on a fork, thus,
+  # add SENTRY_AUTH_TOKEN as a secret to your fork if you want to use this job.
+  # Checkout the README.md on how to create the internal integration (read: auth token)
   create-real-release-per-push:
     name: "Test current action"
     runs-on: ubuntu-latest
