@@ -104,7 +104,7 @@ describe('options', () => {
     });
 
     test('should return an integer when started_at is an ISO8601 string.', async () => {
-      process.env['INPUT_STARTED_AT'] = '2017-07-13T19:40:00';
+      process.env['INPUT_STARTED_AT'] = '2017-07-13T19:40:00-07:00';
       expect(getStartedAt()).toEqual(1500000000);
     });
 
