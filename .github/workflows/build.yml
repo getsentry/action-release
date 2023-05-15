@@ -3,10 +3,6 @@ on:
   push:
     branches:
       - master
-  # XXX: temp change
-  pull_request:
-    paths-ignore:
-      - '**.md'
 env:
   # Variables defined in the repository
   SENTRY_ORG: ${{ vars.SENTRY_ORG }}
