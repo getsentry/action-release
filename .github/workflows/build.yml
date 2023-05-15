@@ -60,3 +60,4 @@ jobs:
         SENTRY_LOG_LEVEL: debug
       with:
         environment: 'production'
+        ignore_missing: true
