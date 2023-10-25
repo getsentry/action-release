@@ -212,20 +212,20 @@ describe('options', () => {
 });
 
 // shows how the runner will run a javascript action with env / stdout protocol
-// test('test runs', () => {
-//   const output = execSync(
-//     `node ${path.join(__dirname, '..', 'dist', 'index.js')}`,
-//     {
-//       env: {
-//         ...process.env,
-//         INPUT_ENVIRONMENT: 'production',
-//         MOCK: 'true',
-//         SENTRY_AUTH_TOKEN: 'test_token',
-//         SENTRY_ORG: 'test_org',
-//         SENTRY_PROJECT: 'test_project',
-//       },
-//     }
-//   );
+test('test runs', () => {
+  const output = execSync(
+    `node ${path.join(__dirname, '..', 'dist', 'index.js')}`,
+    {
+      env: {
+        ...process.env,
+        INPUT_ENVIRONMENT: 'production',
+        MOCK: 'true',
+        SENTRY_AUTH_TOKEN: 'test_token',
+        SENTRY_ORG: 'test_org',
+        SENTRY_PROJECT: 'test_project',
+      },
+    }
+  );
 
-//   console.log(output.toString());
-// });
+  console.log(output.toString());
+});
