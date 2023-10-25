@@ -82,6 +82,7 @@ import * as process from 'process';
     core.debug(`Done`);
     core.setOutput('version', version);
   } catch (error) {
-    core.setFailed(error.message);
+    console.error(error);
+    core.setFailed((error as Error).message);
   }
 })();
