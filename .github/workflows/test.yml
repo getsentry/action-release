@@ -44,6 +44,7 @@ jobs:
         SENTRY_LOG_LEVEL: debug
       with:
         ignore_missing: true
+        docker_image: local-action-release-image
 
     - name: Build Docker Image Locally
       run: docker build -t local-action-release-image .
