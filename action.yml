@@ -44,15 +44,10 @@ inputs:
   working_directory:
     description: 'Directory to collect sentry release information from. Useful when collecting information from a non-standard checkout directory.'
     required: false
-  docker_image:
-    description: 'Docker image to be used for the action.'
-    required: true
-    default: 'ghcr.io/getsentry/action-release-image:latest'
-
 runs:
   using: 'docker'
-  image: 'docker://${{ docker_image }}'
-
+  # If you change this, update the use-local-dockerfile action
+  image: 'docker://ghcr.io/getsentry/action-release-image:latest'
 branding:
   icon: 'triangle'
   color: 'purple'

@@ -40,14 +40,12 @@ jobs:
     - name: Create a staging release
       uses: ./
       env:
+        # If you want this step to be mocked you can uncomment this variable
+        # MOCK: true
         SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
         SENTRY_LOG_LEVEL: debug
       with:
         ignore_missing: true
-        docker_image: local-action-release-image
-
-    - name: Build Docker Image Locally
-      run: docker build -t local-action-release-image .
 
   mock-release: # Make sure that the action works on a clean machine without building Docker
     name: "Build image & mock a release"
