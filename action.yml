@@ -51,7 +51,7 @@ inputs:
 
 runs:
   using: 'docker'
-  image: 'docker://${{ inputs.docker_image }}'
+  image: 'docker://${{ docker_image }}'
 
 branding:
   icon: 'triangle'
