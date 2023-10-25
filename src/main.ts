@@ -1,7 +1,15 @@
 import * as core from '@actions/core';
+import * as Sentry from '@sentry/node';
+
 import {getCLI} from './cli';
 import * as options from './options';
 import * as process from 'process';
+
+Sentry.init({
+  dsn: 'https://156a0eddcf407521a39833be862fc0e6@o1.ingest.sentry.io/4506112609943552',
+  // Performance Monitoring
+  tracesSampleRate: 1.0,
+});
 
 (async () => {
   try {
@@ -83,5 +91,6 @@ import * as process from 'process';
     core.setOutput('version', version);
   } catch (error) {
     core.setFailed((error as Error).message);
+    Sentry.captureException(error);
   }
 })();

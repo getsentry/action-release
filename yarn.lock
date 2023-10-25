@@ -562,6 +562,15 @@
     "@nodelib/fs.scandir" "2.1.5"
     fastq "^1.6.0"
 
+"@sentry-internal/tracing@7.75.1":
+  version "7.75.1"
+  resolved "https://registry.yarnpkg.com/@sentry-internal/tracing/-/tracing-7.75.1.tgz#978c5ec58a704c423a9b33a58ca3e3e6521725f8"
+  integrity sha512-nynV+7iVcF8k3CqhvI2K7iA8h4ovJhgYHKnXR8RDDevQOqNG2AEX9+hjCj9fZM4MhKHYFqf1od2oO9lTr38kwg==
+  dependencies:
+    "@sentry/core" "7.75.1"
+    "@sentry/types" "7.75.1"
+    "@sentry/utils" "7.75.1"
+
 "@sentry/cli@^2.21.2":
   version "2.21.2"
   resolved "https://registry.yarnpkg.com/@sentry/cli/-/cli-2.21.2.tgz#89e5633ff48a83d078c76c6997fffd4b68b2da1c"
@@ -572,6 +581,37 @@
     progress "^2.0.3"
     proxy-from-env "^1.1.0"
     which "^2.0.2"
+
+"@sentry/core@7.75.1":
+  version "7.75.1"
+  resolved "https://registry.yarnpkg.com/@sentry/core/-/core-7.75.1.tgz#f48cc424990ee4f31541e93f2c0277bfd5be9ed3"
+  integrity sha512-Kw4KyKBxbxbh8OKO0S11Tm0gWP+6AaXXYrsq3hp8H338l/wOmIzyckmCbUrc/XJeoRqaFLJbdcCrcUEDZUvsVQ==
+  dependencies:
+    "@sentry/types" "7.75.1"
+    "@sentry/utils" "7.75.1"
+
+"@sentry/node@^7.75.1":
+  version "7.75.1"
+  resolved "https://registry.yarnpkg.com/@sentry/node/-/node-7.75.1.tgz#059d941aa4dcd96a0f9522c215371e8041b77996"
+  integrity sha512-E174NbP3j7OIqQQYPtpMGz1FfL/KE5PeGnhoACyMIk0D5MGB7Ia7Y9+nYfHB7+EOJPV2Ob6BYlhemX/MxPrYWg==
+  dependencies:
+    "@sentry-internal/tracing" "7.75.1"
+    "@sentry/core" "7.75.1"
+    "@sentry/types" "7.75.1"
+    "@sentry/utils" "7.75.1"
+    https-proxy-agent "^5.0.0"
+
+"@sentry/types@7.75.1":
+  version "7.75.1"
+  resolved "https://registry.yarnpkg.com/@sentry/types/-/types-7.75.1.tgz#48b11336a0e70433d41bbe41c617dd339d4992ea"
+  integrity sha512-km+ygqgMDaFfTrbQwdhrptFqx0Oq15jZABqIoIpbaOCkCAMm+tyCqrFS8dTfaq5wpCktqWOy2qU/DOpppO99Cg==
+
+"@sentry/utils@7.75.1":
+  version "7.75.1"
+  resolved "https://registry.yarnpkg.com/@sentry/utils/-/utils-7.75.1.tgz#169040ba13ff4d4ecccb7b7aa23f84724d108b97"
+  integrity sha512-QzW2eRjY20epD//9/tQ0FTNwdAL6XZi+LyJNUQIeK3NMnc5NgHrgpxId87gmFq8cNx47utH1Blub8RuMbKqiwQ==
+  dependencies:
+    "@sentry/types" "7.75.1"
 
 "@sinonjs/commons@^1.7.0":
   version "1.8.3"
