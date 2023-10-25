@@ -227,5 +227,5 @@ describe('options', () => {
 //     }
 //   );
 
-  console.log(output.toString());
-});
+//   console.log(output.toString());
+// });
