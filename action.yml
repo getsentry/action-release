@@ -47,7 +47,7 @@ inputs:
 runs:
   using: 'docker'
   # If you change this, update the use-local-dockerfile action
-  image: 'docker://ghcr.io/getsentry/action-release-image:latest'
+  image: 'docker://ghcr.io/getsentry/action-release-image:6da6022482d1da51ffe93ebfe8598bce22841257'
 branding:
   icon: 'triangle'
   color: 'purple'
