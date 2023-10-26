@@ -21,11 +21,20 @@ RUN export YARN_CACHE_FOLDER="$(mktemp -d)" \
   && yarn install --frozen-lockfile --production --quiet \
   && rm -r "$YARN_CACHE_FOLDER"
 
+
 # Copy the artifacts from `yarn build`
 COPY --from=builder /app/dist /action-release/dist/
 RUN chmod +x /action-release/dist/index.js
 
+# download a copy of sentry-cli
+# TODO: Figure out why we can't use the version that is in node modules
+RUN apk update && apk add curl
+RUN curl -sL https://sentry.io/get-cli/ | SENTRY_CLI_VERSION="2.21.2" sh
+RUN chmod +x /usr/local/bin/sentry-cli
+ENV SENTRY_BINARY_PATH=/usr/local/bin/sentry-cli
+
 # XXX: This could probably be replaced with a standard CMD
 COPY entrypoint.sh /entrypoint.sh
+
 RUN chmod +x /entrypoint.sh
 ENTRYPOINT ["/entrypoint.sh"]
