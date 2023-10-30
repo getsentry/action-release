@@ -24,6 +24,7 @@ RUN export YARN_CACHE_FOLDER="$(mktemp -d)" \
 # Copy the artifacts from `yarn build`
 COPY --from=builder /app/dist /action-release/dist/
 RUN chmod +x /action-release/dist/index.js
+ENV SENTRY_BINARY_PATH=/action-release/node_modules/.bin/sentry-cli
 
 # XXX: This could probably be replaced with a standard CMD
 COPY entrypoint.sh /entrypoint.sh
