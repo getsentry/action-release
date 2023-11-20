@@ -25,7 +25,7 @@ Give your new integration a name (for example, "GitHub Action Release Integratio
 
 ![View of internal integration permissions.](images/internal-integration-permissions.png)
 
-Click “Save” at the bottom of the page and grab your token, which you’ll use as your `SENTRY_AUTH_TOKEN`. We recommend you store this as an [encrypted secret](https://docs.github.com/en/actions/configuring-and-managing-workflows/creating-and-storing-encrypted-secrets).
+Click “Save” at the bottom of the page and grab your token, which you’ll use as your `SENTRY_AUTH_TOKEN`. We recommend you store this as an [encrypted secret](https://docs.github.com/en/actions/security-guides/using-secrets-in-github-actions).
 
 ## Usage
 
