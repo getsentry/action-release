@@ -70,7 +70,7 @@ import * as process from 'process';
       });
     }
 
-    core.debug(`Finalizing the release`);
+    core.debug('Finalizing the release');
     if (shouldFinalize) {
       await cli.finalize(version);
     }
