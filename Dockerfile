@@ -1,6 +1,6 @@
 # The multi stage set up *saves* up image size by avoiding the dev dependencies
 # required to produce dist/
-FROM node:12-alpine as builder
+FROM node:18-alpine as builder
 WORKDIR /app
 # This layer will invalidate upon new dependencies
 COPY package.json yarn.lock ./
@@ -12,7 +12,7 @@ RUN export YARN_CACHE_FOLDER="$(mktemp -d)" \
 COPY . .
 RUN yarn build
 
-FROM node:12-alpine as app
+FROM node:18-alpine as app
 COPY package.json yarn.lock /action-release/
 # On the builder image, we install both types of dependencies rather than
 # just the production ones. This generates /action-release/node_modules
@@ -24,6 +24,10 @@ RUN export YARN_CACHE_FOLDER="$(mktemp -d)" \
 # Copy the artifacts from `yarn build`
 COPY --from=builder /app/dist /action-release/dist/
 RUN chmod +x /action-release/dist/index.js
+
+# move the sentry-cli binary to where the entrypoint expects it
+RUN mv /action-release/node_modules/@sentry/cli/sentry-cli /action-release/sentry-cli
+RUN chmod +x /action-release/sentry-cli
 
 # XXX: This could probably be replaced with a standard CMD
 COPY entrypoint.sh /entrypoint.sh
