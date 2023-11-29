@@ -16,6 +16,12 @@ env:
   SENTRY_PROJECT: ${{ vars.SENTRY_PROJECT }}
 
 jobs:
+    # Debugging Step: Check Git Repository
+    - name: Check Git Repository
+      run: |
+        git status
+        git log -1
+        
   # You're welcome to make changes on this job as part of your PR in order to test out your changes
   # We can always undo the changes once we're satisfied with the results
   #
