@@ -19,13 +19,13 @@ Additionally, releases are used for applying source maps to minified JavaScript 
 
 NOTE: You have to be an admin in your Sentry org to create this.
 
-For this action to communicate securely with Sentry, you'll need to create a new internal integration. In Sentry, navigate to: _Settings > Developer Settings > New Internal Integration_.
+For this action to communicate securely with Sentry, you'll need to create a new internal integration. In Sentry, navigate to: _Settings > Developer Settings > Custom Integrations > Create New Integration > Internal Integration_.
 
 Give your new integration a name (for example, "GitHub Action Release Integration”) and specify the necessary permissions. In this case, we need Admin access for “Release” and Read access for “Organization”.
 
 ![View of internal integration permissions.](images/internal-integration-permissions.png)
 
-Click “Save” at the bottom of the page and grab your token, which you’ll use as your `SENTRY_AUTH_TOKEN`. We recommend you store this as an [encrypted secret](https://docs.github.com/en/actions/configuring-and-managing-workflows/creating-and-storing-encrypted-secrets).
+Click “Save” at the bottom of the page and grab your token, which you’ll use as your `SENTRY_AUTH_TOKEN`. We recommend you store this as an [encrypted secret](https://docs.github.com/en/actions/security-guides/using-secrets-in-github-actions).
 
 ## Usage
 
