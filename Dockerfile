@@ -9,6 +9,7 @@ RUN export YARN_CACHE_FOLDER="$(mktemp -d)" \
   && rm -r "$YARN_CACHE_FOLDER"
 # If there's some code changes that causes this layer to
 # invalidate but it shouldn't, use .dockerignore to exclude it
+
 COPY . .
 RUN yarn build
 
