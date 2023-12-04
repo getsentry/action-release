@@ -46,6 +46,8 @@ jobs:
         SENTRY_LOG_LEVEL: debug
       with:
         ignore_missing: true
+        user: $(id -u):$(id -g)
+
 
   mock-release: # Make sure that the action works on a clean machine without building Docker
     name: "Build image & mock a release"
