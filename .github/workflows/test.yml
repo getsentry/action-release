@@ -47,7 +47,6 @@ jobs:
       with:
         ignore_missing: true
 
-
   mock-release: # Make sure that the action works on a clean machine without building Docker
     name: "Build image & mock a release"
     runs-on: ubuntu-latest
