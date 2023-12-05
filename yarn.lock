@@ -694,10 +694,9 @@
   resolved "https://registry.yarnpkg.com/@sentry/cli-win32-x64/-/cli-win32-x64-2.22.3.tgz#c450136539e8860d46434a932383005cffd89136"
   integrity sha512-NUh56xWvgJo2KuC9lI6o6nTPXdzbpQUB4qGwJ73L9NP3HT2P1I27jtHyrC2zlXTVlYE23gQZGrL3wgW4Jy80QA==
 
-"@sentry/cli@^2.22.3":
+"@sentry/cli@git+https://github.com/getsentry/sentry-cli.git#3aec39d59b9a4cac1a85ea0a1172caae99f80429":
   version "2.22.3"
-  resolved "https://registry.yarnpkg.com/@sentry/cli/-/cli-2.22.3.tgz#e28613885c30979f4760de7365e5d30d5a32d51d"
-  integrity sha512-VFHdtrHsMyTRSZhDLeMyXvit7xB4e81KugIEwMve95c7h5HO672bfmCcM/403CAugj4NzvQ+IR2NKF/2SsEPlg==
+  resolved "git+https://github.com/getsentry/sentry-cli.git#3aec39d59b9a4cac1a85ea0a1172caae99f80429"
   dependencies:
     https-proxy-agent "^5.0.0"
     node-fetch "^2.6.7"
