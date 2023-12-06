@@ -29,6 +29,7 @@ ENV RUN git config --global --add safe.directory '*'
 
 # Modify the contents of /etc/gitconfig as per the screenshot provided
 RUN printf '[safe]\n    directory = *\n' > /etc/gitconfig
+ENV SUDO_UID=1001
 
 # XXX: This could probably be replaced with a standard CMD
 COPY entrypoint.sh /entrypoint.sh
