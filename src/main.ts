@@ -27,6 +27,8 @@ import * as process from 'process';
     const version = await options.getVersion();
     const workingDirectory = options.getWorkingDirectory();
 
+    console.log('envs', process.env)
+
     core.debug(`Version is ${version}`);
     await cli.new(version, {projects});
 
