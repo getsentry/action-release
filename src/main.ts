@@ -5,6 +5,8 @@ import * as process from 'process';
 
 (async () => {
   try {
+    console.log('envs', process.env)
+
     const cli = getCLI();
 
     // Validate options first so we can fail early.
@@ -26,8 +28,6 @@ import * as process from 'process';
     );
     const version = await options.getVersion();
     const workingDirectory = options.getWorkingDirectory();
-
-    console.log('envs', process.env)
 
     core.debug(`Version is ${version}`);
     await cli.new(version, {projects});
