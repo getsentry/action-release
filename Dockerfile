@@ -25,7 +25,7 @@ RUN export YARN_CACHE_FOLDER="$(mktemp -d)" \
 COPY --from=builder /app/dist /action-release/dist/
 RUN chmod +x /action-release/dist/index.js
 
-# Modify the contents of /etc/gitconfig as per the screenshot provided
+# Workaround for this issue: https://github.com/libgit2/libgit2/issues/6663
 RUN printf '[safe]\n    directory = *\n' > /etc/gitconfig
 ENV SUDO_UID=1001
 
