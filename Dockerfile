@@ -24,7 +24,7 @@ RUN export YARN_CACHE_FOLDER="$(mktemp -d)" \
 # Copy the artifacts from `yarn build`
 COPY --from=builder /app/dist /action-release/dist/
 RUN chmod +x /action-release/dist/index.js
-ENV SUDO_UID=1111
+ENV SUDO_UID=0010
 
 # Modify the contents of /etc/gitconfig as per the screenshot provided
 RUN printf '[safe]\n    directory = *\n' > /etc/gitconfig
