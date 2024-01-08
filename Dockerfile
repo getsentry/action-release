@@ -25,6 +25,9 @@ RUN export YARN_CACHE_FOLDER="$(mktemp -d)" \
 COPY --from=builder /app/dist /action-release/dist/
 RUN chmod +x /action-release/dist/index.js
 
+RUN printf '[safe]\n    directory = *\n' > /etc/gitconfig
+# Workaround for this issue: https://github.com/libgit2/libgit2/issues/6663
+ENV SUDO_UID=1001
 
 # XXX: This could probably be replaced with a standard CMD
 COPY entrypoint.sh /entrypoint.sh
