@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - master
+
 env:
   # Variables defined in the repository
   SENTRY_ORG: ${{ vars.SENTRY_ORG }}
@@ -16,11 +17,33 @@ jobs:
   docker-build:
     name: Build & pubish Docker images
     runs-on: ubuntu-latest
+    permissions:
+      packages: write
+    strategy:
+      matrix:
+        target:
+          - name: builder
+            image: action-release-builder-image:latest
+          - name: app
+            image: action-release-image:latest
     steps:
     - name: Checkout repo
       uses: actions/checkout@v3
       with:
         fetch-depth: 0
+
+    - name: Set up QEMU
+      uses: docker/setup-qemu-action@v3
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Login to GitHub Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
 
     # BUILDKIT_INLINE_CACHE creates the image in such a way that you can
     # then use --cache-from (think of a remote cache)
@@ -29,32 +52,21 @@ jobs:
     # There's a COPY command in the builder stage that can easily invalidate the cache
     # If you notice, please add more exceptions to .dockerignore since we loose the value
     # of using --cache-from on the app stage
-    - name: Build Docker builder image
-      run: |
-        docker buildx build . \
-          --build-arg BUILDKIT_INLINE_CACHE=1 \
-          -t ghcr.io/getsentry/action-release-builder-image:latest \
-          --cache-from ghcr.io/getsentry/action-release-builder-image:latest \
-          --target builder
-
-    - name: Build Docker image
-      run: |
-        docker buildx build . \
-          --build-arg BUILDKIT_INLINE_CACHE=1 \
-          -t ghcr.io/getsentry/action-release-image:latest \
-          --cache-from ghcr.io/getsentry/action-release-image:latest \
-          --target app
-
-    - name: Login and publish
-      run: |
-        docker login ghcr.io -u $GITHUB_ACTOR --password-stdin <<< ${{ secrets.GITHUB_TOKEN }}
-        docker push ghcr.io/getsentry/action-release-builder-image:latest
-        docker push ghcr.io/getsentry/action-release-image:latest
+    - name: Build and push
+      uses: docker/build-push-action@v6
+      with:
+        platforms: linux/amd64,linux/arm64
+        push: ${{ github.ref == 'refs/heads/master' }}
+        tags: ghcr.io/${{ github.repository_owner }}/${{ matrix.target.image }}
+        cache-from: ghcr.io/${{ github.repository_owner }}/${{ matrix.target.image }}
+        target: ${{ matrix.target.name }}
+        build-args: BUILDKIT_INLINE_CACHE=1
 
     # This step creates real Sentry releases for the action itself:
     # https://sentry-ecosystem.sentry.io/releases/?project=6576594
     - name: Sentry Release
       uses: getsentry/action-release@v1
+      if: vars.SENTRY_ORG != ''
       env:
         SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
         SENTRY_LOG_LEVEL: debug
