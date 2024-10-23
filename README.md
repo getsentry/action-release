@@ -159,7 +159,7 @@ Suggestions and issues can be posted on the repository's
     Syntax error: end of file unexpected (expecting ")")
     ```
 
-- When adding the action, make sure to first checkout your repo with `actions/checkout@v3`.
+- When adding the action, make sure to first checkout your repo with `actions/checkout@v3` or provide `SENTRY_RELEASE` environment variable manually.
 Otherwise it could fail at the `propose-version` step with the message:
 
     ```text
