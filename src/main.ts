@@ -47,7 +47,7 @@ import * as process from 'process';
 
     if (inject) {
       if (sourcemaps.length) {
-        core.debug('Injecting sourcemaps');
+        core.debug('Injecting sourcemaps with debug ids');
         await cli.execute(['sourcemaps', 'inject', ...sourcemaps], true);
       } else {
         core.warning(`Inject was specified without also specifying sourcemaps`);
