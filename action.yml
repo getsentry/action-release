@@ -8,6 +8,9 @@ inputs:
   sourcemaps:
     description: 'Space-separated list of paths to JavaScript sourcemaps. Omit to skip uploading sourcemaps.'
     required: false
+  inject:
+    description: 'Fixes up JavaScript source files and sourcemaps with debug ids.'
+    required: false
   dist:
     description: 'Unique identifier for the distribution, used to further segment your release. Usually your build number.'
     required: false

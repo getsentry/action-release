@@ -11,6 +11,7 @@ import * as process from 'process';
     options.checkEnvironmentVariables();
 
     const environment = options.getEnvironment();
+    const inject = options.getBooleanOption('inject', false);
     const sourcemaps = options.getSourcemaps();
     const dist = options.getDist();
     const shouldFinalize = options.getBooleanOption('finalize', true);
@@ -42,6 +43,15 @@ import * as process from 'process';
         ignoreMissing,
         ignoreEmpty,
       });
+    }
+
+    if (inject) {
+      if (sourcemaps.length) {
+        core.debug('Injecting sourcemaps');
+        await cli.execute(['sourcemaps', 'inject', ...sourcemaps], true);
+      } else {
+        core.warning(`Inject was specified without also specifying sourcemaps`);
+      }
     }
 
     if (sourcemaps.length) {
