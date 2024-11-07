@@ -202,7 +202,7 @@ describe('options', () => {
 
   describe('getUrlPrefixOption', () => {
     afterEach(() => {
-      delete process.env['URL_PREFIX'];
+      delete process.env['INPUT_URL_PREFIX'];
     });
     it('get url prefix', () => {
       process.env['INPUT_URL_PREFIX'] = 'build';
