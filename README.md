@@ -107,7 +107,7 @@ Adding the following to your workflow will create a new Sentry release and tell 
 
 ## Releases
 
-The `build.yml` workflow will build a Docker image every time a pull request merges to `master` and upload it to [the Github registry](https://github.com/orgs/getsentry/packages?repo_name=action-release), thus, effectively being live for everyone even if we do not bump the version.
+The `build.yml` workflow will build a Docker image every time a pull request merges to `master` and upload it to [the GitHub registry](https://github.com/orgs/getsentry/packages?repo_name=action-release), thus, effectively being live for everyone even if we do not bump the version.
 
 NOTE: Unfortunately, we only use the `latest` tag for the Docker image, thus, making use of a version with the action innefective (e.g. `v1` vs `v1.3.0`). See #129 on how to fix this.
 
@@ -117,7 +117,7 @@ When you are ready to make a release, open a [new release checklist issue](https
 
 The Docker build is [multi-staged](https://github.com/getsentry/action-release/blob/master/Dockerfile) in order to make the final image used by the action as small as possible to reduce network transfer (use `docker images` to see the sizes of the images).
 
-### End to end testing on Github's CI
+### End to end testing on GitHub's CI
 
 The first job in `test.yml` has instructions on how to tweak a job in order to execute your changes as part of the PR.
 
