@@ -67,6 +67,7 @@ Adding the following to your workflow will create a new Sentry release and tell 
 |`ignore_missing`|When the flag is set and the previous release commit was not found in the repository, will create a release with the default commits count instead of failing the command.|`false`|
 |`ignore_empty`|When the flag is set, command will not fail and just exit silently if no new commits for a given release have been found.|`false`|
 |`sourcemaps`|Space-separated list of paths to JavaScript sourcemaps. Omit to skip uploading sourcemaps.|-|
+|`inject`|Fixes up JavaScript source files and sourcemaps with debug ids.|`false`|
 |`dist`|Unique identifier for the distribution, used to further segment your release. Usually your build number.|-|
 |`started_at`|Unix timestamp of the release start date. Omit for current time.|-|
 |`version`|Identifier that uniquely identifies the releases. _Note: the `refs/tags/` prefix is automatically stripped when `version` is `github.ref`._|<code>${{&nbsp;github.sha&nbsp;}}</code>|
