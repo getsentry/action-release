@@ -19,20 +19,23 @@ Additionally, releases are used for applying source maps to minified JavaScript 
 
 NOTE: You have to be an admin in your Sentry org to create this.
 
-For this action to communicate securely with Sentry, you'll need to create a new internal integration. In Sentry, navigate to: _Settings > Developer Settings > New Internal Integration_.
+For this action to communicate securely with Sentry, you'll need to create a new internal integration. In Sentry, navigate to: _Settings > Developer Settings > Custom Integrations > Create New Integration > Internal Integration_.
 
 Give your new integration a name (for example, "GitHub Action Release Integration”) and specify the necessary permissions. In this case, we need Admin access for “Release” and Read access for “Organization”.
 
 ![View of internal integration permissions.](images/internal-integration-permissions.png)
 
-Click “Save” at the bottom of the page and grab your token, which you’ll use as your `SENTRY_AUTH_TOKEN`. We recommend you store this as an [encrypted secret](https://docs.github.com/en/actions/configuring-and-managing-workflows/creating-and-storing-encrypted-secrets).
+Click “Save” at the bottom of the page, then go back into your newly created integration and click "New Token". Grab this newly generated token and use it as your `SENTRY_AUTH_TOKEN`. We recommend you store this as an [encrypted secret](https://docs.github.com/en/actions/security-guides/using-secrets-in-github-actions).
 
 ## Usage
 
 Adding the following to your workflow will create a new Sentry release and tell Sentry that you are deploying to the `production` environment.
   
 ```yaml
-- uses: actions/checkout@v2
+- uses: actions/checkout@v3
+  with:
+    fetch-depth: 0
+
 - name: Create Sentry release
   uses: getsentry/action-release@v1
   env:
@@ -104,7 +107,23 @@ Adding the following to your workflow will create a new Sentry release and tell 
 
 ## Releases
 
+The `build.yml` workflow will build a Docker image every time a pull request merges to `master` and upload it to [the GitHub registry](https://github.com/orgs/getsentry/packages?repo_name=action-release), thus, effectively being live for everyone even if we do not bump the version.
+
+NOTE: Unfortunately, we only use the `latest` tag for the Docker image, thus, making use of a version with the action innefective (e.g. `v1` vs `v1.3.0`). See #129 on how to fix this.
+
+NOTE: Right now, our Docker image publishing is decoupled from `tag` creation in the repository. We should only publish a specific Docker tag when we create a tag (you can make GitHub workflows listen to this). See #102 for details. Once this is fixed merges to `master` will not make the Docker image live and the following paragraph will be legit.
+
 When you are ready to make a release, open a [new release checklist issue](https://github.com/getsentry/action-release/issues/new?assignees=&labels=&template=release-checklist.md&title=New+release+checklist+for+%5Bversion+number%5D) and follow the steps in there.
+
+The Docker build is [multi-staged](https://github.com/getsentry/action-release/blob/master/Dockerfile) in order to make the final image used by the action as small as possible to reduce network transfer (use `docker images` to see the sizes of the images).
+
+### End to end testing on GitHub's CI
+
+The first job in `test.yml` has instructions on how to tweak a job in order to execute your changes as part of the PR.
+
+NOTE: Contributors will need to create an internal integration in their Sentry org and need to be an admin. See `Prerequisites` section above.
+
+Members of this repo will not have to set anything up since [the integration](https://sentry-ecosystem.sentry.io/settings/developer-settings/end-to-end-action-release-integration-416eb2/) is already set-up. Just open the PR and you will see [a release created](https://sentry-ecosystem.sentry.io/releases/?project=4505075304693760) for your PR.
 
 ## Development
 
@@ -223,14 +242,14 @@ Suggestions and issues can be posted on the repository's
     Syntax error: end of file unexpected (expecting ")")
     ```
 
-- When adding the action, make sure to first checkout your repo with `actions/checkout@v2`.
+- When adding the action, make sure to first checkout your repo with `actions/checkout@v3`.
 Otherwise it could fail at the `propose-version` step with the message:
 
     ```text
     error: Could not automatically determine release name
     ```
 
-- In `actions/checkout@v2` the default fetch depth is 1. If you're getting the error message:
+- In `actions/checkout@v3` the default fetch depth is 1. If you're getting the error message:
 
     ```text
     error: Could not find the SHA of the previous release in the git history. Increase your git clone depth.
@@ -239,9 +258,7 @@ Otherwise it could fail at the `propose-version` step with the message:
     you can fetch all history for all branches and tags by setting the `fetch-depth` to zero like so:
 
     ```text
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
       with:
         fetch-depth: 0
     ```
-
-
