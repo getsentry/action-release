@@ -2,7 +2,7 @@ import * as core from '@actions/core';
 import {getCLI} from './cli';
 import * as options from './options';
 import * as process from 'process';
-import {isTelemetryEnabled, withTelemetry} from './telemetry';
+import {isTelemetryEnabled, traceStep, withTelemetry} from './telemetry';
 
 withTelemetry(
   {
@@ -41,43 +41,51 @@ withTelemetry(
       }
 
       if (setCommitsOption !== 'skip') {
-        core.debug(`Setting commits with option '${setCommitsOption}'`);
-        await cli.setCommits(version, {
-          auto: true,
-          ignoreMissing,
-          ignoreEmpty,
+        await traceStep('set-commits', async () => {
+          core.debug(`Setting commits with option '${setCommitsOption}'`);
+          await cli.setCommits(version, {
+            auto: true,
+            ignoreMissing,
+            ignoreEmpty,
+          });
         });
       }
 
       if (sourcemaps.length) {
-        core.debug(`Adding sourcemaps`);
-        await Promise.all(
-          projects.map(async project => {
-            // upload source maps can only do one project at a time
-            const localProjects: [string] = [project];
-            const sourceMapOptions = {
-              include: sourcemaps,
-              projects: localProjects,
-              dist,
-              urlPrefix,
-              stripCommonPrefix,
-            };
-            return cli.uploadSourceMaps(version, sourceMapOptions);
-          })
-        );
-      }
-
-      if (environment) {
-        core.debug(`Adding deploy to release`);
-        await cli.newDeploy(version, {
-          env: environment,
-          ...(deployStartedAtOption && {started: deployStartedAtOption}),
+        await traceStep('upload-sourcemaps', async () => {
+          core.debug(`Adding sourcemaps`);
+          await Promise.all(
+            projects.map(async project => {
+              // upload source maps can only do one project at a time
+              const localProjects: [string] = [project];
+              const sourceMapOptions = {
+                include: sourcemaps,
+                projects: localProjects,
+                dist,
+                urlPrefix,
+                stripCommonPrefix,
+              };
+              return cli.uploadSourceMaps(version, sourceMapOptions);
+            })
+          );
         });
       }
 
-      core.debug(`Finalizing the release`);
+      if (environment) {
+        await traceStep('add-environment', async () => {
+          core.debug(`Adding deploy to release`);
+          await cli.newDeploy(version, {
+            env: environment,
+            ...(deployStartedAtOption && {started: deployStartedAtOption}),
+          });
+        });
+      }
+
       if (shouldFinalize) {
-        await cli.finalize(version);
+        await traceStep('finalizing-release', async () => {
+          core.debug(`Finalizing the release`);
+          await cli.finalize(version);
+        });
       }
 
       if (workingDirectory !== null && workingDirectory.length > 0) {
