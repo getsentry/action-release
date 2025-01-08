@@ -13,7 +13,7 @@ export async function withTelemetry<F>(
   callback: () => F | Promise<F>
 ): Promise<F> {
   Sentry.initWithoutDefaultIntegrations({
-    dsn: 'https://db03e2ecba03514ae59bdb602f5e714e@o1.ingest.us.sentry.io/4508607508905984',
+    dsn: 'https://2172f0c14072ba401de59317df8ded93@o1.ingest.us.sentry.io/4508608809533441',
     enabled: options.enabled,
     environment: `production-sentry-github-action`,
     tracesSampleRate: 1,
