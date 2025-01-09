@@ -23,6 +23,8 @@ export async function withTelemetry<F>(
     tracePropagationTargets: ['sentry.io/api'],
   });
 
+  const session = Sentry.startSession();
+
   Sentry.setTag('node', process.version);
   Sentry.setTag('platform', process.platform);
 
@@ -41,9 +43,11 @@ export async function withTelemetry<F>(
       }
     );
   } catch (e) {
+    session.status = 'crashed';
     Sentry.captureException('Error during sentry-github-action execution.');
     throw e;
   } finally {
+    Sentry.endSession();
     await safeFlush();
   }
 }
