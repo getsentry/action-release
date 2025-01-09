@@ -1,3 +1,4 @@
+import {getTraceData} from '@sentry/node';
 import SentryCli, {SentryCliReleases} from '@sentry/cli';
 // @ts-ignore
 import {version} from '../package.json';
@@ -13,7 +14,12 @@ export const getCLI = (): SentryCliReleases => {
   process.env['SENTRY_PIPELINE'] = `github-action-release/${version}`;
 
   if (!cli) {
-    cli = new SentryCli().releases;
+    cli = new SentryCli(null, {
+      headers: {
+        // Propagate sentry trace if we have one
+        ...getTraceData(),
+      },
+    }).releases;
     if (process.env['MOCK']) {
       // Set environment variables if they aren't already
       for (const variable of [
