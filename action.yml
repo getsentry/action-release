@@ -44,6 +44,9 @@ inputs:
   working_directory:
     description: 'Directory to collect sentry release information from. Useful when collecting information from a non-standard checkout directory.'
     required: false
+  disable_telemetry:
+    description: 'The action sends telemetry data and crash reports to Sentry. This helps us improve the action. You can turn this off by setting this flag.'
+    required: false
 runs:
   using: 'docker'
   # If you change this, update the use-local-dockerfile action

@@ -40,7 +40,8 @@
       "@typescript-eslint/require-array-sort-compare": "error",
       "@typescript-eslint/restrict-plus-operands": "error",
       "@typescript-eslint/type-annotation-spacing": "error",
-      "@typescript-eslint/unbound-method": "error"
+      "@typescript-eslint/unbound-method": "error",
+      "github/array-foreach": "off",
     },
     "env": {
       "node": true,

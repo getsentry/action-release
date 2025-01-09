@@ -76,6 +76,7 @@ Adding the following to your workflow will create a new Sentry release and tell 
 |`url_prefix`|Adds a prefix to source map urls after stripping them.|-|
 |`strip_common_prefix`|Will remove a common prefix from uploaded filenames. Useful for removing a path that is build-machine-specific.|`false`|
 |`working_directory`|Directory to collect sentry release information from. Useful when collecting information from a non-standard checkout directory.|-|
+|`disable_telemetry`|The action sends telemetry data and crash reports to Sentry. This helps us improve the action. You can turn this off by setting this flag.|`false`|
 
 ### Examples
 

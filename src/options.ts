@@ -145,6 +145,19 @@ export const getSetCommitsOption = (): 'auto' | 'skip' => {
  * Check for required environment variables.
  */
 export const checkEnvironmentVariables = (): void => {
+  if (process.env['MOCK']) {
+    // Set environment variables for mock runs if they aren't already
+    for (const variable of [
+      'SENTRY_AUTH_TOKEN',
+      'SENTRY_ORG',
+      'SENTRY_PROJECT',
+    ]) {
+      if (!(variable in process.env)) {
+        process.env[variable] = variable;
+      }
+    }
+  }
+
   if (!process.env['SENTRY_ORG']) {
     throw Error(
       'Environment variable SENTRY_ORG is missing an organization slug'
