@@ -10,8 +10,6 @@ withTelemetry(
   },
   async () => {
     try {
-      const cli = getCLI();
-
       // Validate options first so we can fail early.
       options.checkEnvironmentVariables();
 
@@ -33,7 +31,7 @@ withTelemetry(
       const workingDirectory = options.getWorkingDirectory();
 
       core.debug(`Version is ${version}`);
-      await cli.new(version, {projects});
+      await getCLI().new(version, {projects});
 
       const currentWorkingDirectory = process.cwd();
       if (workingDirectory !== null && workingDirectory.length > 0) {
@@ -43,7 +41,7 @@ withTelemetry(
       if (setCommitsOption !== 'skip') {
         await traceStep('set-commits', async () => {
           core.debug(`Setting commits with option '${setCommitsOption}'`);
-          await cli.setCommits(version, {
+          await getCLI().setCommits(version, {
             auto: true,
             ignoreMissing,
             ignoreEmpty,
@@ -65,7 +63,7 @@ withTelemetry(
                 urlPrefix,
                 stripCommonPrefix,
               };
-              return cli.uploadSourceMaps(version, sourceMapOptions);
+              return getCLI().uploadSourceMaps(version, sourceMapOptions);
             })
           );
         });
@@ -74,7 +72,7 @@ withTelemetry(
       if (environment) {
         await traceStep('add-environment', async () => {
           core.debug(`Adding deploy to release`);
-          await cli.newDeploy(version, {
+          await getCLI().newDeploy(version, {
             env: environment,
             ...(deployStartedAtOption && {started: deployStartedAtOption}),
           });
@@ -84,7 +82,7 @@ withTelemetry(
       if (shouldFinalize) {
         await traceStep('finalizing-release', async () => {
           core.debug(`Finalizing the release`);
-          await cli.finalize(version);
+          await getCLI().finalize(version);
         });
       }
 
