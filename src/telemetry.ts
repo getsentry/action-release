@@ -21,20 +21,6 @@ export async function withTelemetry<F>(
     release: packageJson.version,
     integrations: [Sentry.httpIntegration()],
     tracePropagationTargets: ['sentry.io/api'],
-    beforeSendTransaction: event => {
-      delete event.server_name; // Server name might contain PII
-      return event;
-    },
-    beforeSend: event => {
-      event.exception?.values?.forEach(exception => {
-        delete exception.stacktrace;
-      });
-
-      delete event.server_name; // Server name might contain PII
-      return event;
-    },
-
-    debug: true,
   });
 
   Sentry.setTag('node', process.version);
