@@ -64,7 +64,7 @@ export function updateProgress(step: string): void {
  */
 export function traceStep<T>(step: string, callback: () => T): T {
   updateProgress(step);
-  return Sentry.startSpan({ name: step, op: 'action.step' }, () => callback());
+  return Sentry.startSpan({name: step, op: 'action.step'}, () => callback());
 }
 
 /**
@@ -83,7 +83,9 @@ export async function safeFlush(): Promise<void> {
  * Determine if telemetry should be enabled
  */
 export function isTelemetryEnabled(): boolean {
-  const url = new URL(process.env['SENTRY_URL'] || `https://${SENTRY_SAAS_HOSTNAME}`);
+  const url = new URL(
+    process.env['SENTRY_URL'] || `https://${SENTRY_SAAS_HOSTNAME}`
+  );
 
   return (
     !options.getBooleanOption('disable_telemetry', false) &&
