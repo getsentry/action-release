@@ -78,6 +78,13 @@ Adding the following to your workflow will create a new Sentry release and tell 
 |`working_directory`|Directory to collect sentry release information from. Useful when collecting information from a non-standard checkout directory.|-|
 |`disable_telemetry`|The action sends telemetry data and crash reports to Sentry. This helps us improve the action. You can turn this off by setting this flag.|`false`|
 
+### Outputs
+
+|name|description|examples|
+|---|---|---|
+|`version`|Identifier that uniquely identifies the releases.|`734713bc047d87bf7eac9674765ae793478c50d3`, if using the default <code>${{&nbsp;github.sha&nbsp;}}</code>|
+
+
 ### Examples
 
 - Create a new Sentry release for the `production` environment and upload JavaScript source maps from the `./lib` directory.
