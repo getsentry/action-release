@@ -130,9 +130,92 @@ Members of this repo will not have to set anything up since [the integration](ht
 
 If your change impacts the options used for the action, you need to update the README.md with the new options.
 
-### Unit tests
+## Testing
 
 You can run the unit tests with `yarn test`.
+
+### Test your own repo against an action-release PR
+
+NOTE: This section has not been fully tested but it should work with a bit of investment.
+
+NOTE: This assumes that you have gone through the `Usage` section and have managed to get your Github repository to have worked with this action.
+
+NOTE: Once we start producing Docker images for PRs we can get rid of the need of using the `sed` command below.
+
+Step 1 - action-release changes (This is your PR with your code changes):
+* Make changes to your action-release branch and push it
+* Run this command, commit the changes and push it
+  * This will cause the action-release to be built using the `Dockerfile`
+  * You will need to revert this change once your changes are approved and ready to be merged
+
+```shell
+sed -i .backup 's|docker://ghcr.io/getsentry/action-release-image:latest|Dockerfile|' action.yml
+```
+
+Step 2 - Test out your action-release changes on your own repo
+* Get the sha for the latest commit on Step 1
+* Modify your usage of action-release to point to that commit
+  * If you're using a fork, edit the getsentry org in the string below
+
+```yml
+  - name: Sentry Release
+    uses: getsentry/action-release@<github_action_commit>
+    env:
+      # You will remove this in the next steps when ready
+      MOCK: true
+      SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+      SENTRY_ORG: ${{ vars.SENTRY_ORG }}
+      # If you specify a Github environment for the branch from where you create
+      # releases from (e.g. master), you can then specify a repository-level variable
+      # for all other branches. This allows using a second project for end-to-end testing
+      SENTRY_PROJECT: ${{ vars.SENTRY_PROJECT }}
+```
+
+NOTE: If you want to do local testing read the next section, otherwise, keep reading.
+
+NOTE: Only remove `MOCK: true` once you follow the steps below that will allow you to use two different projects. This will avoid polutting your Sentry releases for your existing Sentry project.
+
+<!-- Add link to test.yml after PR 153 merges -->
+
+Step 3 - Create a new Sentry project under your existing Sentry org (only this one time)
+Step 4 - Create an environment variable in Github for the branch you release from (e.g. `master`) and define the same variable as a repository variable which all other branches will use (read: your PRs)
+
+<!-- <TODO add screenshot here> -->
+Step 5 - Comment out the MOCK env variable from step 2
+Step 6 - Push to Github and the CI will do an end-to-end run!
+
+NOTE: As mentioned, this section not been tested. Please try it out and let me know if it works for you.
+
+### Local testing via act
+
+NOTE: You should test out this whole section to see if it still makes sense to use this testing approach and/or if to only use the one above.
+
+[Here's a repo](https://github.com/scefali/github-actions-react/blob/master/.github/workflows/deploy.yml) you can clone to test out this section.
+
+Step 1 - Install `act` in Mac with:
+```bash
+brew install act
+```
+
+NOTE: Make sure you commit your changes in your branch before running `act`.
+
+Step 3 - Create an integration and set the SENTRY_AUTH_TOKEN (see `Usage` section in this doc)
+
+NOTE: If you have `direnv` installed, you can define the variable within your repo in an `.env` file.
+
+Step 4 - Run the action
+
+```bash
+act -s SENTRY_ORG={your_org_slug} -s SENTRY_PROJECT={your_project_slug}
+```
+
+NOTE: Make sure that `SENTRY_AUTH_TOKEN` is loaded as an env variable.
+NOTE: If you're running and M1 chipset instead of Intel you can ignore the following message:
+```
+WARN  ⚠ You are using Apple M1 chip and you have not specified container architecture, you might encounter issues while running act. If so, try running it with '--container-architecture linux/amd64'
+```
+
+Step 5 - Choose Medium Docker builds
 
 ## Contributing
 
