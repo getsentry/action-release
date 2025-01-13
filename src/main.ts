@@ -1,8 +1,14 @@
+import * as Sentry from '@sentry/node';
 import * as core from '@actions/core';
 import {getCLI} from './cli';
 import * as options from './options';
 import * as process from 'process';
-import {isTelemetryEnabled, traceStep, withTelemetry} from './telemetry';
+import {
+  isSelfHosted,
+  isTelemetryEnabled,
+  traceStep,
+  withTelemetry,
+} from './telemetry';
 
 withTelemetry(
   {
@@ -30,6 +36,12 @@ withTelemetry(
       const version = await options.getVersion();
       const workingDirectory = options.getWorkingDirectory();
 
+      if (projects.length === 1) {
+        Sentry.setTag('project', projects[0]);
+      } else {
+        Sentry.setTag('projects', projects.join(','));
+      }
+
       core.debug(`Version is ${version}`);
       await getCLI().new(version, {projects});
 
@@ -37,6 +49,8 @@ withTelemetry(
       if (workingDirectory !== null && workingDirectory.length > 0) {
         process.chdir(workingDirectory);
       }
+
+      Sentry.setTag('set-commits', setCommitsOption);
 
       if (setCommitsOption !== 'skip') {
         await traceStep('set-commits', async () => {
@@ -48,6 +62,8 @@ withTelemetry(
           });
         });
       }
+
+      Sentry.setTag('sourcemaps', sourcemaps.length > 0);
 
       if (sourcemaps.length) {
         await traceStep('upload-sourcemaps', async () => {
@@ -66,6 +82,8 @@ withTelemetry(
               return getCLI().uploadSourceMaps(version, sourceMapOptions);
             })
           );
+
+          Sentry.setTag('sourcemaps-uploaded', true);
         });
       }
 
@@ -83,6 +101,8 @@ withTelemetry(
         await traceStep('finalizing-release', async () => {
           core.debug(`Finalizing the release`);
           await getCLI().finalize(version);
+
+          Sentry.setTag('finalized', true);
         });
       }
 
