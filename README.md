@@ -148,7 +148,7 @@ Step 1 - action-release changes (This is your PR with your code changes):
   * You will need to revert this change once your changes are approved and ready to be merged
 
 ```shell
-sed -i .backup 's|docker://ghcr.io/getsentry/action-release-image:latest|Dockerfile|' action.yml`
+sed -i .backup 's|docker://ghcr.io/getsentry/action-release-image:latest|Dockerfile|' action.yml
 ```
 
 Step 2 - Test out your action-release changes on your own repo
