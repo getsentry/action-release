@@ -25,6 +25,10 @@ export async function withTelemetry<F>(
 
   const session = Sentry.startSession();
 
+  const org = process.env['SENTRY_ORG'];
+
+  Sentry.setUser({id: org});
+  Sentry.setTag('organization', org);
   Sentry.setTag('node', process.version);
   Sentry.setTag('platform', process.platform);
 
@@ -80,15 +84,21 @@ export async function safeFlush(): Promise<void> {
 }
 
 /**
- * Determine if telemetry should be enabled
+ * Check whether the user is self-hosting Sentry.
  */
-export function isTelemetryEnabled(): boolean {
+export function isSelfHosted(): boolean {
   const url = new URL(
     process.env['SENTRY_URL'] || `https://${SENTRY_SAAS_HOSTNAME}`
   );
 
+  return url.hostname !== SENTRY_SAAS_HOSTNAME;
+}
+
+/**
+ * Determine if telemetry should be enabled.
+ */
+export function isTelemetryEnabled(): boolean {
   return (
-    !options.getBooleanOption('disable_telemetry', false) &&
-    url.hostname === SENTRY_SAAS_HOSTNAME
+    !options.getBooleanOption('disable_telemetry', false) && !isSelfHosted()
   );
 }
