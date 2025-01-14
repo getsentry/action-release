@@ -5,6 +5,9 @@ inputs:
   environment:
     description: 'Set the environment for this release. E.g. "production" or "staging". Omit to skip adding deploy to release.'
     required: false
+  inject:
+    description: 'Injects Debug IDs into source files and sourcemaps. We strongly recommend enabling this to ensure proper un-minifaction of your stacktraces.'
+    required: false
   sourcemaps:
     description: 'Space-separated list of paths to JavaScript sourcemaps. Omit to skip uploading sourcemaps.'
     required: false

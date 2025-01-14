@@ -20,6 +20,7 @@ withTelemetry(
       options.checkEnvironmentVariables();
 
       const environment = options.getEnvironment();
+      const inject = options.getBooleanOption('inject', false);
       const sourcemaps = options.getSourcemaps();
       const dist = options.getDist();
       const shouldFinalize = options.getBooleanOption('finalize', true);
@@ -64,8 +65,20 @@ withTelemetry(
       }
 
       Sentry.setTag('sourcemaps', sourcemaps.length > 0);
+      Sentry.setTag('inject', inject);
 
       if (sourcemaps.length) {
+        if (inject) {
+          await traceStep('inject-debug-ids', async () => {
+            core.debug(`Injecting Debug IDs`);
+            // Unfortunately, @sentry/cli does not yet have an alias for inject
+            await getCLI().execute(
+              ['sourcemaps', 'inject', ...sourcemaps],
+              true
+            );
+          });
+        }
+
         await traceStep('upload-sourcemaps', async () => {
           core.debug(`Adding sourcemaps`);
           await Promise.all(
