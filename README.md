@@ -42,6 +42,9 @@ Click “Save” at the bottom of the page, then go back into your newly created
 ## Usage
 
 Adding the following to your workflow will create a new Sentry release and tell Sentry that you are deploying to the `production` environment.
+
+> [!IMPORTANT]
+> make sure you are using at least v3 of the [actions/checkout](https://github.com/actions/checkout), issues commonly occur with older versions.
   
 ```yaml
 - uses: actions/checkout@v3
