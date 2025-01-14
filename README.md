@@ -23,7 +23,7 @@ A release is a version of your code that can be deployed to an environment. When
 - Resolve issues by including the issue number in your commit message
 - Receive email notifications when your code gets deployed
 
-Additionally, releases are used for applying source maps to minified JavaScript to view original, untransformed source code. You can learn more about releases in the [releases documentation](https://docs.sentry.io/workflow/releases).
+Additionally, releases are used for applying [source maps](https://docs.sentry.io/platforms/javascript/sourcemaps/) to minified JavaScript to view original, untransformed source code. You can learn more about releases in the [releases documentation](https://docs.sentry.io/workflow/releases).
 
 ## Prerequisites
 
