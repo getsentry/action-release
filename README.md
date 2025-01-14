@@ -100,13 +100,14 @@ Adding the following to your workflow will create a new Sentry release and tell 
 
 ### Examples
 
-- Create a new Sentry release for the `production` environment and upload JavaScript source maps from the `./lib` directory.
+- Create a new Sentry release for the `production` environment, inject Debug IDs into JavaScript source files and sourcemaps and upload them from the `./dist` directory.
 
     ```yaml
     - uses: getsentry/action-release@v1
       with:
         environment: 'production'
-        sourcemaps: './lib'
+        inject: true
+        sourcemaps: './dist'
     ```
 
 - Create a new Sentry release for the `production` environment of your project at version `v1.0.1`.
