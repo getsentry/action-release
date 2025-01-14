@@ -27,17 +27,13 @@ Additionally, releases are used for applying [source maps](https://docs.sentry.i
 
 ## Prerequisites
 
-### Create a Sentry Internal Integration
+### Create an Organization Auth Token
 
-NOTE: You have to be an admin in your Sentry org to create this.
-
-For this action to communicate securely with Sentry, you'll need to create a new internal integration. In Sentry, navigate to: _Settings > Developer Settings > Custom Integrations > Create New Integration > Internal Integration_.
-
-Give your new integration a name (for example, "GitHub Action Release Integration”) and specify the necessary permissions. In this case, we need Admin access for “Release” and Read access for “Organization”.
-
-![View of internal integration permissions.](images/internal-integration-permissions.png)
-
-Click “Save” at the bottom of the page, then go back into your newly created integration and click "New Token". Grab this newly generated token and use it as your `SENTRY_AUTH_TOKEN`. We recommend you store this as an [encrypted secret](https://docs.github.com/en/actions/security-guides/using-secrets-in-github-actions).
+> [!NOTE]
+> You have to be an admin in your Sentry org to create this.
+ 
+For this action to communicate securely with Sentry, you'll need to [create an organization auth token](https://docs.sentry.io/account/auth-tokens/#organization-auth-tokens).
+Copy the generated token and use it as your `SENTRY_AUTH_TOKEN`. We recommend storing it as an [encrypted secret](https://docs.github.com/en/actions/security-guides/using-secrets-in-github-actions).
 
 ## Usage
 
