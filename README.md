@@ -25,6 +25,14 @@ A release is a version of your code that can be deployed to an environment. When
 
 Additionally, releases are used for applying [source maps](https://docs.sentry.io/platforms/javascript/sourcemaps/) to minified JavaScript to view original, untransformed source code. You can learn more about releases in the [releases documentation](https://docs.sentry.io/workflow/releases).
 
+## What's new
+
+* **feat(sourcemaps): Add inject option to inject debug ids into source files and sourcemaps**
+
+A new option to inject Debug IDs into source files and sourcemaps was added to the action to ensure proper un-minifaction of your stacktraces. We **strongly recommend enabling** this by setting `inject: true` in your action alongside providing a path to sourcemaps.
+
+Please refer to the [release page](https://github.com/getsentry/action-release/releases) for the latest release notes.
+
 ## Prerequisites
 
 ### Create an Organization Auth Token
@@ -43,7 +51,7 @@ Adding the following to your workflow will create a new Sentry release and tell 
 > Make sure you are using at least v3 of [actions/checkout](https://github.com/actions/checkout) with `fetch-depth: 0`, issues commonly occur with older versions.
  
 ```yaml
-- uses: actions/checkout@v3
+- uses: actions/checkout@v4
   with:
     fetch-depth: 0
 
@@ -74,7 +82,7 @@ Adding the following to your workflow will create a new Sentry release and tell 
 |name| description                                                                                                                                                                |default|
 |---|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---|
 |`environment`| Set the environment for this release. E.g. "production" or "staging". Omit to skip adding deploy to release.                                                               |-|
-|`inject`| Injects Debug IDs into source files and sourcemaps. We **strongly recommend** enabling this to ensure proper un-minifaction of your stacktraces.                           |`false`|
+|`inject`| Injects Debug IDs into source files and sourcemaps. We **strongly recommend enabling** this to ensure proper un-minifaction of your stacktraces.                           |`false`|
 |`sourcemaps`| Space-separated list of paths to JavaScript sourcemaps. Omit to skip uploading sourcemaps.                                                                                 |-|
 |`finalize`| When false, omit marking the release as finalized and released.                                                                                                            |`true`|
 |`ignore_missing`| When the flag is set and the previous release commit was not found in the repository, will create a release with the default commits count instead of failing the command. |`false`|
