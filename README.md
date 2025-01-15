@@ -25,6 +25,15 @@ A release is a version of your code that can be deployed to an environment. When
 
 Additionally, releases are used for applying [source maps](https://docs.sentry.io/platforms/javascript/sourcemaps/) to minified JavaScript to view original, untransformed source code. You can learn more about releases in the [releases documentation](https://docs.sentry.io/workflow/releases).
 
+## What's new
+
+* **feat(sourcemaps): Add inject option to inject debug ids into source files and sourcemaps**
+
+A new option to inject Debug IDs into source files and sourcemaps was added to the action to ensure proper un-minifaction of your stacktraces. We **strongly recommend enabling** this by setting `inject: true` in your action alongside providing a path to sourcemaps.
+
+Please refer to the [release page](https://github.com/getsentry/action-release/releases) for the latest release notes.
+
+[Learn more about debug ids](https://docs.sentry.io/platforms/javascript/sourcemaps/troubleshooting_js/artifact-bundles/)
 ## Prerequisites
 
 ### Create an Organization Auth Token
@@ -43,7 +52,7 @@ Adding the following to your workflow will create a new Sentry release and tell 
 > Make sure you are using at least v3 of [actions/checkout](https://github.com/actions/checkout) with `fetch-depth: 0`, issues commonly occur with older versions.
  
 ```yaml
-- uses: actions/checkout@v3
+- uses: actions/checkout@v4
   with:
     fetch-depth: 0
 
@@ -71,33 +80,35 @@ Adding the following to your workflow will create a new Sentry release and tell 
 
 #### Parameters
 
-|name|description|default|
-|---|---|---|
-|`environment`|Set the environment for this release. E.g. "production" or "staging". Omit to skip adding deploy to release.|-|
-|`finalize`|When false, omit marking the release as finalized and released.|`true`|
-|`ignore_missing`|When the flag is set and the previous release commit was not found in the repository, will create a release with the default commits count instead of failing the command.|`false`|
-|`ignore_empty`|When the flag is set, command will not fail and just exit silently if no new commits for a given release have been found.|`false`|
-|`sourcemaps`|Space-separated list of paths to JavaScript sourcemaps. Omit to skip uploading sourcemaps.|-|
-|`dist`|Unique identifier for the distribution, used to further segment your release. Usually your build number.|-|
-|`started_at`|Unix timestamp of the release start date. Omit for current time.|-|
-|`version`|Identifier that uniquely identifies the releases. _Note: the `refs/tags/` prefix is automatically stripped when `version` is `github.ref`._|<code>${{&nbsp;github.sha&nbsp;}}</code>|
-|`version_prefix`|Value prepended to auto-generated version. For example "v".|-|
-|`set_commits`|Specify whether to set commits for the release. Either "auto" or "skip".|"auto"|
-|`projects`|Space-separated list of paths of projects. When omitted, falls back to the environment variable `SENTRY_PROJECT` to determine the project.|-|
-|`url_prefix`|Adds a prefix to source map urls after stripping them.|-|
-|`strip_common_prefix`|Will remove a common prefix from uploaded filenames. Useful for removing a path that is build-machine-specific.|`false`|
-|`working_directory`|Directory to collect sentry release information from. Useful when collecting information from a non-standard checkout directory.|-|
-|`disable_telemetry`|The action sends telemetry data and crash reports to Sentry. This helps us improve the action. You can turn this off by setting this flag.|`false`|
+|name| description                                                                                                                                                                |default|
+|---|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---|
+|`environment`| Set the environment for this release. E.g. "production" or "staging". Omit to skip adding deploy to release.                                                               |-|
+|`inject`| Injects Debug IDs into source files and sourcemaps. We **strongly recommend enabling** this to ensure proper un-minifaction of your stacktraces.                           |`false`|
+|`sourcemaps`| Space-separated list of paths to JavaScript sourcemaps. Omit to skip uploading sourcemaps.                                                                                 |-|
+|`finalize`| When false, omit marking the release as finalized and released.                                                                                                            |`true`|
+|`ignore_missing`| When the flag is set and the previous release commit was not found in the repository, will create a release with the default commits count instead of failing the command. |`false`|
+|`ignore_empty`| When the flag is set, command will not fail and just exit silently if no new commits for a given release have been found.                                                  |`false`|
+|`dist`| Unique identifier for the distribution, used to further segment your release. Usually your build number.                                                                   |-|
+|`started_at`| Unix timestamp of the release start date. Omit for current time.                                                                                                           |-|
+|`version`| Identifier that uniquely identifies the releases. _Note: the `refs/tags/` prefix is automatically stripped when `version` is `github.ref`._                                |<code>${{&nbsp;github.sha&nbsp;}}</code>|
+|`version_prefix`| Value prepended to auto-generated version. For example "v".                                                                                                                |-|
+|`set_commits`| Specify whether to set commits for the release. Either "auto" or "skip".                                                                                                   |"auto"|
+|`projects`| Space-separated list of paths of projects. When omitted, falls back to the environment variable `SENTRY_PROJECT` to determine the project.                                 |-|
+|`url_prefix`| Adds a prefix to source map urls after stripping them.                                                                                                                     |-|
+|`strip_common_prefix`| Will remove a common prefix from uploaded filenames. Useful for removing a path that is build-machine-specific.                                                            |`false`|
+|`working_directory`| Directory to collect sentry release information from. Useful when collecting information from a non-standard checkout directory.                                           |-|
+|`disable_telemetry`| The action sends telemetry data and crash reports to Sentry. This helps us improve the action. You can turn this off by setting this flag.                                 |`false`|
 
 ### Examples
 
-- Create a new Sentry release for the `production` environment and upload JavaScript source maps from the `./lib` directory.
+- Create a new Sentry release for the `production` environment, inject Debug IDs into JavaScript source files and sourcemaps and upload them from the `./dist` directory.
 
     ```yaml
     - uses: getsentry/action-release@v1
       with:
         environment: 'production'
-        sourcemaps: './lib'
+        inject: true
+        sourcemaps: './dist'
     ```
 
 - Create a new Sentry release for the `production` environment of your project at version `v1.0.1`.

@@ -5,7 +5,6 @@ The [build.yml](../.github/workflows/build.yml) workflow will build a Docker ima
 > [!WARNING]
 > Merging pull requests into `master` means changes are live for anyone who uses the action regardless of bumping the version.
 > Be extremely careful and intentional with changes and ensure properly testing them before merging, see [#Testing](development.md#testing) for more info.
-effectively being live for everyone even if we do not bump the version.
 
 > [!NOTE]
 > Unfortunately, we only use the `latest` tag for the Docker image, thus, making use of a version with the action ineffective (e.g. `v1` vs `v1.3.0`). 
