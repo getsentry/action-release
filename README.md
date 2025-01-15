@@ -33,6 +33,7 @@ A new option to inject Debug IDs into source files and sourcemaps was added to t
 
 Please refer to the [release page](https://github.com/getsentry/action-release/releases) for the latest release notes.
 
+[Learn more about debug ids](https://docs.sentry.io/platforms/javascript/sourcemaps/troubleshooting_js/artifact-bundles/)
 ## Prerequisites
 
 ### Create an Organization Auth Token
