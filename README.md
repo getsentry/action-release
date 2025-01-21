@@ -29,7 +29,7 @@ Additionally, releases are used for applying [source maps](https://docs.sentry.i
 
 * **feat(sourcemaps): Add inject option to inject debug ids into source files and sourcemaps**
 
-A new option to inject Debug IDs into source files and sourcemaps was added to the action to ensure proper un-minifaction of your stacktraces. We **strongly recommend enabling** this by setting `inject: true` in your action alongside providing a path to sourcemaps.
+A new option to inject [Debug IDs](https://docs.sentry.io/platforms/javascript/sourcemaps/troubleshooting_js/artifact-bundles/) into source files and sourcemaps was added to the action to ensure proper un-minifaction of your stacktraces. We **strongly recommend enabling** this by setting `inject: true` in your action alongside providing a path to sourcemaps.
 
 [Learn more about debug ids](https://docs.sentry.io/platforms/javascript/sourcemaps/troubleshooting_js/artifact-bundles/)
 
