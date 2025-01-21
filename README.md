@@ -41,7 +41,6 @@ Please refer to the [release page](https://github.com/getsentry/action-release/r
 
 For this action to communicate securely with Sentry, you'll need to [create an organization auth token](https://docs.sentry.io/account/auth-tokens/#organization-auth-tokens).
 
-Alternatively, you can also use a [User Auth Token](https://docs.sentry.io/account/auth-tokens/#user-auth-tokens), with the "Project: Read & Write" and "Release: Admin" permissions.
 
 You also need to set your Organization and Project slugs and if you're using a self-hosted Sentry instance, provide the URL used to connect to Sentry via SENTRY_URL.
 
