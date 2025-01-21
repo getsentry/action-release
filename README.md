@@ -29,20 +29,29 @@ Additionally, releases are used for applying [source maps](https://docs.sentry.i
 
 * **feat(sourcemaps): Add inject option to inject debug ids into source files and sourcemaps**
 
-A new option to inject Debug IDs into source files and sourcemaps was added to the action to ensure proper un-minifaction of your stacktraces. We **strongly recommend enabling** this by setting `inject: true` in your action alongside providing a path to sourcemaps.
+A new option to inject [Debug IDs](https://docs.sentry.io/platforms/javascript/sourcemaps/troubleshooting_js/artifact-bundles/) into source files and sourcemaps was added to the action to ensure proper un-minifaction of your stacktraces. We **strongly recommend enabling** this by setting `inject: true` in your action alongside providing a path to sourcemaps.
+
 
 Please refer to the [release page](https://github.com/getsentry/action-release/releases) for the latest release notes.
 
-[Learn more about debug ids](https://docs.sentry.io/platforms/javascript/sourcemaps/troubleshooting_js/artifact-bundles/)
 ## Prerequisites
 
 ### Create an Organization Auth Token
 
-> [!NOTE]
-> You have to be an admin in your Sentry org to create this.
- 
 For this action to communicate securely with Sentry, you'll need to [create an organization auth token](https://docs.sentry.io/account/auth-tokens/#organization-auth-tokens).
-Copy the generated token and use it as your `SENTRY_AUTH_TOKEN`. We recommend storing it as an [encrypted secret](https://docs.github.com/en/actions/security-guides/using-secrets-in-github-actions).
+
+
+You also need to set your Organization and Project slugs and if you're using a self-hosted Sentry instance, provide the URL used to connect to Sentry via SENTRY_URL.
+
+```bash
+SENTRY_AUTH_TOKEN=sntrys_YOUR_TOKEN_HERE
+SENTRY_ORG=example-org
+SENTRY_PROJECT=example-project
+# For self-hosted
+# SENTRY_URL=https://my-sentry-url
+```
+
+We recommend storing these as [encrypted secrets](https://docs.github.com/en/actions/security-guides/using-secrets-in-github-actions) on your repository.
 
 ## Usage
 
