@@ -110,6 +110,8 @@ withTelemetry(
         });
       }
 
+      Sentry.setTag('finalize', shouldFinalize);
+
       if (shouldFinalize) {
         await traceStep('finalizing-release', async () => {
           core.debug(`Finalizing the release`);
