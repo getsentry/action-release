@@ -1,6 +1,6 @@
 # Development of `getsentry/action-release`
 
-This document aims to provide guidelines for maintainers and contains information on how to develop and test this action. 
+This document aims to provide guidelines for maintainers and contains information on how to develop and test this action.
 For info on how to release changes, follow [publishing-a-release](publishing-a-release.md).
 
 ## Development
@@ -20,7 +20,7 @@ You can run unit tests with `yarn test`.
 The first job in [test.yml](../.github/workflows/test.yml) has instructions on how to tweak a job in order to execute your changes as part of the PR.
 
 > [!NOTE]  
-> Contributors will need to create an internal integration in their Sentry org and need to be an admin. 
+> Contributors will need to create an internal integration in their Sentry org and need to be an admin.
 > See [#Prerequisites](../README.md#prerequisites).
 
 Members of this repo will not have to set anything up since [the integration](https://sentry-ecosystem.sentry.io/settings/developer-settings/end-to-end-action-release-integration-416eb2/) is already set-up. Just open the PR and you will see [a release created](https://sentry-ecosystem.sentry.io/releases/?project=4505075304693760) for your PR.
@@ -33,11 +33,12 @@ Members of this repo will not have to set anything up since [the integration](ht
 > [!NOTE]
 > Once we start producing Docker images for PRs we can get rid of the need of using the `sed` command below.
 
-**Step 1**  
-* Create a branch, make changes and push it
-* Run this command, commit the changes and push it
-  * This will cause the action-release to be built using the `Dockerfile`
-  * You will need to revert this change once your changes are approved and ready to be merged
+**Step 1**
+
+- Create a branch, make changes and push it
+- Run this command, commit the changes and push it
+  - This will cause the action-release to be built using the `Dockerfile`
+  - You will need to revert this change once your changes are approved and ready to be merged
 
 ```shell
 sed -i .backup 's|docker://ghcr.io/getsentry/action-release-image:latest|Dockerfile|' action.yml
@@ -45,23 +46,24 @@ sed -i .backup 's|docker://ghcr.io/getsentry/action-release-image:latest|Dockerf
 
 **Step 2**  
 Test out your action-release changes on your own repo.
-* Get the sha for the latest commit on **Step 1**
-* Modify your usage of action-release to point to that commit (if you're using a fork, edit the `getsentry` org in the string below)
+
+- Get the sha for the latest commit on **Step 1**
+- Modify your usage of action-release to point to that commit (if you're using a fork, edit the `getsentry` org in the string below)
 
 Example:
 
 ```yml
-  - name: Sentry Release
-    uses: getsentry/action-release@<latest commit sha>
-    env:
-      # You will remove this in the next steps when ready
-      MOCK: true
-      SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-      SENTRY_ORG: ${{ vars.SENTRY_ORG }}
-      # If you specify a GitHub environment for the branch from where you create
-      # releases from (e.g. master), you can then specify a repository-level variable
-      # for all other branches. This allows using a second project for end-to-end testing
-      SENTRY_PROJECT: ${{ vars.SENTRY_PROJECT }}
+- name: Sentry Release
+  uses: getsentry/action-release@<latest commit sha>
+  env:
+    # You will remove this in the next steps when ready
+    MOCK: true
+    SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+    SENTRY_ORG: ${{ vars.SENTRY_ORG }}
+    # If you specify a GitHub environment for the branch from where you create
+    # releases from (e.g. master), you can then specify a repository-level variable
+    # for all other branches. This allows using a second project for end-to-end testing
+    SENTRY_PROJECT: ${{ vars.SENTRY_PROJECT }}
 ```
 
 > [!NOTE]

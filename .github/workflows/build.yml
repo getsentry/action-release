@@ -3,19 +3,12 @@ on:
   push:
     branches:
       - master
-
-env:
-  # Variables defined in the repository
-  SENTRY_ORG: ${{ vars.SENTRY_ORG }}
-  # For master we have an environment variable that selects the action-release project
-  # instead of action-release-prs
-  # For other branches: https://sentry-ecosystem.sentry.io/releases/?project=4505075304693760
-  # For master branch: https://sentry-ecosystem.sentry.io/releases/?project=6576594
-  SENTRY_PROJECT: ${{ vars.SENTRY_PROJECT }}
+      - release/**
+  pull_request:
 
 jobs:
   docker-build:
-    name: Build & pubish Docker images
+    name: Build & publish Docker images
     runs-on: ubuntu-latest
     permissions:
       packages: write
@@ -23,9 +16,9 @@ jobs:
       matrix:
         target:
           - name: builder
-            image: action-release-builder-image:latest
+            image: action-release-builder-image
           - name: app
-            image: action-release-image:latest
+            image: action-release-image
     steps:
     - name: Checkout repo
       uses: actions/checkout@v3
@@ -56,20 +49,8 @@ jobs:
       uses: docker/build-push-action@v6
       with:
         platforms: linux/amd64,linux/arm64
-        push: ${{ github.ref == 'refs/heads/master' }}
-        tags: ghcr.io/${{ github.repository_owner }}/${{ matrix.target.image }}
-        cache-from: ghcr.io/${{ github.repository_owner }}/${{ matrix.target.image }}
+        push: true
+        tags: ghcr.io/${{ github.repository_owner }}/${{ matrix.target.image }}:${{ github.sha }}
+        cache-from: ghcr.io/${{ github.repository_owner }}/${{ matrix.target.image }}:latest
         target: ${{ matrix.target.name }}
         build-args: BUILDKIT_INLINE_CACHE=1
-
-    # This step creates real Sentry releases for the action itself:
-    # https://sentry-ecosystem.sentry.io/releases/?project=6576594
-    - name: Sentry Release
-      uses: getsentry/action-release@v1
-      if: vars.SENTRY_ORG != ''
-      env:
-        SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-        SENTRY_LOG_LEVEL: debug
-      with:
-        environment: 'production'
-        ignore_missing: true
