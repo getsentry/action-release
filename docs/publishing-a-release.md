@@ -7,12 +7,12 @@ The [build.yml](../.github/workflows/build.yml) workflow will build a Docker ima
 > Be extremely careful and intentional with changes and ensure properly testing them before merging, see [#Testing](development.md#testing) for more info.
 
 > [!NOTE]
-> Unfortunately, we only use the `latest` tag for the Docker image, thus, making use of a version with the action ineffective (e.g. `v1` vs `v1.3.0`). 
+> Unfortunately, we only use the `latest` tag for the Docker image, thus, making use of a version with the action ineffective (e.g. `v1` vs `v1.3.0`).
 > See #129 on how to fix this.
 
 > [!NOTE]
-> At the moment our Docker image publishing is decoupled from `tag` creation in the repository. 
-> We should only publish a specific Docker tag when we create a tag (you can make GitHub workflows listen to this). See #102 for details. 
+> At the moment our Docker image publishing is decoupled from `tag` creation in the repository.
+> We should only publish a specific Docker tag when we create a tag (you can make GitHub workflows listen to this). See #102 for details.
 > Once this is fixed, merges to `master` will not make the Docker image live.
 
 When you are ready to make a release, open a [new release checklist issue](https://github.com/getsentry/action-release/issues/new?assignees=&labels=&template=release-checklist.md&title=New+release+checklist+for+%5Bversion+number%5D) and follow the steps in there.

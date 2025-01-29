@@ -1,0 +1,15 @@
+minVersion: 0.23.1
+changelogPolicy: auto
+preReleaseCommand: bash scripts/craft-pre-release.sh
+targets:
+  - id: release
+    name: docker
+    source: ghcr.io/getsentry/action-release-image
+    target: getsentry/action-release
+  - id: latest
+    name: docker
+    source: ghcr.io/getsentry/action-release-image
+    target: getsentry/sentry
+    targetFormat: '{{{target}}}:latest'
+  - name: github
+    tagPrefix: v

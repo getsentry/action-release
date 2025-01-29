@@ -52,7 +52,6 @@ inputs:
     required: false
 runs:
   using: 'docker'
-  # If you change this, update the use-local-dockerfile action
   image: 'docker://ghcr.io/getsentry/action-release-image:latest'
 branding:
   icon: 'triangle'
