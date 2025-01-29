@@ -52,7 +52,7 @@ inputs:
     required: false
 runs:
   using: 'docker'
-  image: 'docker://ghcr.io/getsentry/action-release-image:1.9.0'
+  image: 'docker://ghcr.io/getsentry/action-release-image:latest'
 branding:
   icon: 'triangle'
   color: 'purple'
