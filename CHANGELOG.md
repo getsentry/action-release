@@ -12,3 +12,7 @@ A new option to inject Debug IDs into source files and sourcemaps was added to t
 
 ** Other Changes **
 - feat(telemetry): Collect project specific tags (#228)
+
+## Previous Releases
+
+For previous releases, check the [Github Releases](https://github.com/getsentry/action-release/releases) page.
