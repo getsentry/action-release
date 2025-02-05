@@ -2,9 +2,8 @@
 
 ## Unreleased
 
-- **chore(release): Update release workflow**  
-This release is purely there to test our new craft release workflow and has no functionality change.
-With this release, we now publish a composite action that runs on all runners. Actions can now be properly versioned, allowing users to pin versions from here on out.
+- **feat(action): Support macos and windows runners**  
+We now publish a composite action that runs on all runners. Actions can now be properly versioned, allowing pinning versions from here on out.
 
 ## 1.9.0
 
