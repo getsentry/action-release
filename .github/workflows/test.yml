@@ -21,6 +21,24 @@ env:
   SENTRY_PROJECT: ${{ vars.SENTRY_PROJECT }}
 
 jobs:
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install
+        run: yarn install
+
+      - name: Check format
+        run: yarn format-check
+
+      - name: Lint
+        run: yarn lint
+
+      - name: Build
+        run: yarn build
+
   # You're welcome to make changes on this job as part of your PR in order to test out your changes
   # We can always undo the changes once we're satisfied with the results
   #
