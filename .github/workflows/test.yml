@@ -1,15 +1,20 @@
-name: "integration tests"
+name: Integration Tests
+
 on:
   pull_request:
     paths-ignore:
-      - '**.md'
+      - "**.md"
   push:
     branches:
       - master
+      - release/**
+    paths-ignore:
+      - "**.md"
+
 env:
   # Variables defined in the repository
   SENTRY_ORG: ${{ vars.SENTRY_ORG }}
-  # For master we have an environment variable that selects the action-release project
+  # For master, we have an environment variable that selects the action-release project
   # instead of action-release-prs
   # For other branches: https://sentry-ecosystem.sentry.io/releases/?project=4505075304693760
   # For master branch: https://sentry-ecosystem.sentry.io/releases/?project=6576594
@@ -21,69 +26,64 @@ jobs:
   #
   # Secrets on this repo do not get shared with PRs opened on a fork, thus,
   # add SENTRY_AUTH_TOKEN as a secret to your fork if you want to use this job.
-  # Checkout the README.md on how to create the internal integration (read: auth token)
   create-real-release-per-push:
-    name: "Test current action"
-    runs-on: ubuntu-latest
-    # XXX: This job will fail for forks, skip step on forks and let contributors tweak it when ready
-    if: github.ref != 'refs/heads/master'
+    strategy:
+      matrix:
+        os: [ ubuntu-latest, windows-latest, macos-latest ]
+    runs-on: ${{ matrix.os }}
+    name: Test current action
     steps:
-    - uses: actions/checkout@v3
-      with:
-        fetch-depth: 0
-        # For PRs, this supports creating a release using the commits from the branch (rather than the merge commit)
-        ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-    # This allows executing the action's code in the next step rather than a specific tag
-    - uses: './.github/actions/use-local-dockerfile'
+      - name: Create a staging release
+        uses: ./
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_LOG_LEVEL: debug
+        with:
+          ignore_missing: true
 
-    - name: Create a staging release
-      uses: ./
-      env:
-        # If you want this step to be mocked you can uncomment this variable
-        # MOCK: true
-        SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-        SENTRY_LOG_LEVEL: debug
-      with:
-        ignore_missing: true
-
-  mock-release: # Make sure that the action works on a clean machine without building Docker
-    name: "Build image & mock a release"
-    runs-on: ubuntu-latest
+  mock-release:
+    strategy:
+      matrix:
+        os: [ ubuntu-latest, windows-latest, macos-latest ]
+    runs-on: ${{ matrix.os }}
+    name: Mock a release
     steps:
-    - uses: actions/checkout@v3
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
-    - uses: './.github/actions/use-local-dockerfile'
-
-    - name: Mock creating a Sentry release
-      uses: ./
-      env:
-        MOCK: true
-      with:
-        environment: production
+      - name: Mock creating a Sentry release
+        uses: ./
+        env:
+          MOCK: true
+        with:
+          environment: production
 
   mock-release-working-directory:
-    name: "Build image & mock a release in a different working directory"
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os: [ ubuntu-latest, windows-latest, macos-latest ]
+    runs-on: ${{ matrix.os }}
+    name: Mock a release in a different working directory
     steps:
-    - name: Checkout directory we'll be running from
-      uses: actions/checkout@v3
-      with:
-        path: main/
+      - name: Checkout directory we'll be running from
+        uses: actions/checkout@v3
+        with:
+          path: main/
 
-    - name: Checkout directory we'll be testing
-      uses: actions/checkout@v3
-      with:
-        path: test/
+      - name: Checkout directory we'll be testing
+        uses: actions/checkout@v3
+        with:
+          path: test/
 
-    - uses: './main/.github/actions/use-local-dockerfile'
-      with:
-        working_directory: main
-
-    - name: Mock creating a Sentry release in a different directory
-      uses: ./main
-      env:
-        MOCK: true
-      with:
-        environment: production
-        working_directory: ./test
+      - name: Mock creating a Sentry release in a different directory
+        uses: ./main
+        env:
+          MOCK: true
+        with:
+          environment: production
+          working_directory: ./test

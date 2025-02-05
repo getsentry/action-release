@@ -1,0 +1,44 @@
+# Inspired by @action/checkout
+#
+# Compares the checked in `dist/index.js` with the PR's `dist/index.js`
+# On mismatch this action fails
+name: Verify dist
+
+on:
+  push:
+    branches:
+      - master
+    paths-ignore:
+      - "**.md"
+  pull_request:
+    paths-ignore:
+      - "**.md"
+
+jobs:
+  check-dist:
+    name: Verify dist/index.js file
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Use volta
+        uses: volta-cli/action@v4
+
+      - name: Install dependencies
+        run: yarn install
+
+      - name: Rebuild dist
+        run: yarn build
+
+      - name: Compare expected and actual dist
+        run: |
+          if [ "$(git diff --ignore-space-at-eol dist/ | wc -l)" -gt "0" ]; then
+            echo "Detected uncommitted changes after build. Did you forget to commit `dist/index.js`?"
+            echo "Diff:"
+            git diff
+            exit 1
+          fi
