@@ -26,7 +26,7 @@ jobs:
   #
   # Secrets on this repo do not get shared with PRs opened on a fork, thus,
   # add SENTRY_AUTH_TOKEN as a secret to your fork if you want to use this job.
-  create-real-release-per-push:
+  create-staging-release-per-push:
     strategy:
       matrix:
         os: [ ubuntu-latest, windows-latest, macos-latest ]
