@@ -4,7 +4,6 @@ import {getCLI} from './cli';
 import * as options from './options';
 import * as process from 'process';
 import {
-  isSelfHosted,
   isTelemetryEnabled,
   traceStep,
   withTelemetry,
@@ -42,7 +41,6 @@ withTelemetry(
         false
       );
       const version = await options.getVersion();
-      const workingDirectory = options.getWorkingDirectory();
 
       if (projects.length === 1) {
         Sentry.setTag('project', projects[0]);
@@ -52,11 +50,6 @@ withTelemetry(
 
       core.debug(`Version is ${version}`);
       await getCLI().new(version, {projects});
-
-      const currentWorkingDirectory = process.cwd();
-      if (workingDirectory !== null && workingDirectory.length > 0) {
-        process.chdir(workingDirectory);
-      }
 
       Sentry.setTag('set-commits', setCommitsOption);
 
