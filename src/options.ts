@@ -193,5 +193,5 @@ export const getUrlPrefixOption = (): string => {
 };
 
 export const getWorkingDirectory = (): string => {
-  return core.getInput('working_directory');
+  return core.getInput('working_directory') || process.env.GITHUB_WORKSPACE || '';
 };

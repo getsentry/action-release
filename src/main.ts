@@ -16,6 +16,13 @@ withTelemetry(
   },
   async () => {
     try {
+      const workingDirectory = options.getWorkingDirectory();
+      const currentWorkingDirectory = process.cwd();
+
+      if (workingDirectory !== null && workingDirectory.length > 0) {
+        process.chdir(workingDirectory);
+      }
+
       // Validate options first so we can fail early.
       options.checkEnvironmentVariables();
 
