@@ -26,10 +26,10 @@
   "license": "MIT",
   "dependencies": {
     "@actions/core": "^1.11.1",
-    "@sentry/cli": "^2.41.1",
     "@sentry/node": "^8.54.0"
   },
   "devDependencies": {
+    "@sentry/cli": "^2.41.1",
     "@types/jest": "^29.5.6",
     "@types/node": "^20.8.9",
     "@typescript-eslint/parser": "^6.9.0",
