@@ -5,6 +5,7 @@
   "description": "GitHub Action for creating a release on Sentry",
   "main": "dist/index.js",
   "scripts": {
+    "start": "node dist/index.js",
     "build": "ncc build src/main.ts -e @sentry/cli",
     "format": "prettier --write **/*.ts **/*.md",
     "format-check": "prettier --check **/*.ts **/*.md",
