@@ -57,7 +57,7 @@ runs:
   steps:
     - name: Install Sentry CLI v2
       shell: bash
-      run: yarn add --dev --no-lockfile @sentry/cli@2
+      run: yarn add --dev --no-lockfile @sentry/cli@~2.4
       working-directory: ${{ github.action_path }}
 
     - name: Run Release Action
