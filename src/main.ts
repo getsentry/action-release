@@ -3,11 +3,7 @@ import * as core from '@actions/core';
 import {getCLI} from './cli';
 import * as options from './options';
 import * as process from 'process';
-import {
-  isTelemetryEnabled,
-  traceStep,
-  withTelemetry,
-} from './telemetry';
+import {isTelemetryEnabled, traceStep, withTelemetry} from './telemetry';
 
 withTelemetry(
   {

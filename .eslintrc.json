@@ -42,6 +42,7 @@
       "@typescript-eslint/type-annotation-spacing": "error",
       "@typescript-eslint/unbound-method": "error",
       "github/array-foreach": "off",
+      "i18n-text/no-en": "off"
     },
     "env": {
       "node": true,
