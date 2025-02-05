@@ -31,7 +31,6 @@ export async function withTelemetry<F>(
   Sentry.setTag('organization', org);
   Sentry.setTag('node', process.version);
   Sentry.setTag('platform', process.platform);
-  Sentry.setTag('restored-yarn-cache', process.env['CACHE_HIT']);
 
   try {
     return await Sentry.startSpan(

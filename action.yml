@@ -58,27 +58,9 @@ runs:
     - name: Use volta
       uses: volta-cli/action@v4
 
-    - name: Get yarn cache directory path
-      id: yarn-cache-dir-path
-      run: echo "dir=$(yarn cache dir)" >> $GITHUB_OUTPUT
-      shell: bash
-
-    - name: Cache yarn cache per OS
-      uses: actions/cache@v4
-      id: yarn-cache
-      with:
-        path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
-        key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-        restore-keys: |
-          ${{ runner.os }}-yarn-
-
-    - name: Set cache hit for telemetry usage
-      run: echo "CACHE_HIT=${{ steps.yarn-cache.outputs.cache-hit }}" >> $GITHUB_ENV
-      shell: bash
-
     - name: Install Sentry CLI v2
       shell: bash
-      run: yarn add @sentry/cli@2
+      run: yarn add --dev --no-lockfile @sentry/cli@2
       working-directory: ${{ github.action_path }}
 
     - name: Run Release Action
