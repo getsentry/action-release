@@ -55,9 +55,6 @@ inputs:
 runs:
   using: 'composite'
   steps:
-    - name: Use volta
-      uses: volta-cli/action@v4
-
     - name: Install Sentry CLI v2
       shell: bash
       run: yarn add --dev --no-lockfile @sentry/cli@2
