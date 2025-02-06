@@ -1,6 +1,6 @@
 {
   "name": "action-release",
-  "version": "1.10.0",
+  "version": "1.10.1",
   "private": true,
   "description": "GitHub Action for creating a release on Sentry",
   "main": "dist/index.js",
