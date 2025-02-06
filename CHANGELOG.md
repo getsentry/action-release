@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.10.0
 
 - **feat(action): Support macos and windows runners**  
 We now publish a composite action that runs on all runners. Actions can now be properly versioned, allowing pinning versions from here on out.
