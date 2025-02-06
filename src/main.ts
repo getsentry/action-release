@@ -14,7 +14,7 @@ withTelemetry(
       const workingDirectory = options.getWorkingDirectory();
       const currentWorkingDirectory = process.cwd();
 
-      if (workingDirectory !== null && workingDirectory.length > 0) {
+      if (workingDirectory) {
         process.chdir(workingDirectory);
       }
 
@@ -117,7 +117,7 @@ withTelemetry(
         });
       }
 
-      if (workingDirectory !== null && workingDirectory.length > 0) {
+      if (workingDirectory) {
         process.chdir(currentWorkingDirectory);
       }
 
