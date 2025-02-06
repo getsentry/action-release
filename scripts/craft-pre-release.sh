@@ -15,4 +15,4 @@ npm version "${NEW_VERSION}"
 
 # The build output contains the package.json so we need to
 # rebuild to ensure it's reflected after bumping the version
-yarn build
+yarn install && yarn build
