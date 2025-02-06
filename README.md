@@ -27,10 +27,10 @@ Additionally, releases are used for applying [source maps](https://docs.sentry.i
 
 ## What's new
 
-* **feat(sourcemaps): Add inject option to inject debug ids into source files and sourcemaps**
+### 1.10.0
 
-A new option to inject [Debug IDs](https://docs.sentry.io/platforms/javascript/sourcemaps/troubleshooting_js/artifact-bundles/) into source files and sourcemaps was added to the action to ensure proper un-minifaction of your stacktraces. We **strongly recommend enabling** this by setting `inject: true` in your action alongside providing a path to sourcemaps.
-
+- **feat(action): Support macos and windows runners**  
+We now publish a composite action that runs on all runners. Actions can now be properly versioned, allowing pinning versions from here on out.
 
 Please refer to the [release page](https://github.com/getsentry/action-release/releases) for the latest release notes.
 

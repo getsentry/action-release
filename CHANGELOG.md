@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.10.1
+
+This release contains changes concerning maintainers of the repo and has no user-facing changes.
+
 ## 1.10.0
 
 - **feat(action): Support macos and windows runners**  
