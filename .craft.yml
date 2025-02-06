@@ -4,14 +4,5 @@ preReleaseCommand: bash scripts/craft-pre-release.sh
 artifactProvider:
   name: none
 targets:
-  - id: release
-    name: docker
-    source: ghcr.io/getsentry/action-release-image
-    target: ghcr.io/getsentry/action-release-image
-  - id: latest
-    name: docker
-    source: ghcr.io/getsentry/action-release-image
-    target: ghcr.io/getsentry/action-release-image
-    targetFormat: '{{{target}}}:latest'
   - name: github
     tagPrefix: v

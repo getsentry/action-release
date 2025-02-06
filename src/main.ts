@@ -3,12 +3,7 @@ import * as core from '@actions/core';
 import {getCLI} from './cli';
 import * as options from './options';
 import * as process from 'process';
-import {
-  isSelfHosted,
-  isTelemetryEnabled,
-  traceStep,
-  withTelemetry,
-} from './telemetry';
+import {isTelemetryEnabled, traceStep, withTelemetry} from './telemetry';
 
 withTelemetry(
   {
@@ -16,6 +11,13 @@ withTelemetry(
   },
   async () => {
     try {
+      const workingDirectory = options.getWorkingDirectory();
+      const currentWorkingDirectory = process.cwd();
+
+      if (workingDirectory) {
+        process.chdir(workingDirectory);
+      }
+
       // Validate options first so we can fail early.
       options.checkEnvironmentVariables();
 
@@ -35,7 +37,6 @@ withTelemetry(
         false
       );
       const version = await options.getVersion();
-      const workingDirectory = options.getWorkingDirectory();
 
       if (projects.length === 1) {
         Sentry.setTag('project', projects[0]);
@@ -45,11 +46,6 @@ withTelemetry(
 
       core.debug(`Version is ${version}`);
       await getCLI().new(version, {projects});
-
-      const currentWorkingDirectory = process.cwd();
-      if (workingDirectory !== null && workingDirectory.length > 0) {
-        process.chdir(workingDirectory);
-      }
 
       Sentry.setTag('set-commits', setCommitsOption);
 
@@ -121,7 +117,7 @@ withTelemetry(
         });
       }
 
-      if (workingDirectory !== null && workingDirectory.length > 0) {
+      if (workingDirectory) {
         process.chdir(currentWorkingDirectory);
       }
 

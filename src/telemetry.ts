@@ -1,4 +1,4 @@
-import * as options from './options';
+import * as ciOptions from './options';
 import * as Sentry from '@sentry/node';
 import packageJson from '../package.json';
 
@@ -99,6 +99,6 @@ export function isSelfHosted(): boolean {
  */
 export function isTelemetryEnabled(): boolean {
   return (
-    !options.getBooleanOption('disable_telemetry', false) && !isSelfHosted()
+    !ciOptions.getBooleanOption('disable_telemetry', false) && !isSelfHosted()
   );
 }

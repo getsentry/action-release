@@ -1,6 +1,7 @@
 name: 'Sentry Release'
 description: 'GitHub Action for creating a release on Sentry'
 author: 'Sentry'
+
 inputs:
   environment:
     description: 'Set the environment for this release. E.g. "production" or "staging". Omit to skip adding deploy to release.'
@@ -50,9 +51,39 @@ inputs:
   disable_telemetry:
     description: 'The action sends telemetry data and crash reports to Sentry. This helps us improve the action. You can turn this off by setting this flag.'
     required: false
+
 runs:
-  using: 'docker'
-  image: 'docker://ghcr.io/getsentry/action-release-image:latest'
+  using: 'composite'
+  steps:
+    - name: Install Sentry CLI v2
+      shell: bash
+      run: yarn add --dev --no-lockfile @sentry/cli@^2.4
+      working-directory: ${{ github.action_path }}
+
+    - name: Run Release Action
+      env:
+        # Composite actions don't pass the outer action's inputs
+        # down into these steps, so we have to replicate all inputs to be accessible
+        # via @actions/core
+        INPUT_ENVIRONMENT: ${{ inputs.environment }}
+        INPUT_INJECT: ${{ inputs.inject }}
+        INPUT_SOURCEMAPS: ${{ inputs.sourcemaps }}
+        INPUT_DIST: ${{ inputs.dist }}
+        INPUT_FINALIZE: ${{ inputs.finalize }}
+        INPUT_IGNORE_MISSING: ${{ inputs.ignore_missing }}
+        INPUT_IGNORE_EMPTY: ${{ inputs.ignore_empty }}
+        INPUT_STARTED_AT: ${{ inputs.started_at }}
+        INPUT_VERSION: ${{ inputs.version }}
+        INPUT_VERSION_PREFIX: ${{ inputs.version_prefix }}
+        INPUT_SET_COMMITS: ${{ inputs.set_commits }}
+        INPUT_PROJECTS: ${{ inputs.projects }}
+        INPUT_URL_PREFIX: ${{ inputs.url_prefix }}
+        INPUT_STRIP_COMMON_PREFIX: ${{ inputs.strip_common_prefix }}
+        INPUT_WORKING_DIRECTORY: ${{ inputs.working_directory }}
+        INPUT_DISABLE_TELEMETRY: ${{ inputs.disable_telemetry }}
+      shell: bash
+      run: yarn start
+      working-directory: ${{ github.action_path }}
 branding:
   icon: 'triangle'
   color: 'purple'

@@ -5,7 +5,8 @@
   "description": "GitHub Action for creating a release on Sentry",
   "main": "dist/index.js",
   "scripts": {
-    "build": "ncc build src/main.ts",
+    "start": "node dist/index.js",
+    "build": "ncc build src/main.ts -e @sentry/cli",
     "format": "prettier --write **/*.ts **/*.md",
     "format-check": "prettier --check **/*.ts **/*.md",
     "lint": "eslint src/**/*.ts",
@@ -24,11 +25,11 @@
   "author": "Sentry",
   "license": "MIT",
   "dependencies": {
-    "@actions/core": "^1.10.0",
-    "@sentry/cli": "^2.24.1",
-    "@sentry/node": "^8.48.0"
+    "@actions/core": "^1.11.1",
+    "@sentry/node": "^8.54.0"
   },
   "devDependencies": {
+    "@sentry/cli": "^2.41.1",
     "@types/jest": "^29.5.6",
     "@types/node": "^20.8.9",
     "@typescript-eslint/parser": "^6.9.0",

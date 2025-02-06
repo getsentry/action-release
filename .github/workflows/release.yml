@@ -1,4 +1,5 @@
-name: "Action: Prepare Release"
+name: Prepare Release
+
 on:
   workflow_dispatch:
     inputs:
@@ -12,10 +13,13 @@ on:
         description: Target branch to merge into. Uses the default branch as a fallback (optional)
         required: false
         default: master
+
 jobs:
   release:
+    name: Release a new version
+
     runs-on: ubuntu-20.04
-    name: 'Release a new version'
+
     steps:
       - name: Get auth token
         id: token

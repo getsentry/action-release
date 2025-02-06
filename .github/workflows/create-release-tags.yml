@@ -1,0 +1,35 @@
+  # Releases always publish a `v[major].[minor].[patch]` tag
+  # This action creates/updates `v[major]` and `v[major].[minor]` tags
+  name: Create release tags
+
+  on:
+    release:
+      types: [released]
+
+  permissions:
+    contents: write
+
+  jobs:
+    create-tags:
+      name: Create release tags for major and minor versions
+
+      runs-on: ubuntu-latest
+
+      steps:
+        - uses: actions/checkout@v4
+          with:
+            ref: ${{ github.event.release.tag_name }}
+
+        - name: Set git user to getsentry-bot
+          run: |
+            echo "GIT_COMMITTER_NAME=getsentry-bot" >> $GITHUB_ENV;
+            echo "GIT_AUTHOR_NAME=getsentry-bot" >> $GITHUB_ENV;
+            echo "EMAIL=bot@sentry.io" >> $GITHUB_ENV;
+
+        - name: Create and push major and minor version tags
+          run: |
+            MAJOR_VERSION=$(echo '${{ github.event.release.tag_name }}' | cut -d. -f1)
+            MINOR_VERSION=$(echo '${{ github.event.release.tag_name }}' | cut -d. -f1-2)
+            git tag -f $MAJOR_VERSION
+            git tag -f $MINOR_VERSION
+            git push -f origin $MAJOR_VERSION $MINOR_VERSION
