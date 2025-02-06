@@ -12,3 +12,7 @@ cd $SCRIPT_DIR/..
 # as craft/publish will take care of that
 export npm_config_git_tag_version=false
 npm version "${NEW_VERSION}"
+
+# The build output contains the package.json so we need to
+# rebuild to ensure it's reflected after bumping the version
+yarn build
