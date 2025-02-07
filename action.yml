@@ -57,7 +57,7 @@ runs:
   steps:
     - name: Install Sentry CLI v2
       shell: bash
-      run: yarn add --dev --no-lockfile @sentry/cli@^2.4
+      run: npm install --save-dev --no-package-lock @sentry/cli@^2.4
       working-directory: ${{ github.action_path }}
 
     - name: Run Release Action
@@ -82,7 +82,7 @@ runs:
         INPUT_WORKING_DIRECTORY: ${{ inputs.working_directory }}
         INPUT_DISABLE_TELEMETRY: ${{ inputs.disable_telemetry }}
       shell: bash
-      run: yarn start
+      run: npm run start
       working-directory: ${{ github.action_path }}
 branding:
   icon: 'triangle'
