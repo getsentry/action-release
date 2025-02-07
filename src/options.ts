@@ -202,3 +202,7 @@ export const getWorkingDirectory = (): string => {
     core.getInput('working_directory')
   );
 };
+
+export const getStripPrefixOption = (): string => {
+  return core.getInput('strip_prefix');
+};

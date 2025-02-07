@@ -85,6 +85,7 @@ Adding the following to your workflow will create a new Sentry release and tell 
 |`set_commits`| Specify whether to set commits for the release. Either "auto" or "skip".                                                                                                   |"auto"|
 |`projects`| Space-separated list of paths of projects. When omitted, falls back to the environment variable `SENTRY_PROJECT` to determine the project.                                 |-|
 |`url_prefix`| Adds a prefix to source map urls after stripping them.                                                                                                                     |-|
+|`strip_prefix`|Will chop-off a prefix from all sources references inside uploaded source maps. For instance, you can use this to remove a path that is build machine specific.|-|
 |`strip_common_prefix`| Will remove a common prefix from uploaded filenames. Useful for removing a path that is build-machine-specific.                                                            |`false`|
 |`working_directory`| Directory to collect sentry release information from. Useful when collecting information from a non-standard checkout directory.                                           |-|
 |`disable_telemetry`| The action sends telemetry data and crash reports to Sentry. This helps us improve the action. You can turn this off by setting this flag.                                 |`false`|

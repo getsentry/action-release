@@ -45,6 +45,9 @@ inputs:
   strip_common_prefix:
     description: 'Will remove a common prefix from uploaded filenames. Useful for removing a path that is build-machine-specific.'
     required: false
+  strip_prefix:
+    description: 'Will chop-off a prefix from all sources references inside uploaded source maps. For instance, you can use this to remove a path that is build machine specific.'
+    required: false
   working_directory:
     description: 'Directory to collect sentry release information from. Useful when collecting information from a non-standard checkout directory.'
     required: false
