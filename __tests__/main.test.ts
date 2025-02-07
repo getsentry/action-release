@@ -10,6 +10,7 @@ import {
   getSetCommitsOption,
   getProjects,
   getUrlPrefixOption,
+  getWorkingDirectory,
 } from '../src/options';
 
 describe('options', () => {
@@ -207,6 +208,26 @@ describe('options', () => {
     it('get url prefix', () => {
       process.env['INPUT_URL_PREFIX'] = 'build';
       expect(getUrlPrefixOption()).toEqual('build');
+    });
+  });
+
+  describe('getWorkingDirectory', () => {
+    afterEach(() => {
+      delete process.env['GITHUB_WORKSPACE'];
+      delete process.env['INPUT_WORKING_DIRECTORY'];
+    });
+
+    it('gets the working directory url and prefixes it with the `GITHUB_WORKSPACE`', () => {
+      process.env['GITHUB_WORKSPACE'] = '/repo/root';
+      process.env['INPUT_WORKING_DIRECTORY'] = '/some/working/directory';
+      expect(getWorkingDirectory()).toEqual(
+        '/repo/root/some/working/directory'
+      );
+    });
+
+    it('should default to `GITHUB_WORKSPACE` even if no direcotry is passed', () => {
+      process.env['GITHUB_WORKSPACE'] = '/repo/root';
+      expect(getWorkingDirectory()).toEqual('/repo/root');
     });
   });
 });

@@ -100,4 +100,4 @@ jobs:
           MOCK: true
         with:
           environment: production
-          working_directory: ../test
+          working_directory: ./test
