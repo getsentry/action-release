@@ -1,4 +1,5 @@
 import * as core from '@actions/core';
+import path from 'path';
 import {getCLI} from './cli';
 
 /**
@@ -195,9 +196,9 @@ export const getUrlPrefixOption = (): string => {
 export const getWorkingDirectory = (): string => {
   // The action runs inside `github.action_path` and as such
   // doesn't automatically have access to the user's git
-  // In case users don't provide their own `working_directory`
-  // we use `GITHUB_WORKSPACE` which is at the top of the repo.
-  return (
-    core.getInput('working_directory') || process.env.GITHUB_WORKSPACE || ''
+  // We prefix all paths with `GITHUB_WORKSPACE` which is at the top of the repo.
+  return path.join(
+    process.env.GITHUB_WORKSPACE || '',
+    core.getInput('working_directory')
   );
 };

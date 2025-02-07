@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- fix(action): Ensure working directory always starts out at repo root (#250)
+
 ## 1.10.1
 
 This release contains changes concerning maintainers of the repo and has no user-facing changes.
