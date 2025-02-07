@@ -31,7 +31,7 @@ Members of this repo will not have to set anything up since [the integration](ht
 **Step 1**
 
 - Create a branch, make changes
-- If possible, add unit and e2e tests (inside `.github/workflows/test.yml`)
+- If possible, add unit and E2E tests (inside `.github/workflows/test.yml`)
 - Run `yarn install` to install deps
 - Run `yarn build` to build the action
 - Commit the changes and the build inside `dist/`
@@ -43,7 +43,7 @@ Create a new Sentry project under your existing Sentry org (only this one time).
 Create an environment variable in GitHub for the branch you release from (e.g. `master`) and define the same variable as a repository variable which all other branches will use (i.e. your PR's branch)
 
 **Step 4**  
-Push to GitHub and the CI will do end-to-end runs!
+Push to GitHub and the CI will do E2E runs!
 
 ### Troubleshooting
 
