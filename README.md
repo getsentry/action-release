@@ -10,10 +10,6 @@
 
 # Sentry Release GitHub Action
 
-> [!IMPORTANT]
-> This action is currently only available for Linux runners. 
-> See [this issue](https://github.com/getsentry/action-release/issues/58) for more details.
-
 Automatically create a Sentry release in a workflow.
 
 A release is a version of your code that can be deployed to an environment. When you give Sentry information about your releases, you unlock a number of new features:
@@ -36,22 +32,7 @@ Please refer to the [release page](https://github.com/getsentry/action-release/r
 
 ## Prerequisites
 
-### Create an Organization Auth Token
-
-For this action to communicate securely with Sentry, you'll need to [create an organization auth token](https://docs.sentry.io/account/auth-tokens/#organization-auth-tokens).
-
-
-You also need to set your Organization and Project slugs and if you're using a self-hosted Sentry instance, provide the URL used to connect to Sentry via SENTRY_URL.
-
-```bash
-SENTRY_AUTH_TOKEN=sntrys_YOUR_TOKEN_HERE
-SENTRY_ORG=example-org
-SENTRY_PROJECT=example-project
-# For self-hosted
-# SENTRY_URL=https://my-sentry-url
-```
-
-We recommend storing these as [encrypted secrets](https://docs.github.com/en/actions/security-guides/using-secrets-in-github-actions) on your repository.
+See how to [set up the prerequisites](https://docs.sentry.io/product/releases/setup/release-automation/github-actions/#prerequisites) for the Action to securely communicate with Sentry.
 
 ## Usage
 
