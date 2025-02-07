@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.10.2
 
 - fix(action): Ensure working directory always starts out at repo root (#250)
 - fix(action): Use `npm` instead of `yarn` to install `sentry-cli` (#251)
