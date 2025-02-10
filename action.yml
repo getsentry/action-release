@@ -55,6 +55,8 @@ inputs:
 runs:
   using: 'composite'
   steps:
+    - uses: volta-cli/action@v4
+
     - name: Install Sentry CLI v2
       shell: bash
       run: npm install --save-dev --no-package-lock @sentry/cli@^2.4
