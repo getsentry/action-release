@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.10.3
+
+### Various fixes & improvements
+
+- fix(ci): Use volta to ensure node and npm are available (#255) by @andreiborza
+
 ## 1.10.2
 
 - fix(action): Ensure working directory always starts out at repo root (#250)
