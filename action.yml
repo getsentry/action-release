@@ -77,7 +77,7 @@ runs:
         # setup-node doesn't allow absolute paths, so we can't
         # just use `github.action_path` to read this out from the `package.json`
         # any changes to the runtime need to be reflected here
-        node-version-file: 18.17.0
+        node-version: 18.17.0
 
     - name: Install Sentry CLI v2
       shell: bash
