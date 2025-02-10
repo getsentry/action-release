@@ -51,11 +51,33 @@ inputs:
   disable_telemetry:
     description: 'The action sends telemetry data and crash reports to Sentry. This helps us improve the action. You can turn this off by setting this flag.'
     required: false
+  disable_safe_directory:
+    description: 'The action needs access to the repo it runs in. For that we need to configure git to mark the repo as a safe directory. You can turn this off by setting this flag.'
+    required: false
 
 runs:
   using: 'composite'
   steps:
-    - uses: volta-cli/action@v4
+    - name: Mark GitHub workspace a safe directory in git
+      if: ${{ inputs.disable_safe_directory != 'true' }}
+      shell: bash
+      run: |
+        git config --global --add safe.directory ${{ github.workspace }}
+
+    - name: Get node version
+      shell: bash
+      run: |
+        echo "NODE_VERSION=$(node -v 2>/dev/null || echo '')" >> $GITHUB_ENV
+
+    - name: Setup node
+      # Only install node if there isn't one already
+      if: env.NODE_VERSION == ''
+      uses: actions/setup-node@v4
+      with:
+        # setup-node doesn't allow absolute paths, so we can't
+        # just use `github.action_path` to read this out from the `package.json`
+        # any changes to the runtime need to be reflected here
+        node-version: 18.17.0
 
     - name: Install Sentry CLI v2
       shell: bash
@@ -83,9 +105,11 @@ runs:
         INPUT_STRIP_COMMON_PREFIX: ${{ inputs.strip_common_prefix }}
         INPUT_WORKING_DIRECTORY: ${{ inputs.working_directory }}
         INPUT_DISABLE_TELEMETRY: ${{ inputs.disable_telemetry }}
+        INPUT_DISABLE_SAFE_DIRECTORY: ${{ inputs.disable_safe_directory }}
       shell: bash
       run: npm run start
       working-directory: ${{ github.action_path }}
+
 branding:
   icon: 'triangle'
   color: 'purple'
