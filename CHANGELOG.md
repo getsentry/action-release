@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.10.4
+
+### Various fixes & improvements
+
+- fix(action): Use `action/setup-node` instead of unofficial volta action (#256) by @andreiborza
+
 ## 1.10.3
 
 ### Various fixes & improvements
