@@ -1,5 +1,19 @@
 # Changelog
 
+## 2.0.0
+
+> [!NOTE]  
+> This release contains no changes over `v1.10.4` and is just meant to unblock users that have upgraded to `v2` before.  
+> 
+> We **recommend** pinning to `v1`.
+ 
+Last week we pushed a `v2` branch that triggered dependabot which treated it as a release.
+This was not meant to be a release, but many users have upgraded to `v2`.
+
+This release will help unblock users that have upgraded to `v2`.
+
+Please see: #209
+
 ## 1.10.4
 
 ### Various fixes & improvements

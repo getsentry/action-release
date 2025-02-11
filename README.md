@@ -23,11 +23,6 @@ Additionally, releases are used for applying [source maps](https://docs.sentry.i
 
 ## What's new
 
-### 1.10.0
-
-- **feat(action): Support macos and windows runners**  
-We now publish a composite action that runs on all runners. Actions can now be properly versioned, allowing pinning versions from here on out.
-
 Please refer to the [release page](https://github.com/getsentry/action-release/releases) for the latest release notes.
 
 ## Prerequisites
