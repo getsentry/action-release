@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.10.5
+
+### Various fixes & improvements
+
+- fix: Mark `GITHUB_WORKSPACE` a safe git directory (#260) by @andreiborza
+
 ## 2.0.0
 
 > [!NOTE]  
