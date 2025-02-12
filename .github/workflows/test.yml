@@ -61,6 +61,24 @@ jobs:
         with:
           ignore_missing: true
 
+  runs-on-container:
+    runs-on: ubuntu-latest
+    container:
+      image: node:18.17
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Create a staging release
+        uses: ./
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_LOG_LEVEL: debug
+        with:
+          ignore_missing: true
+
   mock-release:
     strategy:
       matrix:
