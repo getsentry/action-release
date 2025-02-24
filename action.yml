@@ -77,7 +77,7 @@ runs:
     # to run the action.
     - name: Run docker image
       if: runner.os != 'macOS' && runner.os != 'Windows'
-      uses: docker://ghcr.io/getsentry/action-release-image:ab/multiarch-docker
+      uses: docker://ghcr.io/getsentry/action-release-image:ab-multiarch-docker
 
     # For actions running on macos or windows runners, we use a composite
     # action approach so it allows us to install the arch specific sentry-cli
