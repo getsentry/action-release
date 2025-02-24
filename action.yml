@@ -95,16 +95,8 @@ runs:
       run: |
         git config --global --add safe.directory "$GITHUB_WORKSPACE"
 
-    - name: Get node and npm versions
-      if: runner.os == 'macOS' || runner.os == 'Windows'
-      shell: bash
-      run: |
-        echo "NODE_VERSION=$(node -v 2>/dev/null || echo '')" >> $GITHUB_ENV
-        echo "NPM_VERSION=$(npm -v 2>/dev/null || echo '')" >> $GITHUB_ENV
-
     - name: Setup node
-      # Only install node if there isn't one already
-      if: ${{ (runner.os == 'macOS' || runner.os == 'Windows') && (env.NODE_VERSION == '' || env.NPM_VERSION == '') }}
+      if: runner.os == 'macOS' || runner.os == 'Windows'
       uses: actions/setup-node@v4
       with:
         # setup-node doesn't allow absolute paths, so we can't
