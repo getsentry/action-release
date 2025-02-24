@@ -25,7 +25,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Extract docker tag
+      - name: Extract docker tag from action.yml
         run: |
           TAG=$(yq '... | select(has("uses") and .uses | test("docker://ghcr.io/getsentry/action-release-image:.*")) | .uses' action.yml | awk -F':' '{print $3}')
           echo "DOCKER_TAG=$TAG" >> $GITHUB_ENV
