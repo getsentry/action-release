@@ -63,6 +63,27 @@ runs:
     # to run the action.
     - name: Run docker image
       if: runner.os != 'macOS' && runner.os != 'Windows'
+      env:
+        # Composite actions don't pass the outer action's inputs
+        # down into these steps, so we have to replicate all inputs to be accessible
+        # via @actions/core
+        INPUT_ENVIRONMENT: ${{ inputs.environment }}
+        INPUT_INJECT: ${{ inputs.inject }}
+        INPUT_SOURCEMAPS: ${{ inputs.sourcemaps }}
+        INPUT_DIST: ${{ inputs.dist }}
+        INPUT_FINALIZE: ${{ inputs.finalize }}
+        INPUT_IGNORE_MISSING: ${{ inputs.ignore_missing }}
+        INPUT_IGNORE_EMPTY: ${{ inputs.ignore_empty }}
+        INPUT_STARTED_AT: ${{ inputs.started_at }}
+        INPUT_VERSION: ${{ inputs.version }}
+        INPUT_VERSION_PREFIX: ${{ inputs.version_prefix }}
+        INPUT_SET_COMMITS: ${{ inputs.set_commits }}
+        INPUT_PROJECTS: ${{ inputs.projects }}
+        INPUT_URL_PREFIX: ${{ inputs.url_prefix }}
+        INPUT_STRIP_COMMON_PREFIX: ${{ inputs.strip_common_prefix }}
+        INPUT_WORKING_DIRECTORY: ${{ inputs.working_directory }}
+        INPUT_DISABLE_TELEMETRY: ${{ inputs.disable_telemetry }}
+        INPUT_DISABLE_SAFE_DIRECTORY: ${{ inputs.disable_safe_directory }}
       uses: docker://ghcr.io/getsentry/action-release-image:ab-multiarch-docker
 
     # For actions running on macos or windows runners, we use a composite
