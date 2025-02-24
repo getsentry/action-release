@@ -52,6 +52,8 @@ jobs:
     name: Test current action
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Create a staging release
         uses: ./
@@ -87,6 +89,7 @@ jobs:
     name: Mock a release
     steps:
       - uses: actions/checkout@v4
+        fetch-depth: 0
 
       - name: Mock creating a Sentry release
         uses: ./
@@ -105,11 +108,13 @@ jobs:
       - name: Checkout directory we'll be running from
         uses: actions/checkout@v4
         with:
+          fetch-depth: 0
           path: main/
 
       - name: Checkout directory we'll be testing
         uses: actions/checkout@v4
         with:
+          fetch-depth: 0
           path: test/
 
       - name: Mock creating a Sentry release in a different directory
