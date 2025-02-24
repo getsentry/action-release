@@ -1,4 +1,5 @@
-name: "build"
+name: "Build docker"
+
 on:
   pull_request:
     types:

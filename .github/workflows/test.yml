@@ -2,7 +2,8 @@ name: Integration Tests
 
 on:
   workflow_run:
-    workflows: [ build ]
+    workflows:
+      - "Build docker"
     types:
       - completed
 
