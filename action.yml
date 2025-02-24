@@ -87,9 +87,8 @@ runs:
       uses: docker://ghcr.io/getsentry/action-release-image:ab-multiarch-docker
 
     # For actions running on macos or windows runners, we use a composite
-    # action approach so it allows us to install the arch specific sentry-cli
-    # that's needed for the runner. This is slower and runners require to have
-    # node and npm available.
+    # action approach which allows us to install the arch specific sentry-cli
+    # binary that's needed for the runner. This is slower.
     - name: Mark GitHub workspace a safe directory in git
       if: ${{ (runner.os == 'macOS' || runner.os == 'Windows')  && inputs.disable_safe_directory != 'true' }}
       shell: bash
