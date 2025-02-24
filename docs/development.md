@@ -31,7 +31,7 @@ Members of this repo will not have to set anything up since [the integration](ht
 **Step 1**
 
 - Create a branch, make changes
-- If possible, add unit and E2E tests (inside `.github/workflows/test.yml`)
+- If possible, add unit and E2E tests (inside `.github/workflows/build.yml`)
 - Run `yarn install` to install deps
 - Run `yarn build` to build the action
 - Commit the changes and the build inside `dist/`
