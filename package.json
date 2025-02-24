@@ -11,7 +11,9 @@
     "format-check": "prettier --check **/*.ts **/*.md",
     "lint": "eslint src/**/*.ts",
     "test": "jest",
-    "all": "yarn run format && yarn run lint && yarn run build && yarn test"
+    "all": "yarn run format && yarn run lint && yarn run build && yarn test",
+    "bump-docker-tag": "./scripts/set-docker-tag.sh",
+    "bump-docker-tag-from-branch": "./scripts/set-branch-docker-tag.sh"
   },
   "repository": {
     "type": "git",

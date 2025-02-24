@@ -58,20 +58,6 @@ inputs:
 runs:
   using: 'composite'
   steps:
-#    - name: Extract tag to use for docker image
-#      if: runner.os == 'Linux'
-#      shell: bash
-#      run: |
-#        GIT_REF="${{ github.action_ref }}"
-#        if [[ "$GIT_REF" == refs/tags/* ]]; then
-#          DOCKER_TAG=${REF#refs/tags/}
-#        elif [[ "$GIT_REF" == refs/heads/* ]]; then
-#          DOCKER_TAG=${GIT_REF#refs/heads/}
-#        else
-#          DOCKER_TAG="master"
-#        fi
-#        echo "DOCKER_TAG=$DOCKER_TAG" >> $GITHUB_ENV
-
     # For actions running on a linux runner, we use a docker
     # approach as it's faster and encapsulates everything needed
     # to run the action.
