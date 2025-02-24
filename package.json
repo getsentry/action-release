@@ -11,7 +11,9 @@
     "format-check": "prettier --check **/*.ts **/*.md",
     "lint": "eslint src/**/*.ts",
     "test": "jest",
-    "all": "yarn run format && yarn run lint && yarn run build && yarn test"
+    "all": "yarn run format && yarn run lint && yarn run build && yarn test",
+    "bump-docker-tag": "./scripts/set-docker-tag.sh",
+    "bump-docker-tag-from-branch": "./scripts/set-branch-docker-tag.sh"
   },
   "repository": {
     "type": "git",
@@ -26,10 +28,10 @@
   "license": "MIT",
   "dependencies": {
     "@actions/core": "^1.11.1",
-    "@sentry/node": "^8.54.0"
+    "@sentry/node": "^8.54.0",
+    "@sentry/cli": "^2.41.1"
   },
   "devDependencies": {
-    "@sentry/cli": "^2.41.1",
     "@types/jest": "^29.5.6",
     "@types/node": "^20.8.9",
     "@typescript-eslint/parser": "^6.9.0",
