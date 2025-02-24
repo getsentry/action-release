@@ -66,7 +66,7 @@ runs:
       env:
         # Composite actions don't pass the outer action's inputs
         # down into these steps, so we have to replicate all inputs to be accessible
-        # via @actions/core
+        # via @actions/core here and in the `Run Release Action` step further down.
         INPUT_ENVIRONMENT: ${{ inputs.environment }}
         INPUT_INJECT: ${{ inputs.inject }}
         INPUT_SOURCEMAPS: ${{ inputs.sourcemaps }}
