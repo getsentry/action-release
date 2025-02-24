@@ -16,3 +16,6 @@ npm version "${NEW_VERSION}"
 # The build output contains the package.json so we need to
 # rebuild to ensure it's reflected after bumping the version
 yarn install && yarn build
+
+# Update the docker tag in action.yml
+./scripts/set-docker-tag $NEW_VERSION
