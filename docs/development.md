@@ -1,3 +1,14 @@
+# Pre-requirements
+
+This setup assumes you have [Yarn][Yarn], [Volta][volta] and [pre-commit][pre-commit] installed.
+
+After cloning the repo, run
+
+```bash
+# Install or update application dependencies
+make
+```
+
 # Development of `getsentry/action-release`
 
 This document aims to provide guidelines for maintainers and contains information on how to develop and test this action.
@@ -33,13 +44,13 @@ Telemetry for internal development is collected using `@sentry/node`, see `src/t
 
 ## Development steps
 
-> [!NOTE]  
+> [!NOTE]
 > Contributors will need to create an internal integration in their Sentry org and need to be an admin.
 > See [#Prerequisites](../README.md#prerequisites).
 
 Members of this repo will not have to set anything up since [the integration](https://sentry-ecosystem.sentry.io/settings/developer-settings/end-to-end-action-release-integration-416eb2/) is already set-up. Just open the PR and you will see [a release created](https://sentry-ecosystem.sentry.io/releases/?project=4505075304693760) for your PR.
 
-> [!WARNING]  
+> [!WARNING]
 > After you create a branch ALWAYS run yarn set-docker-tag-from-branch.
 > This is very important. You should avoid publishing changes to an already existing docker image.
 >
