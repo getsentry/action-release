@@ -3,14 +3,13 @@ name: Build and Test
 on:
   pull_request:
     paths-ignore:
-      - "**.md"
+      - '**.md'
   push:
     branches:
       - master
       - release/**
     paths-ignore:
-      - "**.md"
-
+      - '**.md'
 
 env:
   # Variables defined in the repository
@@ -52,7 +51,7 @@ jobs:
               echo "EMAIL=bot@sentry.io" >> $GITHUB_ENV;
 
               git add action.yml
-              SKIP=set-docker-tag-from-branch git commit -m "chore: Set docker tag for master [skip-ci]"
+              SKIP=lint,format,set-docker-tag-from-branch git commit -m "chore: Set docker tag for master [skip-ci]"
               git push
             fi
           else
@@ -125,7 +124,7 @@ jobs:
     needs: docker-build
     strategy:
       matrix:
-        os: [ ubuntu-latest, windows-latest, macos-latest ]
+        os: [ubuntu-latest, windows-latest, macos-latest]
     runs-on: ${{ matrix.os }}
     name: Test current action
     steps:
@@ -164,7 +163,7 @@ jobs:
     needs: docker-build
     strategy:
       matrix:
-        os: [ ubuntu-latest, windows-latest, macos-latest ]
+        os: [ubuntu-latest, windows-latest, macos-latest]
     runs-on: ${{ matrix.os }}
     name: Mock a release
     steps:
@@ -183,7 +182,7 @@ jobs:
     needs: docker-build
     strategy:
       matrix:
-        os: [ ubuntu-latest, windows-latest, macos-latest ]
+        os: [ubuntu-latest, windows-latest, macos-latest]
     runs-on: ${{ matrix.os }}
     name: Mock a release in a different working directory
     steps:
