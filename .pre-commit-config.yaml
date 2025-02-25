@@ -13,11 +13,14 @@ repos:
         name: Format
         entry: yarn format
         language: system
+        pass_filenames: false
       - id: lint
         name: Lint
         entry: yarn lint
         language: system
+        pass_filenames: false
       - id: set-docker-tag-from-branch
         name: Set docker tag in action.yml from current git branch
         entry: yarn set-docker-tag-from-branch
         language: system
+        pass_filenames: false
