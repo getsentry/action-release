@@ -1,7 +1,31 @@
+# Pre-requirements
+
+This setup assumes you have [Yarn][Yarn], [Volta][volta] and [pre-commit][pre-commit] installed.
+
+After cloning the repo, run
+
+```bash
+# Install or update application dependencies
+make
+```
+
 # Development of `getsentry/action-release`
 
 This document aims to provide guidelines for maintainers and contains information on how to develop and test this action.
 For info on how to release changes, follow [publishing-a-release](publishing-a-release.md).
+
+The action is a composite GitHub Action.
+
+On Linux runners, the action executes the underlying JavaScript script
+via a Docker image we publish.
+
+For Mac OS and Windows runners, the action cannot run the Docker image and instead installs
+the `@sentry/cli` dependency corresponding to the architecture of the runner and then executes the underlying JavaScript
+distribution.
+
+This split in architecture is done to optimize the run-time of the action but at the same time support non-Linux runners.
+
+This action runs fastest on Linux runners.
 
 ## Development
 
@@ -9,41 +33,37 @@ The action is using `@sentry/cli` under the hood and is written in TypeScript. S
 
 Options to the action are exposed via `action.yml`, changes that impact options need to be documented in the `README.md`.
 
+> [!NOTE]
+> Actions have to be exposed in 3 places in `action.yml`
+>
+> 1. Under the `inputs` field - These are the actual inputs exposed to users
+> 2. Under the `env` field inside the `Run docker image` step. All inputs have to be mapped from inputs to `INPUT_X` env variables.
+> 3. Under the `env` field inside the `Run Release Action
+
 Telemetry for internal development is collected using `@sentry/node`, see `src/telemetry.ts` for utilities.
 
-## Testing
+## Development steps
 
-You can run unit tests with `yarn test`.
-
-### E2E testing on GitHub's CI
-
-> [!NOTE]  
+> [!NOTE]
 > Contributors will need to create an internal integration in their Sentry org and need to be an admin.
 > See [#Prerequisites](../README.md#prerequisites).
 
 Members of this repo will not have to set anything up since [the integration](https://sentry-ecosystem.sentry.io/settings/developer-settings/end-to-end-action-release-integration-416eb2/) is already set-up. Just open the PR and you will see [a release created](https://sentry-ecosystem.sentry.io/releases/?project=4505075304693760) for your PR.
 
-### Test your own repo against an action-release PR
+1. Create a branch
+2. Run `yarn set-docker-tag-from-branch` to set a docker tag based on your github branch name. This is important so that the action gets its own Docker image, allowing you to test the action in a different repo.
+3. Make changes
+4. If possible, add unit and E2E tests (inside `.github/workflows/build.yml`)
+5. Run `yarn install` to install deps
+6. Run `yarn build` to build the action
+7. Commit the changes and the build inside `dist/`
 
-> [!NOTE]
-> This assumes that you have gone through the [#Usage](../README.md#usage) section and have managed to get your GitHub repository to have worked with this action.
+If you forget to run `yarn set-docker-tag-from-branch` the repo's pre-commit hooks will do it for you and fail the commit.
+Just add the changes to staging and commit again.
 
-**Step 1**
+## Testing
 
-- Create a branch, make changes
-- If possible, add unit and E2E tests (inside `.github/workflows/test.yml`)
-- Run `yarn install` to install deps
-- Run `yarn build` to build the action
-- Commit the changes and the build inside `dist/`
-
-**Step 2**  
-Create a new Sentry project under your existing Sentry org (only this one time).
-
-**Step 3**  
-Create an environment variable in GitHub for the branch you release from (e.g. `master`) and define the same variable as a repository variable which all other branches will use (i.e. your PR's branch)
-
-**Step 4**  
-Push to GitHub and the CI will do E2E runs!
+You can run unit tests with `yarn test`.
 
 ### Troubleshooting
 
