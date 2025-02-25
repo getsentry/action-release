@@ -45,7 +45,7 @@ jobs:
           
           if [[ "${{ github.event_name }}" == "pull_request" ]]; then
             if [[ "$TAG" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-              echo "Error: DOCKER_TAG ($TAG) is not allowed to match `MAJOR.MINOR.PATCH` format inside a pull request."
+              echo "Error: DOCKER_TAG $TAG matching format MAJOR.MINOR.PATCH is not allowed inside pull requests."
               echo "Please rename the docker tag in `action.yml` and try again."
               exit 1
             fi
