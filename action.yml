@@ -88,7 +88,8 @@ runs:
 
     # For actions running on macos or windows runners, we use a composite
     # action approach which allows us to install the arch specific sentry-cli
-    # binary that's needed for the runner. This is slower.
+    # binary that's needed for the runner.
+    # This is slower than the docker approach but runs on macos and windows.
     - name: Mark GitHub workspace a safe directory in git
       if: ${{ (runner.os == 'macOS' || runner.os == 'Windows')  && inputs.disable_safe_directory != 'true' }}
       shell: bash
