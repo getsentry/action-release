@@ -5,15 +5,15 @@
   "description": "GitHub Action for creating a release on Sentry",
   "main": "dist/index.js",
   "scripts": {
-    "start": "node dist/index.js",
+    "all": "yarn run format && yarn run lint && yarn run build && yarn test",
     "build": "ncc build src/main.ts -e @sentry/cli",
     "format": "prettier --write **/*.ts **/*.md",
     "format-check": "prettier --check **/*.ts **/*.md",
     "lint": "eslint src/**/*.ts",
-    "test": "jest",
-    "all": "yarn run format && yarn run lint && yarn run build && yarn test",
-    "bump-docker-tag": "./scripts/set-docker-tag.sh",
-    "bump-docker-tag-from-branch": "./scripts/set-branch-docker-tag.sh"
+    "set-docker-tag": "./scripts/set-docker-tag.sh",
+    "set-docker-tag-from-branch": "./scripts/set-docker-tag-from-branch.sh",
+    "start": "node dist/index.js",
+    "test": "jest"
   },
   "repository": {
     "type": "git",

@@ -18,4 +18,4 @@ npm version "${NEW_VERSION}"
 yarn install && yarn build
 
 # Update the docker tag in action.yml
-yarn bump-docker-tag "${NEW_VERSION}"
+yarn set-docker-tag "${NEW_VERSION}"

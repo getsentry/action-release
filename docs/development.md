@@ -40,14 +40,13 @@ Telemetry for internal development is collected using `@sentry/node`, see `src/t
 Members of this repo will not have to set anything up since [the integration](https://sentry-ecosystem.sentry.io/settings/developer-settings/end-to-end-action-release-integration-416eb2/) is already set-up. Just open the PR and you will see [a release created](https://sentry-ecosystem.sentry.io/releases/?project=4505075304693760) for your PR.
 
 > [!WARNING]  
-> After you create a branch **ALWAYS** run `yarn bump-docker-tag-from-branch`.  
-> This is **very important**. You should avoid publishing changes to an already existing docker image,
-> especially to docker images tagged with release versions, e.g. `1.11.0`.
->
-> **Never** write a version tag into `action.yml` yourself, let the release process handle this.
+> After you create a branch **ALWAYS** run `yarn set-docker-tag-from-branch`.  
+> This is **very important**. You should avoid publishing changes to an already existing docker image.
+> 
+> Docker tags in action.yml that match `MAJOR.MINOR.PATCH` will be rejected by the CI on pull requests.
 
 1. Create a branch
-2. Run `yarn bump-docker-tag-from-branch` to set a docker tag based on your github branch name. This is important so that the action gets its own Docker image, allowing you to test the action in a different repo.
+2. Run `yarn set-docker-tag-from-branch` to set a docker tag based on your github branch name. This is important so that the action gets its own Docker image, allowing you to test the action in a different repo.
 3. Make changes
 4. If possible, add unit and E2E tests (inside `.github/workflows/build.yml`)
 5. Run `yarn install` to install deps
