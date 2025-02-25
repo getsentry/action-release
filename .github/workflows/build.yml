@@ -115,12 +115,11 @@ jobs:
       - name: Build
         run: yarn build
 
-  # You're welcome to make changes on this job as part of your PR in order to test out your changes
-  # We can always undo the changes once we're satisfied with the results
-  #
-  # Secrets on this repo do not get shared with PRs opened on a fork, thus,
-  # add SENTRY_AUTH_TOKEN as a secret to your fork if you want to use this job.
-  create-staging-release-per-push:
+  #############
+  # E2E Tests
+  #############
+
+  test-create-staging-release-per-push:
     needs: docker-build
     strategy:
       matrix:
@@ -140,7 +139,7 @@ jobs:
         with:
           ignore_missing: true
 
-  runs-on-container:
+  test-runs-on-container:
     needs: docker-build
     runs-on: ubuntu-latest
     container:
@@ -159,7 +158,7 @@ jobs:
         with:
           ignore_missing: true
 
-  mock-release:
+  test-mock-release:
     needs: docker-build
     strategy:
       matrix:
@@ -178,7 +177,7 @@ jobs:
         with:
           environment: production
 
-  mock-release-working-directory:
+  test-mock-release-working-directory:
     needs: docker-build
     strategy:
       matrix:
