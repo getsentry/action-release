@@ -41,8 +41,8 @@ Members of this repo will not have to set anything up since [the integration](ht
 
 > [!WARNING]  
 > After you create a branch ALWAYS run yarn set-docker-tag-from-branch.
-> This is very important. You should avoid publishing changes to an already existing docker image.  
-> 
+> This is very important. You should avoid publishing changes to an already existing docker image.
+>
 > Tags matching MAJOR.MINOR.PATCH (e.g. `1.10.2`) will be automatically rejected.
 
 1. Create a branch
