@@ -50,12 +50,6 @@ Telemetry for internal development is collected using `@sentry/node`, see `src/t
 
 Members of this repo will not have to set anything up since [the integration](https://sentry-ecosystem.sentry.io/settings/developer-settings/end-to-end-action-release-integration-416eb2/) is already set-up. Just open the PR and you will see [a release created](https://sentry-ecosystem.sentry.io/releases/?project=4505075304693760) for your PR.
 
-> [!WARNING]
-> After you create a branch ALWAYS run yarn set-docker-tag-from-branch.
-> This is very important. You should avoid publishing changes to an already existing docker image.
->
-> Tags matching MAJOR.MINOR.PATCH (e.g. `1.10.2`) will be automatically rejected.
-
 1. Create a branch
 2. Run `yarn set-docker-tag-from-branch` to set a docker tag based on your github branch name. This is important so that the action gets its own Docker image, allowing you to test the action in a different repo.
 3. Make changes
@@ -63,6 +57,9 @@ Members of this repo will not have to set anything up since [the integration](ht
 5. Run `yarn install` to install deps
 6. Run `yarn build` to build the action
 7. Commit the changes and the build inside `dist/`
+
+If you forget to run `yarn set-docker-tag-from-branch` the repo's pre-commit hooks will do it for you and fail the commit.
+Just add the changes to staging and commit again.
 
 ## Testing
 
