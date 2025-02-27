@@ -21,11 +21,54 @@ env:
   SENTRY_PROJECT: ${{ vars.SENTRY_PROJECT }}
 
 jobs:
-  docker-build:
-    name: Build & publish Docker images
+  prepare-docker:
+    name: Prepare docker tag
     runs-on: ubuntu-latest
     permissions:
       contents: write
+    outputs:
+      docker_tag: ${{ steps.evaluate_docker_tag.outputs.docker_tag }}
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set git user to getsentry-bot
+        if: github.ref == 'refs/heads/master'
+        run: |
+          echo "GIT_COMMITTER_NAME=getsentry-bot" >> $GITHUB_ENV;
+          echo "GIT_AUTHOR_NAME=getsentry-bot" >> $GITHUB_ENV;
+          echo "EMAIL=bot@sentry.io" >> $GITHUB_ENV;
+
+      - name: Evaluate docker tag
+        id: evaluate_docker_tag
+        run: |
+          if [[ "${{ github.ref }}" == "refs/heads/master" ]]; then
+            echo "docker_tag=master" >> "$GITHUB_OUTPUT"
+            yarn set-docker-tag master
+
+            if ! git diff --quiet action.yml; then
+              git add action.yml
+              SKIP=lint,format,set-docker-tag-from-branch git commit -m "chore: Set docker tag for master [skip-ci]"
+              git push
+            fi
+          else
+            TAG=$(yq '... | select(has("uses") and .uses | test("docker://ghcr.io/getsentry/action-release-image:.*")) | .uses' action.yml | awk -F':' '{print $3}')
+            echo "docker_tag=$TAG" >> "$GITHUB_OUTPUT"
+
+            if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+              if [[ "$TAG" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+                echo "Error: docker_tag $TAG matching format MAJOR.MINOR.PATCH is not allowed inside pull requests."
+                echo "Please rename the docker tag in action.yml and try again."
+                exit 1
+              fi
+            fi
+          fi
+
+  docker-build:
+    name: Build & publish Docker images
+    needs: prepare-docker
+    runs-on: ubuntu-latest
+    permissions:
       packages: write
     strategy:
       matrix:
@@ -39,39 +82,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
-      - name: Set git user to getsentry-bot
-        if: github.ref == 'refs/heads/master'
-        run: |
-          echo "GIT_COMMITTER_NAME=getsentry-bot" >> $GITHUB_ENV;
-          echo "GIT_AUTHOR_NAME=getsentry-bot" >> $GITHUB_ENV;
-          echo "EMAIL=bot@sentry.io" >> $GITHUB_ENV;
-
-      - name: Evaluate docker tag
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_SENTRY_BOT_PAT }}
-        run: |
-          if [[ "${{ github.ref }}" == "refs/heads/master" ]]; then
-            echo "DOCKER_TAG=master" >> $GITHUB_ENV
-            yarn set-docker-tag master
-
-            if ! git diff --quiet action.yml; then
-              git add action.yml
-              SKIP=lint,format,set-docker-tag-from-branch git commit -m "chore: Set docker tag for master [skip-ci]"
-              git push
-            fi
-          else
-            TAG=$(yq '... | select(has("uses") and .uses | test("docker://ghcr.io/getsentry/action-release-image:.*")) | .uses' action.yml | awk -F':' '{print $3}')
-            echo "DOCKER_TAG=$TAG" >> $GITHUB_ENV
-
-            if [[ "${{ github.event_name }}" == "pull_request" ]]; then
-              if [[ "$TAG" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-                echo "Error: DOCKER_TAG $TAG matching format MAJOR.MINOR.PATCH is not allowed inside pull requests."
-                echo "Please rename the docker tag in action.yml and try again."
-                exit 1
-              fi
-            fi
-          fi
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -98,7 +108,7 @@ jobs:
         with:
           platforms: linux/amd64,linux/arm64
           push: true
-          tags: ghcr.io/${{ github.repository_owner }}/${{ matrix.target.image }}:${{ env.DOCKER_TAG }}
+          tags: ghcr.io/${{ github.repository_owner }}/${{ matrix.target.image }}:${{ needs.prepare-docker.outputs.docker_tag }}
           cache-from: ghcr.io/${{ github.repository_owner }}/${{ matrix.target.image }}:master
           target: ${{ matrix.target.name }}
           build-args: BUILDKIT_INLINE_CACHE=1
