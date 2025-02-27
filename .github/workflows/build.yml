@@ -48,6 +48,8 @@ jobs:
           echo "EMAIL=bot@sentry.io" >> $GITHUB_ENV;
 
       - name: Evaluate docker tag
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_SENTRY_BOT_PAT }}
         run: |
           if [[ "${{ github.ref }}" == "refs/heads/master" ]]; then
             echo "DOCKER_TAG=master" >> $GITHUB_ENV
