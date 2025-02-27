@@ -1,0 +1,206 @@
+name: Build and Test
+
+on:
+  pull_request:
+    paths-ignore:
+      - '**.md'
+  push:
+    branches:
+      - master
+      - release/**
+    paths-ignore:
+      - '**.md'
+
+env:
+  # Variables defined in the repository
+  SENTRY_ORG: ${{ vars.SENTRY_ORG }}
+  # For master, we have an environment variable that selects the action-release project
+  # instead of action-release-prs
+  # For other branches: https://sentry-ecosystem.sentry.io/releases/?project=4505075304693760
+  # For master branch: https://sentry-ecosystem.sentry.io/releases/?project=6576594
+  SENTRY_PROJECT: ${{ vars.SENTRY_PROJECT }}
+
+jobs:
+  docker-build:
+    name: Build & publish Docker images
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+    strategy:
+      matrix:
+        target:
+          - name: builder
+            image: action-release-builder-image
+          - name: app
+            image: action-release-image
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Evaluate docker tag
+        run: |
+          if [[ "${{ github.ref }}" == "refs/heads/master" ]]; then
+            echo "DOCKER_TAG=master" >> $GITHUB_ENV
+            yarn set-docker-tag master
+
+            if ! git diff --quiet action.yml; then
+              echo "GIT_COMMITTER_NAME=getsentry-bot" >> $GITHUB_ENV;
+              echo "GIT_AUTHOR_NAME=getsentry-bot" >> $GITHUB_ENV;
+              echo "EMAIL=bot@sentry.io" >> $GITHUB_ENV;
+
+              git add action.yml
+              SKIP=lint,format,set-docker-tag-from-branch git commit -m "chore: Set docker tag for master [skip-ci]"
+              git push
+            fi
+          else
+            TAG=$(yq '... | select(has("uses") and .uses | test("docker://ghcr.io/getsentry/action-release-image:.*")) | .uses' action.yml | awk -F':' '{print $3}')
+            echo "DOCKER_TAG=$TAG" >> $GITHUB_ENV
+
+            if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+              if [[ "$TAG" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+                echo "Error: DOCKER_TAG $TAG matching format MAJOR.MINOR.PATCH is not allowed inside pull requests."
+                echo "Please rename the docker tag in action.yml and try again."
+                exit 1
+              fi
+            fi
+          fi
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # BUILDKIT_INLINE_CACHE creates the image in such a way that you can
+      # then use --cache-from (think of a remote cache)
+      # This feature is allowed thanks to using the buildx plugin
+      #
+      # There's a COPY command in the builder stage that can easily invalidate the cache
+      # If you notice, please add more exceptions to .dockerignore since we loose the value
+      # of using --cache-from on the app stage
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ghcr.io/${{ github.repository_owner }}/${{ matrix.target.image }}:${{ env.DOCKER_TAG }}
+          cache-from: ghcr.io/${{ github.repository_owner }}/${{ matrix.target.image }}:master
+          target: ${{ matrix.target.name }}
+          build-args: BUILDKIT_INLINE_CACHE=1
+
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install
+        run: yarn install
+
+      - name: Check format
+        run: yarn format-check
+
+      - name: Lint
+        run: yarn lint
+
+      - name: Build
+        run: yarn build
+
+  #############
+  # E2E Tests
+  #############
+
+  test-create-staging-release-per-push:
+    needs: docker-build
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    name: Test current action
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Create a staging release
+        uses: ./
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_LOG_LEVEL: debug
+        with:
+          ignore_missing: true
+
+  test-runs-on-container:
+    needs: docker-build
+    runs-on: ubuntu-latest
+    container:
+      image: node:18.17
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Create a staging release
+        uses: ./
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_LOG_LEVEL: debug
+        with:
+          ignore_missing: true
+
+  test-mock-release:
+    needs: docker-build
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    name: Mock a release
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Mock creating a Sentry release
+        uses: ./
+        env:
+          MOCK: true
+        with:
+          environment: production
+
+  test-mock-release-working-directory:
+    needs: docker-build
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    name: Mock a release in a different working directory
+    steps:
+      - name: Checkout directory we'll be running from
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          path: main/
+
+      - name: Checkout directory we'll be testing
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          path: test/
+
+      - name: Mock creating a Sentry release in a different directory
+        uses: ./main
+        env:
+          MOCK: true
+        with:
+          environment: production
+          working_directory: ./test
