@@ -32,20 +32,6 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Get auth token
-        id: token
-        uses: actions/create-github-app-token@5d869da34e18e7287c1daad50e0b8ea0f506ce69 # v1.11.0
-        with:
-          app_id: ${{ vars.SENTRY_INTERNAL_APP_ID }}
-          private_key: ${{ secrets.SENTRY_INTERNAL_APP_PRIVATE_KEY }}
-
-      - name: Set git user to getsentry-bot
-        if: github.ref == 'refs/heads/master'
-        run: |
-          echo "GIT_COMMITTER_NAME=getsentry-bot" >> $GITHUB_ENV;
-          echo "GIT_AUTHOR_NAME=getsentry-bot" >> $GITHUB_ENV;
-          echo "EMAIL=bot@sentry.io" >> $GITHUB_ENV;
-
       - name: Get docker tag
         id: docker_tag
         run: |
@@ -64,6 +50,13 @@ jobs:
               fi
             fi
           fi
+
+      - name: Get auth token
+        id: token
+        uses: actions/create-github-app-token@5d869da34e18e7287c1daad50e0b8ea0f506ce69 # v1.11.0
+        with:
+          app_id: ${{ vars.SENTRY_INTERNAL_APP_ID }}
+          private_key: ${{ secrets.SENTRY_INTERNAL_APP_PRIVATE_KEY }}
 
       - name: Commit changes
         uses: getsentry/action-github-commit@v2.0.0
