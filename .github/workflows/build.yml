@@ -39,6 +39,13 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Set git user to getsentry-bot
+        if: github.ref == 'refs/heads/master'
+        run: |
+          echo "GIT_COMMITTER_NAME=getsentry-bot" >> $GITHUB_ENV;
+          echo "GIT_AUTHOR_NAME=getsentry-bot" >> $GITHUB_ENV;
+          echo "EMAIL=bot@sentry.io" >> $GITHUB_ENV;
+
       - name: Evaluate docker tag
         run: |
           if [[ "${{ github.ref }}" == "refs/heads/master" ]]; then
@@ -46,10 +53,6 @@ jobs:
             yarn set-docker-tag master
 
             if ! git diff --quiet action.yml; then
-              echo "GIT_COMMITTER_NAME=getsentry-bot" >> $GITHUB_ENV;
-              echo "GIT_AUTHOR_NAME=getsentry-bot" >> $GITHUB_ENV;
-              echo "EMAIL=bot@sentry.io" >> $GITHUB_ENV;
-
               git add action.yml
               SKIP=lint,format,set-docker-tag-from-branch git commit -m "chore: Set docker tag for master [skip-ci]"
               git push
