@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased
+
+- feat: Use hybrid docker/composite action approach (#265) by @andreiborza
+
+After receiving user feedback both on runtime and compatibility issues for `1.10.0`
+the action has been reworked to use a Docker based approach on Linux runners, mimicking
+`< 1.9.0` versions, while Mac OS and Windows runners will follow the `1.10.0` approach
+of installing `@sentry/cli` in the run step.
+
 ## 1.10.5
 
 ### Various fixes & improvements
@@ -8,11 +17,11 @@
 
 ## 2.0.0
 
-> [!NOTE]  
-> This release contains no changes over `v1.10.4` and is just meant to unblock users that have upgraded to `v2` before.  
-> 
+> [!NOTE]
+> This release contains no changes over `v1.10.4` and is just meant to unblock users that have upgraded to `v2` before.
+>
 > We **recommend** pinning to `v1`.
- 
+
 Last week we pushed a `v2` branch that triggered dependabot which treated it as a release.
 This was not meant to be a release, but many users have upgraded to `v2`.
 
@@ -43,7 +52,7 @@ This release contains changes concerning maintainers of the repo and has no user
 
 ## 1.10.0
 
-- **feat(action): Support macos and windows runners**  
+- **feat(action): Support macos and windows runners**
 We now publish a composite action that runs on all runners. Actions can now be properly versioned, allowing pinning versions from here on out.
 
 ## 1.9.0
