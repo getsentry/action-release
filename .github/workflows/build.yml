@@ -27,7 +27,7 @@ jobs:
     permissions:
       contents: write
     outputs:
-      docker_tag: ${{ steps.evaluate_docker_tag.outputs.docker_tag }}
+      docker_tag: ${{ steps.docker_tag.outputs.docker_tag }}
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
@@ -46,15 +46,15 @@ jobs:
           echo "GIT_AUTHOR_NAME=getsentry-bot" >> $GITHUB_ENV;
           echo "EMAIL=bot@sentry.io" >> $GITHUB_ENV;
 
-      - name: Evaluate docker tag
-        id: evaluate_docker_tag
+      - name: Get docker tag
+        id: docker_tag
         run: |
           if [[ "${{ github.ref }}" == "refs/heads/master" ]]; then
-            echo "docker_tag=master" >> "$GITHUB_OUTPUT"
+            echo "docker_tag=master" >> $GITHUB_OUTPUT
             yarn set-docker-tag master
           else
             TAG=$(yq '... | select(has("uses") and .uses | test("docker://ghcr.io/getsentry/action-release-image:.*")) | .uses' action.yml | awk -F':' '{print $3}')
-            echo "docker_tag=$TAG" >> "$GITHUB_OUTPUT"
+            echo "docker_tag=$TAG" >> $GITHUB_OUTPUT
 
             if [[ "${{ github.event_name }}" == "pull_request" ]]; then
               if [[ "$TAG" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
