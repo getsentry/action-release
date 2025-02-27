@@ -25,6 +25,7 @@ jobs:
     name: Build & publish Docker images
     runs-on: ubuntu-latest
     permissions:
+      contents: write
       packages: write
     strategy:
       matrix:
