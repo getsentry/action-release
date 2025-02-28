@@ -35,7 +35,7 @@ Adding the following to your workflow will create a new Sentry release and tell 
 
 > [!IMPORTANT]
 > Make sure you are using at least v3 of [actions/checkout](https://github.com/actions/checkout) with `fetch-depth: 0`, issues commonly occur with older versions.
- 
+
 ```yaml
 - uses: actions/checkout@v4
   with:
@@ -149,7 +149,7 @@ Otherwise it could fail at the `propose-version` step with the message:
     error: Could not automatically determine release name
     ```
 
-- In `actions/checkout@v3` the default fetch depth is 1. If you're getting the error message:
+- In `actions/checkout@v4` the default fetch depth is 1. If you're getting the error message:
 
     ```text
     error: Could not find the SHA of the previous release in the git history. Increase your git clone depth.
@@ -157,8 +157,28 @@ Otherwise it could fail at the `propose-version` step with the message:
 
     you can fetch all history for all branches and tags by setting the `fetch-depth` to zero like so:
 
-    ```text
-    - uses: actions/checkout@v3
+    ```yaml
+    - uses: actions/checkout@v4
       with:
         fetch-depth: 0
+    ```
+
+- Not finding the repository
+
+  ```text
+  Error: Command failed: /action-release/node_modules/@sentry/cli-linux-x64/bin/sentry-cli --header sentry-trace:ab7a03b5cd8ce324103b3ced985de08b-2bf7fecfb8a1e812-1 --header baggage:sentry-environment=production-sentry-github-action,sentry-release=1.10.5,sentry-public_key=<truncated>,sentry-trace_id=ab7a03b5cd8ce324103b3ced985de08b,sentry-sample_rate=1,sentry-transaction=sentry-github-action-execution,sentry-sampled=true releases set-commits action-test --auto
+  error: could not find repository at '.'; class=Repository (6); code=NotFound (-3)
+  ```
+
+  Ensure you use `actions/checkout` before running the action
+
+  ```yaml
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - uses: getsentry/action-release@v1
+      with:
+        environment: 'production'
+        version: 'v1.0.1'
     ```
