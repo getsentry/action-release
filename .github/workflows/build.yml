@@ -64,7 +64,7 @@ jobs:
         if: github.ref == 'refs/heads/master'
         with:
           github-token: ${{ steps.token.outputs.token }}
-          message: "chore: Set docker tag for master [skip-ci]"
+          message: "chore: Set docker tag for master [skip ci]"
 
   docker-build:
     name: Build & publish Docker images
