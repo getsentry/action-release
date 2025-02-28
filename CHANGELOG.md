@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.11.0
 
 - feat: Use hybrid docker/composite action approach (#265) by @andreiborza
 
