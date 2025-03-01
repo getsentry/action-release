@@ -5,7 +5,9 @@ repos:
     rev: v5.0.0
     hooks:
       - id: trailing-whitespace
+        exclude: '^dist/.*'
       - id: end-of-file-fixer
+        exclude: '^dist/.*'
       - id: check-yaml
   - repo: local
     hooks:

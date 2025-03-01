@@ -6,11 +6,12 @@ inputs:
   environment:
     description: 'Set the environment for this release. E.g. "production" or "staging". Omit to skip adding deploy to release.'
     required: false
-  inject:
-    description: 'Injects Debug IDs into source files and sourcemaps. We strongly recommend enabling this to ensure proper un-minifaction of your stacktraces.'
-    required: false
   sourcemaps:
-    description: 'Space-separated list of paths to JavaScript sourcemaps. Omit to skip uploading sourcemaps.'
+    description: 'Space-separated list of paths to JavaScript source maps. Omit to skip uploading sourcemaps.'
+    required: false
+  inject:
+    description: 'Injects Debug IDs into source files and source maps to ensure proper un-minifcation of your stacktraces. Does nothing if `sourcemaps` was not set.'
+    default: true
     required: false
   dist:
     description: 'Unique identifier for the distribution, used to further segment your release. Usually your build number.'
@@ -20,9 +21,11 @@ inputs:
     default: true
   ignore_missing:
     description: 'When the flag is set and the previous release commit was not found in the repository, will create a release with the default commits count instead of failing the command.'
+    default: false
     required: false
   ignore_empty:
     description: 'When the flag is set, command will not fail and just exit silently if no new commits for a given release have been found.'
+    default: false
     required: false
   started_at:
     description: 'Unix timestamp of the release start date. Omit for current time.'
@@ -44,15 +47,18 @@ inputs:
     required: false
   strip_common_prefix:
     description: 'Will remove a common prefix from uploaded filenames. Useful for removing a path that is build-machine-specific.'
+    default: false
     required: false
   working_directory:
     description: 'Directory to collect sentry release information from. Useful when collecting information from a non-standard checkout directory.'
     required: false
   disable_telemetry:
     description: 'The action sends telemetry data and crash reports to Sentry. This helps us improve the action. You can turn this off by setting this flag.'
+    default: false
     required: false
   disable_safe_directory:
     description: 'The action needs access to the repo it runs in. For that we need to configure git to mark the repo as a safe directory. You can turn this off by setting this flag.'
+    default: false
     required: false
 
 runs:
@@ -84,7 +90,7 @@ runs:
         INPUT_WORKING_DIRECTORY: ${{ inputs.working_directory }}
         INPUT_DISABLE_TELEMETRY: ${{ inputs.disable_telemetry }}
         INPUT_DISABLE_SAFE_DIRECTORY: ${{ inputs.disable_safe_directory }}
-      uses: docker://ghcr.io/getsentry/action-release-image:master
+      uses: docker://ghcr.io/getsentry/action-release-image:ab-inject-by-default
 
     # For actions running on macos or windows runners, we use a composite
     # action approach which allows us to install the arch specific sentry-cli

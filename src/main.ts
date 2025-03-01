@@ -22,7 +22,7 @@ withTelemetry(
       options.checkEnvironmentVariables();
 
       const environment = options.getEnvironment();
-      const inject = options.getBooleanOption('inject', false);
+      const inject = options.getBooleanOption('inject', true);
       const sourcemaps = options.getSourcemaps();
       const dist = options.getDist();
       const shouldFinalize = options.getBooleanOption('finalize', true);

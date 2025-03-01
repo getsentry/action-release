@@ -1,5 +1,26 @@
 # Changelog
 
+## 3.0.0
+
+Version `3.0.0` contains breaking changes:
+
+- feat(sourcemaps)!: Enable injecting debug ids by default (#272) by @andreiborza
+
+The action now automatically injects Debug IDs into your JavaScript source files and source maps to ensure your stacktraces can be
+properly un-minified.
+
+This is a **breaking change as it modifies your source files**. You can disable this behavior by setting `inject: false`:
+
+```yaml
+- uses: getsentry/action-release@v3
+  with:
+    environment: 'production'
+    sourcemaps: './dist'
+    inject: false
+```
+
+Read more about [Artifact Bundles and Debug IDs here](https://docs.sentry.io/platforms/javascript/sourcemaps/troubleshooting_js/artifact-bundles/).
+
 ## 1.11.0
 
 - feat: Use hybrid docker/composite action approach (#265) by @andreiborza
