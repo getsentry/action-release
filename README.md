@@ -23,6 +23,15 @@ Additionally, releases are used for applying [source maps](https://docs.sentry.i
 
 ## What's new
 
+Version `3.0.0` contains breaking changes:
+
+- feat(sourcemaps)!: Enable injecting debug ids by default (#272) by @andreiborza
+
+The action now automatically injects Debug IDs into your JavaScript source files and source maps to ensure your stacktraces can be
+properly un-minified.
+
+This is a **breaking change as it modifies your source files**. You can disable this behavior by setting `inject: false`.
+
 Please refer to the [release page](https://github.com/getsentry/action-release/releases) for the latest release notes.
 
 ## Prerequisites
@@ -42,7 +51,7 @@ Adding the following to your workflow will create a new Sentry release and tell 
     fetch-depth: 0
 
 - name: Create Sentry release
-  uses: getsentry/action-release@v1
+  uses: getsentry/action-release@v3
   env:
     SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
     SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
@@ -68,8 +77,8 @@ Adding the following to your workflow will create a new Sentry release and tell 
 | name                     | description                                                                                                                                                                |default|
 |--------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---|
 | `environment`            | Set the environment for this release. E.g. "production" or "staging". Omit to skip adding deploy to release.                                                               |-|
-| `inject`                 | Injects Debug IDs into source files and sourcemaps. We **strongly recommend enabling** this to ensure proper un-minifaction of your stacktraces.                           |`false`|
 | `sourcemaps`             | Space-separated list of paths to JavaScript sourcemaps. Omit to skip uploading sourcemaps.                                                                                 |-|
+| `inject`                 | Injects Debug IDs into source files and source maps to ensure proper un-minifcation of your stacktraces. Does nothing if `sourcemaps` was not set.                         |`true`|
 | `finalize`               | When false, omit marking the release as finalized and released.                                                                                                            |`true`|
 | `ignore_missing`         | When the flag is set and the previous release commit was not found in the repository, will create a release with the default commits count instead of failing the command. |`false`|
 | `ignore_empty`           | When the flag is set, command will not fail and just exit silently if no new commits for a given release have been found.                                                  |`false`|
@@ -88,20 +97,19 @@ Adding the following to your workflow will create a new Sentry release and tell 
 
 ### Examples
 
-- Create a new Sentry release for the `production` environment, inject Debug IDs into JavaScript source files and sourcemaps and upload them from the `./dist` directory.
+- Create a new Sentry release for the `production` environment, inject Debug IDs into JavaScript source files and source maps and upload them from the `./dist` directory.
 
     ```yaml
-    - uses: getsentry/action-release@v1
+    - uses: getsentry/action-release@v3
       with:
         environment: 'production'
-        inject: true
         sourcemaps: './dist'
     ```
 
 - Create a new Sentry release for the `production` environment of your project at version `v1.0.1`.
 
     ```yaml
-    - uses: getsentry/action-release@v1
+    - uses: getsentry/action-release@v3
       with:
         environment: 'production'
         version: 'v1.0.1'
@@ -110,7 +118,7 @@ Adding the following to your workflow will create a new Sentry release and tell 
 - Create a new Sentry release for [Self-Hosted Sentry](https://develop.sentry.dev/self-hosted/)
 
     ```yaml
-    - uses: getsentry/action-release@v1
+    - uses: getsentry/action-release@v3
       env:
         SENTRY_URL: https://sentry.example.com/
     ```
@@ -177,7 +185,7 @@ Otherwise it could fail at the `propose-version` step with the message:
       with:
         fetch-depth: 0
 
-    - uses: getsentry/action-release@v1
+    - uses: getsentry/action-release@v3
       with:
         environment: 'production'
         version: 'v1.0.1'
