@@ -1,5 +1,13 @@
 # Changelog
 
+## 3.1.0
+
+- feat: Add `release` and `release_prefix` in favor of `version` and `version_prefix`
+
+Input parameter `version` has been deprecated and will be removed in a future version in favor of a newly introduced `release` parameter.
+
+Input parameter `version_prefix` has been deprecated and will be removed in a future version in favor of a newly introduced `release_prefix` parameter.
+
 ## 3.0.0
 
 Version `3.0.0` contains breaking changes:

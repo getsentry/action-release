@@ -7,23 +7,31 @@ import {getCLI} from './cli';
  * @throws
  * @returns Promise<string>
  */
-export const getVersion = async (): Promise<string> => {
+export const getRelease = async (): Promise<string> => {
+  // TODO(v4): Remove `version` and `version_prefix`, they were deprecated in v3
+  const releaseOption: string = core.getInput('release');
   const versionOption: string = core.getInput('version');
+  const releasePrefixOption: string = core.getInput('release_prefix');
   const versionPrefixOption: string = core.getInput('version_prefix');
-  let version = '';
-  if (versionOption) {
-    // If the users passes in `${{github.ref}}, then it will have an unwanted prefix.
-    version = versionOption.replace(/^(refs\/tags\/)/, '');
+
+  let release = '';
+  if (releaseOption || versionOption) {
+    // Prefer `release` over the deprecated `version`
+    release = releaseOption ? releaseOption : versionOption;
+    // If users pass `${{ github.ref }}, strip the unwanted `refs/tags` prefix
+    release = release.replace(/^(refs\/tags\/)/, '');
   } else {
-    core.debug('Version not provided, proposing one...');
-    version = await getCLI().proposeVersion();
+    core.debug('Release version not provided, proposing one...');
+    release = await getCLI().proposeVersion();
   }
 
-  if (versionPrefixOption) {
-    version = `${versionPrefixOption}${version}`;
+  if (releasePrefixOption) {
+    release = `${releasePrefixOption}${release}`;
+  } else if (versionPrefixOption) {
+    release = `${versionPrefixOption}${release}`;
   }
 
-  return version;
+  return release;
 };
 
 /**

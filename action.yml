@@ -4,60 +4,116 @@ author: 'Sentry'
 
 inputs:
   environment:
-    description: 'Set the environment for this release. E.g. "production" or "staging". Omit to skip adding deploy to release.'
+    description: |-
+      Set the environment for this release. E.g. "production" or "staging".
+      Omit to skip adding deploy to release.
     required: false
   sourcemaps:
-    description: 'Space-separated list of paths to JavaScript source maps. Omit to skip uploading sourcemaps.'
+    description: |-
+      Space-separated list of paths to JavaScript source maps.
+      Omit to skip uploading sourcemaps.
     required: false
   inject:
-    description: 'Injects Debug IDs into source files and source maps to ensure proper un-minifcation of your stacktraces. Does nothing if `sourcemaps` was not set.'
+    description: |-
+      Injects Debug IDs into source files and source maps to ensure proper
+      un-minifcation of your stacktraces.
+      Does nothing if "sourcemaps" was not set.
     default: true
     required: false
   dist:
-    description: 'Unique identifier for the distribution, used to further segment your release. Usually your build number.'
+    description: |-
+      Unique identifier for the distribution, used to further segment your
+      release.
+      Usually your build number.
     required: false
   finalize:
-    description: 'When false, omit marking the release as finalized and released.'
+    description: |-
+      When false, omit marking the release as finalized and released.
     default: true
   ignore_missing:
-    description: 'When the flag is set and the previous release commit was not found in the repository, will create a release with the default commits count instead of failing the command.'
+    description: |-
+      When the flag is set and the previous release commit was not found in
+      the repository, will create a release with the default commits count
+      instead of failing the command.
     default: false
     required: false
   ignore_empty:
-    description: 'When the flag is set, command will not fail and just exit silently if no new commits for a given release have been found.'
+    description: |-
+      When the flag is set, command will not fail and just exit silently if no
+      new commits for a given release have been found.
     default: false
     required: false
   started_at:
-    description: 'Unix timestamp of the release start date. Omit for current time.'
+    description: |-
+      Unix timestamp of the release start date. Omit for current time.
     required: false
   version:
-    description: 'Identifier that uniquely identifies the releases. Omit to auto-generate one.'
+    description: |-
+      Identifier that uniquely identifies the release.
+      Should match the "release" property in your Sentry SDK init call if one
+      was set.
+      Omit to auto-generate one.
+    deprecationMessage: |-
+      Deprecated: Use "release" instead.
+    required: false
+  release:
+    description: |-
+      Identifier that uniquely identifies the release.
+      Should match the "release" property in your Sentry SDK init call if one
+      was set.
+      Omit to auto-generate one.
     required: false
   version_prefix:
-    description: 'Value prepended to auto-generated version.'
+    description: |-
+      Value prepended to auto-generated version.
+    deprecationMessage: |-
+      Deprecated: Use "release_prefix" instead.
+    required: false
+  release_prefix:
+    description: |-
+      Value prepended to auto-generated release version.
     required: false
   set_commits:
-    description: 'Specify whether to set commits for the release. Either "auto" or "skip".'
+    description: |-
+      Specify whether to set commits for the release.
+      One of: "auto", "skip"
     required: false
   projects:
-    description: 'Space-separated list of projects. Defaults to the env variable "SENTRY_PROJECT" if not provided.'
+    description: |-
+      Space-separated list of projects.
+      Defaults to the env variable "SENTRY_PROJECT" if not provided.
     required: false
   url_prefix:
-    description: 'Adds a prefix to source map urls after stripping them.'
+    description: |-
+      Adds a prefix to source map urls after stripping them.
     required: false
   strip_common_prefix:
-    description: 'Will remove a common prefix from uploaded filenames. Useful for removing a path that is build-machine-specific.'
+    description: |-
+      Will remove a common prefix from uploaded filenames. Useful for removing
+      a path that is build-machine-specific.
+      Note: Will not remove common prefixes across two or more directories
+      provided to "sourcemap". E.g. Setting
+      "sourcemap": "./dist/js ./dist/asset/js" will strip "./dist" for the first
+      directory and "./dist/assets/js" for the
     default: false
     required: false
   working_directory:
-    description: 'Directory to collect sentry release information from. Useful when collecting information from a non-standard checkout directory.'
+    description: |-
+      Directory to collect sentry release information from.
+      Useful when collecting information from a non-standard checkout directory.
     required: false
   disable_telemetry:
-    description: 'The action sends telemetry data and crash reports to Sentry. This helps us improve the action. You can turn this off by setting this flag.'
+    description: |-
+      The action sends telemetry data and crash reports to Sentry. This helps
+      us improve the action.
+      You can turn this off by setting this flag.
     default: false
     required: false
   disable_safe_directory:
-    description: 'The action needs access to the repo it runs in. For that we need to configure git to mark the repo as a safe directory. You can turn this off by setting this flag.'
+    description: |-
+      The action needs access to the repo it runs in. For that we need to
+      configure git to mark the repo directory a safe directory.
+      You can turn this off by setting this flag.
     default: false
     required: false
 
@@ -82,7 +138,9 @@ runs:
         INPUT_IGNORE_EMPTY: ${{ inputs.ignore_empty }}
         INPUT_STARTED_AT: ${{ inputs.started_at }}
         INPUT_VERSION: ${{ inputs.version }}
+        INPUT_RELEASE: ${{ inputs.release }}
         INPUT_VERSION_PREFIX: ${{ inputs.version_prefix }}
+        INPUT_RELEASE_PREFIX: ${{ inputs.release_prefix }}
         INPUT_SET_COMMITS: ${{ inputs.set_commits }}
         INPUT_PROJECTS: ${{ inputs.projects }}
         INPUT_URL_PREFIX: ${{ inputs.url_prefix }}
@@ -90,7 +148,7 @@ runs:
         INPUT_WORKING_DIRECTORY: ${{ inputs.working_directory }}
         INPUT_DISABLE_TELEMETRY: ${{ inputs.disable_telemetry }}
         INPUT_DISABLE_SAFE_DIRECTORY: ${{ inputs.disable_safe_directory }}
-      uses: docker://ghcr.io/getsentry/action-release-image:master
+      uses: docker://ghcr.io/getsentry/action-release-image:ab-deprecate-version
 
     # For actions running on macos or windows runners, we use a composite
     # action approach which allows us to install the arch specific sentry-cli
@@ -132,7 +190,9 @@ runs:
         INPUT_IGNORE_EMPTY: ${{ inputs.ignore_empty }}
         INPUT_STARTED_AT: ${{ inputs.started_at }}
         INPUT_VERSION: ${{ inputs.version }}
+        INPUT_RELEASE: ${{ inputs.release }}
         INPUT_VERSION_PREFIX: ${{ inputs.version_prefix }}
+        INPUT_RELEASE_PREFIX: ${{ inputs.release_prefix }}
         INPUT_SET_COMMITS: ${{ inputs.set_commits }}
         INPUT_PROJECTS: ${{ inputs.projects }}
         INPUT_URL_PREFIX: ${{ inputs.url_prefix }}
