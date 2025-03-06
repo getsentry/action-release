@@ -2,7 +2,7 @@
 
 ## 3.1.0
 
-- feat: Add `release` and `release_prefix` in favor of `version` and `version_prefix`
+- feat: Add `release` and `release_prefix` in favor of `version` and `version_prefix` (#273) by @andreiborza
 
 Input parameter `version` has been deprecated and will be removed in a future version in favor of a newly introduced `release` parameter.
 
