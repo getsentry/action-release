@@ -36,7 +36,7 @@ withTelemetry(
         'strip_common_prefix',
         false
       );
-      const version = await options.getVersion();
+      const release = await options.getRelease();
 
       if (projects.length === 1) {
         Sentry.setTag('project', projects[0]);
@@ -44,15 +44,15 @@ withTelemetry(
         Sentry.setTag('projects', projects.join(','));
       }
 
-      core.debug(`Version is ${version}`);
-      await getCLI().new(version, {projects});
+      core.debug(`Release version is ${release}`);
+      await getCLI().new(release, {projects});
 
       Sentry.setTag('set-commits', setCommitsOption);
 
       if (setCommitsOption !== 'skip') {
         await traceStep('set-commits', async () => {
           core.debug(`Setting commits with option '${setCommitsOption}'`);
-          await getCLI().setCommits(version, {
+          await getCLI().setCommits(release, {
             auto: true,
             ignoreMissing,
             ignoreEmpty,
@@ -88,7 +88,7 @@ withTelemetry(
                 urlPrefix,
                 stripCommonPrefix,
               };
-              return getCLI().uploadSourceMaps(version, sourceMapOptions);
+              return getCLI().uploadSourceMaps(release, sourceMapOptions);
             })
           );
 
@@ -99,7 +99,7 @@ withTelemetry(
       if (environment) {
         await traceStep('add-environment', async () => {
           core.debug(`Adding deploy to release`);
-          await getCLI().newDeploy(version, {
+          await getCLI().newDeploy(release, {
             env: environment,
             ...(deployStartedAtOption && {started: deployStartedAtOption}),
           });
@@ -111,7 +111,7 @@ withTelemetry(
       if (shouldFinalize) {
         await traceStep('finalizing-release', async () => {
           core.debug(`Finalizing the release`);
-          await getCLI().finalize(version);
+          await getCLI().finalize(release);
 
           Sentry.setTag('finalized', true);
         });
@@ -122,7 +122,9 @@ withTelemetry(
       }
 
       core.debug(`Done`);
-      core.setOutput('version', version);
+      // TODO(v4): Remove `version`
+      core.setOutput('version', release);
+      core.setOutput('release', release);
     } catch (error) {
       core.setFailed((error as Error).message);
       throw error;

@@ -6,7 +6,7 @@ import {
   getDist,
   getSourcemaps,
   getStartedAt,
-  getVersion,
+  getRelease,
   getSetCommitsOption,
   getProjects,
   getUrlPrefixOption,
@@ -120,36 +120,66 @@ describe('options', () => {
     });
   });
 
-  describe('getVersion', () => {
+  describe.each([
+    {release: 'INPUT_RELEASE', prefix: 'INPUT_RELEASE_PREFIX'},
+    {release: 'INPUT_VERSION', prefix: 'INPUT_VERSION_PREFIX'},
+    {release: 'INPUT_RELEASE', prefix: 'INPUT_VERSION_PREFIX'},
+    {release: 'INPUT_VERSION', prefix: 'INPUT_RELEASE_PREFIX'},
+  ])(`getRelease`, params => {
     const MOCK_VERSION = 'releases propose-version';
+
     afterEach(() => {
+      delete process.env['INPUT_RELEASE'];
       delete process.env['INPUT_VERSION'];
+      delete process.env['INPUT_RELEASE_PREFIX'];
       delete process.env['INPUT_VERSION_PREFIX'];
     });
 
-    test('should strip refs from version', async () => {
-      process.env['INPUT_VERSION'] = 'refs/tags/v1.0.0';
-      expect(await getVersion()).toBe('v1.0.0');
+    test(`should strip refs from ${params.release}`, async () => {
+      process.env[params.release] = 'refs/tags/v1.0.0';
+      expect(await getRelease()).toBe('v1.0.0');
     });
 
-    test('should get version from inputs', async () => {
-      process.env['INPUT_VERSION'] = 'v1.0.0';
-      expect(await getVersion()).toBe('v1.0.0');
+    test(`should get release version from ${params.release}`, async () => {
+      process.env[params.release] = 'v1.0.0';
+      expect(await getRelease()).toBe('v1.0.0');
     });
 
-    test('should propose-version when version is omitted', async () => {
-      expect(await getVersion()).toBe(MOCK_VERSION);
+    test(`should propose-version when release version ${params.release} is omitted`, async () => {
+      expect(await getRelease()).toBe(MOCK_VERSION);
     });
 
-    test('should include prefix in version', async () => {
-      process.env['INPUT_VERSION_PREFIX'] = 'prefix-';
-      expect(await getVersion()).toBe(`prefix-${MOCK_VERSION}`);
+    test(`should include ${params.prefix} prefix`, async () => {
+      process.env[params.prefix] = 'prefix-';
+      expect(await getRelease()).toBe(`prefix-${MOCK_VERSION}`);
     });
 
-    test('should include prefix in version with user provided version', async () => {
-      process.env['INPUT_VERSION'] = 'v1.0.0';
-      process.env['INPUT_VERSION_PREFIX'] = 'prefix-';
-      expect(await getVersion()).toBe(`prefix-v1.0.0`);
+    test(`should include ${params.prefix} prefix with user provided release version ${params.release}`, async () => {
+      process.env[params.release] = 'v1.0.0';
+      process.env[params.prefix] = 'prefix-';
+      expect(await getRelease()).toBe(`prefix-v1.0.0`);
+    });
+  });
+
+  describe('getRelease', () => {
+    afterEach(() => {
+      delete process.env['INPUT_RELEASE'];
+      delete process.env['INPUT_VERSION'];
+      delete process.env['INPUT_RELEASE_PREFIX'];
+      delete process.env['INPUT_VERSION_PREFIX'];
+    });
+
+    test('should prefer INPUT_RELEASE over deprecated INPUT_VERSION', async () => {
+      process.env['INPUT_VERSION'] = 'v0.0.1';
+      process.env['INPUT_RELEASE'] = 'v1.2.3';
+      expect(await getRelease()).toBe('v1.2.3');
+    });
+
+    test('should prefer INPUT_RELEASE_PREFIX over deprecated INPUT_VERSION_PREFIX', async () => {
+      process.env['INPUT_VERSION_PREFIX'] = 'version-prefix-';
+      process.env['INPUT_RELEASE_PREFIX'] = 'release-prefix-';
+      process.env['INPUT_RELEASE'] = 'v1.2.3';
+      expect(await getRelease()).toBe('release-prefix-v1.2.3');
     });
   });
 
