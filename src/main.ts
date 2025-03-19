@@ -1,5 +1,6 @@
 import * as Sentry from '@sentry/node';
 import * as core from '@actions/core';
+import {SentryCliUploadSourceMapsOptions} from '@sentry/cli';
 import {getCLI} from './cli';
 import * as options from './options';
 import * as process from 'process';
@@ -77,19 +78,26 @@ withTelemetry(
 
         await traceStep('upload-sourcemaps', async () => {
           core.debug(`Adding sourcemaps`);
+          const sourceMapsOptions: SentryCliUploadSourceMapsOptions = {
+            include: sourcemaps,
+            dist,
+            stripCommonPrefix,
+          };
+
+          // only set the urlPrefix if it's not empty
+          if (urlPrefix) {
+            sourceMapsOptions.urlPrefix = urlPrefix;
+          }
+
+          // sentry-cli supports multiple projects, but only uploads sourcemaps for the
+          // first project so we need to upload sourcemaps for each project individually
           await Promise.all(
-            projects.map(async project => {
-              // upload source maps can only do one project at a time
-              const localProjects: [string] = [project];
-              const sourceMapOptions = {
-                include: sourcemaps,
-                projects: localProjects,
-                dist,
-                urlPrefix,
-                stripCommonPrefix,
-              };
-              return getCLI().uploadSourceMaps(release, sourceMapOptions);
-            })
+            projects.map(async (project: string) =>
+              getCLI().uploadSourceMaps(release, {
+                ...sourceMapsOptions,
+                projects: [project],
+              } as SentryCliUploadSourceMapsOptions & {projects: string[]})
+            )
           );
 
           Sentry.setTag('sourcemaps-uploaded', true);
