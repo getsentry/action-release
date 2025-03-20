@@ -1,6 +1,6 @@
 import * as core from '@actions/core';
 import path from 'path';
-import {getCLI} from './cli';
+import { getCLI } from './cli';
 
 /**
  * Get the release version string from parameter or propose one.
@@ -69,9 +69,7 @@ export const getStartedAt = (): number | null => {
   }
 
   if (!outputTimestamp || outputTimestamp < 0) {
-    throw new Error(
-      'started_at not in valid format. Unix timestamp or ISO 8601 date expected'
-    );
+    throw new Error('started_at not in valid format. Unix timestamp or ISO 8601 date expected');
   }
 
   return outputTimestamp;
@@ -109,10 +107,7 @@ export const getDist = (): string | undefined => {
  * @param defaultValue boolean
  * @returns boolean
  */
-export const getBooleanOption = (
-  input: string,
-  defaultValue: boolean
-): boolean => {
+export const getBooleanOption = (input: string, defaultValue: boolean): boolean => {
   const option = core.getInput(input);
   if (!option) {
     return defaultValue;
@@ -156,11 +151,7 @@ export const getSetCommitsOption = (): 'auto' | 'skip' => {
 export const checkEnvironmentVariables = (): void => {
   if (process.env['MOCK']) {
     // Set environment variables for mock runs if they aren't already
-    for (const variable of [
-      'SENTRY_AUTH_TOKEN',
-      'SENTRY_ORG',
-      'SENTRY_PROJECT',
-    ]) {
+    for (const variable of ['SENTRY_AUTH_TOKEN', 'SENTRY_ORG', 'SENTRY_PROJECT']) {
       if (!(variable in process.env)) {
         process.env[variable] = variable;
       }
@@ -168,14 +159,10 @@ export const checkEnvironmentVariables = (): void => {
   }
 
   if (!process.env['SENTRY_ORG']) {
-    throw Error(
-      'Environment variable SENTRY_ORG is missing an organization slug'
-    );
+    throw Error('Environment variable SENTRY_ORG is missing an organization slug');
   }
   if (!process.env['SENTRY_AUTH_TOKEN']) {
-    throw Error(
-      'Environment variable SENTRY_AUTH_TOKEN is missing an auth token'
-    );
+    throw Error('Environment variable SENTRY_AUTH_TOKEN is missing an auth token');
   }
 };
 
@@ -205,8 +192,5 @@ export const getWorkingDirectory = (): string => {
   // The action runs inside `github.action_path` and as such
   // doesn't automatically have access to the user's git
   // We prefix all paths with `GITHUB_WORKSPACE` which is at the top of the repo.
-  return path.join(
-    process.env.GITHUB_WORKSPACE || '',
-    core.getInput('working_directory')
-  );
+  return path.join(process.env.GITHUB_WORKSPACE || '', core.getInput('working_directory'));
 };

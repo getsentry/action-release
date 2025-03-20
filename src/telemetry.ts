@@ -8,10 +8,7 @@ const SENTRY_SAAS_HOSTNAME = 'sentry.io';
  * Initializes Sentry and wraps the given callback
  * in a span.
  */
-export async function withTelemetry<F>(
-  options: {enabled: boolean},
-  callback: () => F | Promise<F>
-): Promise<F> {
+export async function withTelemetry<F>(options: { enabled: boolean }, callback: () => F | Promise<F>): Promise<F> {
   Sentry.initWithoutDefaultIntegrations({
     dsn: 'https://2172f0c14072ba401de59317df8ded93@o1.ingest.us.sentry.io/4508608809533441',
     enabled: options.enabled,
@@ -27,7 +24,7 @@ export async function withTelemetry<F>(
 
   const org = process.env['SENTRY_ORG'];
 
-  Sentry.setUser({id: org});
+  Sentry.setUser({ id: org });
   Sentry.setTag('organization', org);
   Sentry.setTag('node', process.version);
   Sentry.setTag('platform', process.platform);
@@ -68,7 +65,7 @@ export function updateProgress(step: string): void {
  */
 export function traceStep<T>(step: string, callback: () => T): T {
   updateProgress(step);
-  return Sentry.startSpan({name: step, op: 'action.step'}, () => callback());
+  return Sentry.startSpan({ name: step, op: 'action.step' }, () => callback());
 }
 
 /**
@@ -87,9 +84,7 @@ export async function safeFlush(): Promise<void> {
  * Check whether the user is self-hosting Sentry.
  */
 export function isSelfHosted(): boolean {
-  const url = new URL(
-    process.env['SENTRY_URL'] || `https://${SENTRY_SAAS_HOSTNAME}`
-  );
+  const url = new URL(process.env['SENTRY_URL'] || `https://${SENTRY_SAAS_HOSTNAME}`);
 
   return url.hostname !== SENTRY_SAAS_HOSTNAME;
 }
@@ -98,7 +93,5 @@ export function isSelfHosted(): boolean {
  * Determine if telemetry should be enabled.
  */
 export function isTelemetryEnabled(): boolean {
-  return (
-    !ciOptions.getBooleanOption('disable_telemetry', false) && !isSelfHosted()
-  );
+  return !ciOptions.getBooleanOption('disable_telemetry', false) && !isSelfHosted();
 }
