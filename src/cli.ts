@@ -1,7 +1,7 @@
-import {getTraceData} from '@sentry/node';
-import SentryCli, {SentryCliReleases} from '@sentry/cli';
+import { getTraceData } from '@sentry/node';
+import SentryCli, { SentryCliReleases } from '@sentry/cli';
 // @ts-ignore
-import {version} from '../package.json';
+import { version } from '../package.json';
 
 /**
  * CLI Singleton

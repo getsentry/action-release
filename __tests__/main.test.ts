@@ -1,4 +1,4 @@
-import {execSync} from 'child_process';
+import { execSync } from 'child_process';
 import * as path from 'path';
 import * as process from 'process';
 import {
@@ -29,9 +29,7 @@ describe('options', () => {
 
     test('should throw an error when option type is not a boolean', () => {
       process.env['INPUT_FINALIZE'] = 'error';
-      expect(() => getBooleanOption(option, defaultValue)).toThrow(
-        errorMessage
-      );
+      expect(() => getBooleanOption(option, defaultValue)).toThrow(errorMessage);
     });
 
     test('should return defaultValue if option is omitted', () => {
@@ -84,8 +82,7 @@ describe('options', () => {
   });
 
   describe('getStartedAt', () => {
-    const errorMessage =
-      'started_at not in valid format. Unix timestamp or ISO 8601 date expected';
+    const errorMessage = 'started_at not in valid format. Unix timestamp or ISO 8601 date expected';
     afterEach(() => {
       delete process.env['INPUT_STARTED_AT'];
     });
@@ -121,10 +118,10 @@ describe('options', () => {
   });
 
   describe.each([
-    {release: 'INPUT_RELEASE', prefix: 'INPUT_RELEASE_PREFIX'},
-    {release: 'INPUT_VERSION', prefix: 'INPUT_VERSION_PREFIX'},
-    {release: 'INPUT_RELEASE', prefix: 'INPUT_VERSION_PREFIX'},
-    {release: 'INPUT_VERSION', prefix: 'INPUT_RELEASE_PREFIX'},
+    { release: 'INPUT_RELEASE', prefix: 'INPUT_RELEASE_PREFIX' },
+    { release: 'INPUT_VERSION', prefix: 'INPUT_VERSION_PREFIX' },
+    { release: 'INPUT_RELEASE', prefix: 'INPUT_VERSION_PREFIX' },
+    { release: 'INPUT_VERSION', prefix: 'INPUT_RELEASE_PREFIX' },
   ])(`getRelease`, params => {
     const MOCK_VERSION = 'releases propose-version';
 
@@ -250,9 +247,7 @@ describe('options', () => {
     it('gets the working directory url and prefixes it with the `GITHUB_WORKSPACE`', () => {
       process.env['GITHUB_WORKSPACE'] = '/repo/root';
       process.env['INPUT_WORKING_DIRECTORY'] = '/some/working/directory';
-      expect(getWorkingDirectory()).toEqual(
-        '/repo/root/some/working/directory'
-      );
+      expect(getWorkingDirectory()).toEqual('/repo/root/some/working/directory');
     });
 
     it('should default to `GITHUB_WORKSPACE` even if no direcotry is passed', () => {
@@ -264,19 +259,16 @@ describe('options', () => {
 
 // shows how the runner will run a javascript action with env / stdout protocol
 test('test runs', () => {
-  const output = execSync(
-    `node ${path.join(__dirname, '..', 'dist', 'index.js')}`,
-    {
-      env: {
-        ...process.env,
-        INPUT_ENVIRONMENT: 'production',
-        MOCK: 'true',
-        SENTRY_AUTH_TOKEN: 'test_token',
-        SENTRY_ORG: 'test_org',
-        SENTRY_PROJECT: 'test_project',
-      },
-    }
-  );
+  const output = execSync(`node ${path.join(__dirname, '..', 'dist', 'index.js')}`, {
+    env: {
+      ...process.env,
+      INPUT_ENVIRONMENT: 'production',
+      MOCK: 'true',
+      SENTRY_AUTH_TOKEN: 'test_token',
+      SENTRY_ORG: 'test_org',
+      SENTRY_PROJECT: 'test_project',
+    },
+  });
 
   console.log(output.toString());
 });
