@@ -1,5 +1,9 @@
 # Changelog
 
+## 3.1.1
+
+- fix: Only pass `urlPrefix` to sentry-cli if it's not empty (#275) by @andreiborza
+
 ## 3.1.0
 
 - feat: Add `release` and `release_prefix` in favor of `version` and `version_prefix` (#273) by @andreiborza
@@ -82,16 +86,17 @@ This release contains changes concerning maintainers of the repo and has no user
 ## 1.10.0
 
 - **feat(action): Support macos and windows runners**
-We now publish a composite action that runs on all runners. Actions can now be properly versioned, allowing pinning versions from here on out.
+  We now publish a composite action that runs on all runners. Actions can now be properly versioned, allowing pinning versions from here on out.
 
 ## 1.9.0
 
 **Important Changes**
 
 - **feat(sourcemaps): Add inject option to inject debug ids into source files and sourcemaps (#229)**
-A new option to inject Debug IDs into source files and sourcemaps was added to the action to ensure proper un-minifaction of your stacktraces. We strongly recommend enabling this by setting inject: true in your action alongside providing a path to sourcemaps.
+  A new option to inject Debug IDs into source files and sourcemaps was added to the action to ensure proper un-minifaction of your stacktraces. We strongly recommend enabling this by setting inject: true in your action alongside providing a path to sourcemaps.
 
 **Other Changes**
+
 - feat(telemetry): Collect project specific tags (#228)
 
 ## Previous Releases
