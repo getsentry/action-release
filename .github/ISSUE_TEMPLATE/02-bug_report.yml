@@ -1,0 +1,55 @@
+name: 🐞 Bug Report
+description: Tell us about something that's not working the way we (probably) intend.
+labels: ["Bug"]
+body:
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: How do you use this action?
+      placeholder: |-
+        Standard Github runners or self-hosted runners (which OS and arch?)
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      description: Which version of the action do you use?
+      placeholder: "v1 ← should look like this"
+      label: Version
+    validations:
+      required: true
+
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to Reproduce
+      description: How can we see what you're seeing? Specific is terrific.
+      placeholder: |-
+        1. foo
+        2. bar
+        3. baz
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Result
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual Result
+      description: Logs? Screenshots? Yes, please.
+    validations:
+      required: true
+
+  - type: markdown
+    attributes:
+      value: |-
+        ## Thanks 🙏
+        Check our [triage docs](https://open.sentry.io/triage/) for what to expect next.
