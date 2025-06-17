@@ -1,5 +1,9 @@
 # Changelog
 
+## 3.1.2
+
+- fix: Preserve existing Node version on macOS and Windows runners (#280) by @andreiborza
+
 ## 3.1.1
 
 - fix: Only pass `urlPrefix` to sentry-cli if it's not empty (#275) by @andreiborza
