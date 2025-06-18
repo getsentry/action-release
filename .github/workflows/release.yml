@@ -1,4 +1,4 @@
-name: "Action: Prepare Release"
+name: 'Action: Prepare Release'
 
 on:
   workflow_dispatch:
@@ -18,7 +18,7 @@ jobs:
   release:
     name: Release a new version
 
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
 
     steps:
       - name: Get auth token
