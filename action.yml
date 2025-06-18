@@ -148,7 +148,7 @@ runs:
         INPUT_WORKING_DIRECTORY: ${{ inputs.working_directory }}
         INPUT_DISABLE_TELEMETRY: ${{ inputs.disable_telemetry }}
         INPUT_DISABLE_SAFE_DIRECTORY: ${{ inputs.disable_safe_directory }}
-      uses: docker://ghcr.io/getsentry/action-release-image:master
+      uses: docker://ghcr.io/getsentry/action-release-image:ab-restore-node-version
 
     # For actions running on macos or windows runners, we use a composite
     # action approach which allows us to install the arch specific sentry-cli
@@ -159,6 +159,16 @@ runs:
       shell: bash
       run: |
         git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
+    # Save the current Node version before changing it
+    - name: Save current Node version
+      if: runner.os == 'macOS' || runner.os == 'Windows'
+      id: node_version
+      shell: bash
+      run: |
+        if command -v node &> /dev/null; then
+          echo "NODE_VERSION=$(node --version | sed 's/v//')" >> $GITHUB_OUTPUT
+        fi
 
     - name: Setup node
       if: runner.os == 'macOS' || runner.os == 'Windows'
@@ -203,6 +213,13 @@ runs:
       shell: bash
       run: npm run start
       working-directory: ${{ github.action_path }}
+
+    # Restore the original Node version
+    - name: Restore original Node version
+      if: (runner.os == 'macOS' || runner.os == 'Windows') && steps.node_version.outputs.NODE_VERSION != ''
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ steps.node_version.outputs.NODE_VERSION }}
 
 branding:
   icon: 'triangle'

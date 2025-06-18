@@ -64,7 +64,7 @@ jobs:
         if: github.ref == 'refs/heads/master'
         with:
           github-token: ${{ steps.token.outputs.token }}
-          message: "chore: Set docker tag for master [skip ci]"
+          message: 'chore: Set docker tag for master [skip ci]'
 
   docker-build:
     name: Build & publish Docker images
@@ -222,3 +222,48 @@ jobs:
         with:
           environment: production
           working_directory: ./test
+
+  test-node-version-preserved:
+    needs: docker-build
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        node-version: ['20.x', '22.x']
+    runs-on: ${{ matrix.os }}
+    name: Test Node version preserved on ${{ matrix.os }} with Node ${{ matrix.node-version }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Print Node Version (Before)
+        id: node_before
+        shell: bash
+        run: |
+          VERSION=$(node --version)
+          echo "Node version before: $VERSION"
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Mock creating a Sentry release
+        uses: ./
+        env:
+          MOCK: true
+        with:
+          environment: production
+
+      - name: Print Node Version (After)
+        shell: bash
+        run: |
+          VERSION_AFTER=$(node --version)
+          echo "Node version after: $VERSION_AFTER"
+          echo "Expected: ${{ steps.node_before.outputs.VERSION }}"
+          if [ "$VERSION_AFTER" != "${{ steps.node_before.outputs.VERSION }}" ]; then
+            echo "ERROR: Node version changed from ${{ steps.node_before.outputs.VERSION }} to $VERSION_AFTER"
+            exit 1
+          fi
+          echo "SUCCESS: Node version preserved"
