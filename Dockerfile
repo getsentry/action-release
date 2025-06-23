@@ -1,6 +1,6 @@
 # The multi stage set up *saves* up image size by avoiding the dev dependencies
 # required to produce dist/
-FROM node:18-alpine AS builder
+FROM node:20-alpine AS builder
 WORKDIR /app
 # This layer will invalidate upon new dependencies
 COPY package.json yarn.lock ./
@@ -12,7 +12,7 @@ RUN export YARN_CACHE_FOLDER="$(mktemp -d)" \
 COPY . .
 RUN yarn build
 
-FROM node:18-alpine AS app
+FROM node:20-alpine AS app
 COPY package.json yarn.lock /action-release/
 # On the builder image, we install both types of dependencies rather than
 # just the production ones. This generates /action-release/node_modules
