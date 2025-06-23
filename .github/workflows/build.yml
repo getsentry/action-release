@@ -161,7 +161,7 @@ jobs:
     needs: docker-build
     runs-on: ubuntu-latest
     container:
-      image: node:18.17
+      image: node:20.19.2
 
     steps:
       - uses: actions/checkout@v4
