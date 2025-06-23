@@ -31,6 +31,7 @@ withTelemetry(
       const ignoreEmpty = options.getBooleanOption('ignore_empty', false);
       const deployStartedAtOption = options.getStartedAt();
       const setCommitsOption = options.getSetCommitsOption();
+      const commitRange = options.getCommitRange();
       const projects = options.getProjects();
       const urlPrefix = options.getUrlPrefixOption();
       const stripCommonPrefix = options.getBooleanOption('strip_common_prefix', false);
@@ -47,7 +48,17 @@ withTelemetry(
 
       Sentry.setTag('set-commits', setCommitsOption);
 
-      if (setCommitsOption !== 'skip') {
+      if (setCommitsOption === 'manual') {
+        await traceStep('set-commits', async () => {
+          core.debug(`Setting commits with option '${setCommitsOption}'`);
+          await getCLI().setCommits(release, {
+            auto: false,
+            repo: commitRange.get('repo'),
+            commit: commitRange.get('currentCommit'),
+            previousCommit: commitRange.get('previousCommit'),
+          });
+        });
+      } else if (setCommitsOption !== 'skip') {
         await traceStep('set-commits', async () => {
           core.debug(`Setting commits with option '${setCommitsOption}'`);
           await getCLI().setCommits(release, {

@@ -127,7 +127,7 @@ export const getBooleanOption = (input: string, defaultValue: boolean): boolean 
   throw Error(`${input} is not a boolean`);
 };
 
-export const getSetCommitsOption = (): 'auto' | 'skip' => {
+export const getSetCommitsOption = (): 'auto' | 'skip' | 'manual' => {
   let setCommitOption = core.getInput('set_commits');
   // default to auto
   if (!setCommitOption) {
@@ -138,11 +138,28 @@ export const getSetCommitsOption = (): 'auto' | 'skip' => {
   switch (setCommitOption) {
     case 'auto':
       return 'auto';
+    case 'manual':
+      return 'manual';
     case 'skip':
       return 'skip';
     default:
-      throw Error('set_commits must be "auto" or "skip"');
+      throw Error('set_commits must be "auto" or "skip" or "manual"');
   }
+};
+
+export const getCommitRange = (): Map<string, string> => {
+  const commitRange = core.getInput('commit_range');
+
+  // Split the input by a common comma delimiter
+  const [repo, currentCommit, previousCommit] = commitRange.split(',');
+
+  // Create a map and update with the provided values
+  const commitRangeDetails = new Map();
+  commitRangeDetails.set('repo', repo.trim());
+  commitRangeDetails.set('currentCommit', currentCommit.trim());
+  commitRangeDetails.set('previousCommit', previousCommit.trim());
+
+  return commitRangeDetails;
 };
 
 /**

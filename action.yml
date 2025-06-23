@@ -76,7 +76,12 @@ inputs:
   set_commits:
     description: |-
       Specify whether to set commits for the release.
-      One of: "auto", "skip"
+      One of: "auto", "skip", "manual"
+    required: false
+  commit_range:
+    description: |-
+      If set commits equals manual, include a comma separated list of repo,current commit,previous commit.
+      Example: octocat/my-repo,ae1d1cd5d658e784dcfdff36afe93f75b764cb82,7711b5c927410659df736751ec8124469f87e233
     required: false
   projects:
     description: |-
@@ -142,6 +147,7 @@ runs:
         INPUT_VERSION_PREFIX: ${{ inputs.version_prefix }}
         INPUT_RELEASE_PREFIX: ${{ inputs.release_prefix }}
         INPUT_SET_COMMITS: ${{ inputs.set_commits }}
+        INPUT_COMMIT_RANGE: ${{ inputs.commit_range }}
         INPUT_PROJECTS: ${{ inputs.projects }}
         INPUT_URL_PREFIX: ${{ inputs.url_prefix }}
         INPUT_STRIP_COMMON_PREFIX: ${{ inputs.strip_common_prefix }}
@@ -204,6 +210,7 @@ runs:
         INPUT_VERSION_PREFIX: ${{ inputs.version_prefix }}
         INPUT_RELEASE_PREFIX: ${{ inputs.release_prefix }}
         INPUT_SET_COMMITS: ${{ inputs.set_commits }}
+        INPUT_COMMIT_RANGE: ${{ inputs.commit_range }}
         INPUT_PROJECTS: ${{ inputs.projects }}
         INPUT_URL_PREFIX: ${{ inputs.url_prefix }}
         INPUT_STRIP_COMMON_PREFIX: ${{ inputs.strip_common_prefix }}
