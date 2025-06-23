@@ -1,5 +1,13 @@
 # Changelog
 
+## 3.2.0
+
+### Various fixes & improvements
+
+- chore: Set docker tag for master [skip ci] (e8340952) by @getsantry[bot]
+- feat: Bump to node 20.19.2 (#284) by @andreiborza
+- chore: Set docker tag for master [skip ci] (ec695e24) by @getsantry[bot]
+
 ## 3.1.2
 
 - fix: Preserve existing Node version on macOS and Windows runners (#280) by @andreiborza
