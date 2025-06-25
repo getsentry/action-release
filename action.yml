@@ -142,7 +142,6 @@ runs:
         INPUT_VERSION_PREFIX: ${{ inputs.version_prefix }}
         INPUT_RELEASE_PREFIX: ${{ inputs.release_prefix }}
         INPUT_SET_COMMITS: ${{ inputs.set_commits }}
-        INPUT_COMMIT_RANGE: ${{ inputs.commit_range }}
         INPUT_PROJECTS: ${{ inputs.projects }}
         INPUT_URL_PREFIX: ${{ inputs.url_prefix }}
         INPUT_STRIP_COMMON_PREFIX: ${{ inputs.strip_common_prefix }}
@@ -205,7 +204,6 @@ runs:
         INPUT_VERSION_PREFIX: ${{ inputs.version_prefix }}
         INPUT_RELEASE_PREFIX: ${{ inputs.release_prefix }}
         INPUT_SET_COMMITS: ${{ inputs.set_commits }}
-        INPUT_COMMIT_RANGE: ${{ inputs.commit_range }}
         INPUT_PROJECTS: ${{ inputs.projects }}
         INPUT_URL_PREFIX: ${{ inputs.url_prefix }}
         INPUT_STRIP_COMMON_PREFIX: ${{ inputs.strip_common_prefix }}
