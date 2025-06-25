@@ -31,7 +31,6 @@ withTelemetry(
       const ignoreEmpty = options.getBooleanOption('ignore_empty', false);
       const deployStartedAtOption = options.getStartedAt();
       const setCommitsOption = options.getSetCommitsOption();
-      const commitRange = options.getCommitRange();
       const projects = options.getProjects();
       const urlPrefix = options.getUrlPrefixOption();
       const stripCommonPrefix = options.getBooleanOption('strip_common_prefix', false);
@@ -46,19 +45,20 @@ withTelemetry(
       core.debug(`Release version is ${release}`);
       await getCLI().new(release, { projects });
 
-      Sentry.setTag('set-commits', setCommitsOption);
+      Sentry.setTag('set-commits', setCommitsOption.get('mode'));
 
-      if (setCommitsOption === 'manual') {
+      if (setCommitsOption.get('mode') === 'manual') {
         await traceStep('set-commits', async () => {
-          core.debug(`Setting commits with option '${setCommitsOption}'`);
+          core.debug(`Setting commits with options '${setCommitsOption}'`);
+          const previousCommit = setCommitsOption.get('previous_commit');
           await getCLI().setCommits(release, {
             auto: false,
-            repo: commitRange.get('repo'),
-            commit: commitRange.get('currentCommit'),
-            previousCommit: commitRange.get('previousCommit'),
+            repo: setCommitsOption.get('repo'),
+            commit: setCommitsOption.get('commit'),
+            ...(previousCommit && { previousCommit }),
           });
         });
-      } else if (setCommitsOption !== 'skip') {
+      } else if (setCommitsOption.get('mode') !== 'skip') {
         await traceStep('set-commits', async () => {
           core.debug(`Setting commits with option '${setCommitsOption}'`);
           await getCLI().setCommits(release, {

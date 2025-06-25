@@ -127,39 +127,58 @@ export const getBooleanOption = (input: string, defaultValue: boolean): boolean 
   throw Error(`${input} is not a boolean`);
 };
 
-export const getSetCommitsOption = (): 'auto' | 'skip' | 'manual' => {
+export const getSetCommitsOption = (): Map<string, string> => {
   let setCommitOption = core.getInput('set_commits');
-  // default to auto
+
+  // Default to "auto" if the input is empty or undefined
   if (!setCommitOption) {
-    return 'auto';
+    return new Map([['mode', 'auto']]);
   }
-  // convert to lower case
-  setCommitOption = setCommitOption.toLowerCase();
+
+  // Convert input to lower case for uniformity
+  setCommitOption = setCommitOption.trim().toLowerCase();
+
+  // Create a map for the output structure
+  const result = new Map<string, string>();
+
+  // Handle the different cases for set_commits
   switch (setCommitOption) {
     case 'auto':
-      return 'auto';
-    case 'manual':
-      return 'manual';
+      result.set('mode', 'auto');
+      break;
     case 'skip':
-      return 'skip';
-    default:
-      throw Error('set_commits must be "auto" or "skip" or "manual"');
+      result.set('mode', 'skip');
+      break;
+    default: {
+      // Handle repo-owner/repo-name@commit or commit range
+      const regex = /^([\w\-]+\/[\w\-]+)@([\w\-.]+(?:\.\.|@[\w\-.]+)?)$/;
+      const match = regex.exec(setCommitOption);
+
+      if (!match) {
+        throw new Error(
+          'Invalid value for set_commits. Expected "auto", "skip", or "repo-owner/repo-name@commit" / "repo-owner/repo-name@<commit1>..<commit2>".'
+        );
+      }
+
+      // Parse repo and commit(s) from the input
+      const [, repository, commitRange] = match;
+      result.set('mode', 'manual');
+      result.set('repository', repository);
+
+      if (commitRange.includes('..')) {
+        // Handle commit range
+        const [previousCommit, currentCommit] = commitRange.split('..');
+        result.set('previous_commit', previousCommit);
+        result.set('commit', currentCommit);
+      } else {
+        // Single commit
+        result.set('commit', commitRange);
+      }
+      break;
+    }
   }
-};
 
-export const getCommitRange = (): Map<string, string> => {
-  const commitRange = core.getInput('commit_range');
-
-  // Split the input by a common comma delimiter
-  const [repo, currentCommit, previousCommit] = commitRange.split(',');
-
-  // Create a map and update with the provided values
-  const commitRangeDetails = new Map();
-  commitRangeDetails.set('repo', repo.trim());
-  commitRangeDetails.set('currentCommit', currentCommit.trim());
-  commitRangeDetails.set('previousCommit', previousCommit.trim());
-
-  return commitRangeDetails;
+  return result;
 };
 
 /**
