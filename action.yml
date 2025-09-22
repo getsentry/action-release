@@ -172,7 +172,7 @@ runs:
 
     - name: Setup node
       if: runner.os == 'macOS' || runner.os == 'Windows'
-      uses: actions/setup-node@v4
+      uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
       with:
         # setup-node doesn't allow absolute paths, so we can't
         # just use `github.action_path` to read this out from the `package.json`
@@ -217,7 +217,7 @@ runs:
     # Restore the original Node version
     - name: Restore original Node version
       if: (runner.os == 'macOS' || runner.os == 'Windows') && steps.node_version.outputs.NODE_VERSION != ''
-      uses: actions/setup-node@v4
+      uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
       with:
         node-version: ${{ steps.node_version.outputs.NODE_VERSION }}
 
