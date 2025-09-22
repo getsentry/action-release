@@ -1,5 +1,12 @@
 # Changelog
 
+## 3.3.0
+
+### Various fixes & improvements
+
+- chore: pin cache action (#290) by @saibotk
+- chore: Set docker tag for master [skip ci] (ae1d1cd5) by @getsantry[bot]
+
 ## 3.2.0
 
 ### Various fixes & improvements
