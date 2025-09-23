@@ -45,9 +45,20 @@ withTelemetry(
       core.debug(`Release version is ${release}`);
       await getCLI().new(release, { projects });
 
-      Sentry.setTag('set-commits', setCommitsOption);
+      Sentry.setTag('set-commits', setCommitsOption.get('mode'));
 
-      if (setCommitsOption !== 'skip') {
+      if (setCommitsOption.get('mode') === 'manual') {
+        await traceStep('set-commits', async () => {
+          core.debug(`Setting commits with options '${setCommitsOption}'`);
+          const previousCommit = setCommitsOption.get('previous_commit');
+          await getCLI().setCommits(release, {
+            auto: false,
+            repo: setCommitsOption.get('repo'),
+            commit: setCommitsOption.get('commit'),
+            ...(previousCommit && { previousCommit }),
+          });
+        });
+      } else if (setCommitsOption.get('mode') !== 'skip') {
         await traceStep('set-commits', async () => {
           core.debug(`Setting commits with option '${setCommitsOption}'`);
           await getCLI().setCommits(release, {
