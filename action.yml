@@ -76,7 +76,23 @@ inputs:
   set_commits:
     description: |-
       Specify whether to set commits for the release.
-      One of: "auto", "skip", "repo-owner/repo-name@commit", "repo-owner/repo-name@<commit_of_previous_release>..<commit_of_current_release>"
+      When "manual", you need to provide the repository, commit, and previous commit.
+      One of: "auto", "skip", "manual"
+    required: false
+  repo:
+    description: |-
+      The repository to set commits for in "repo-owner/repo-name" format.
+      Only used when "set_commits" is "manual".
+    required: false
+  commit:
+    description: |-
+      The commit SHA of the current release you are creating.
+      Only used when "set_commits" is "manual".
+    required: false
+  previous_commit:
+    description: |-
+      The commit SHA of the previous release.
+      Required when "set_commits" is "manual".
     required: false
   projects:
     description: |-
@@ -142,6 +158,9 @@ runs:
         INPUT_VERSION_PREFIX: ${{ inputs.version_prefix }}
         INPUT_RELEASE_PREFIX: ${{ inputs.release_prefix }}
         INPUT_SET_COMMITS: ${{ inputs.set_commits }}
+        INPUT_REPO: ${{ inputs.repo }}
+        INPUT_COMMIT: ${{ inputs.commit }}
+        INPUT_PREVIOUS_COMMIT: ${{ inputs.previous_commit }}
         INPUT_PROJECTS: ${{ inputs.projects }}
         INPUT_URL_PREFIX: ${{ inputs.url_prefix }}
         INPUT_STRIP_COMMON_PREFIX: ${{ inputs.strip_common_prefix }}
@@ -204,6 +223,9 @@ runs:
         INPUT_VERSION_PREFIX: ${{ inputs.version_prefix }}
         INPUT_RELEASE_PREFIX: ${{ inputs.release_prefix }}
         INPUT_SET_COMMITS: ${{ inputs.set_commits }}
+        INPUT_REPO: ${{ inputs.repo }}
+        INPUT_COMMIT: ${{ inputs.commit }}
+        INPUT_PREVIOUS_COMMIT: ${{ inputs.previous_commit }}
         INPUT_PROJECTS: ${{ inputs.projects }}
         INPUT_URL_PREFIX: ${{ inputs.url_prefix }}
         INPUT_STRIP_COMMON_PREFIX: ${{ inputs.strip_common_prefix }}

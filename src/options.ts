@@ -127,60 +127,33 @@ export const getBooleanOption = (input: string, defaultValue: boolean): boolean 
   throw Error(`${input} is not a boolean`);
 };
 
-export const getSetCommitsOption = (): Map<string, string> => {
+export const getSetCommitsOption = (): 'auto' | 'skip' | 'manual' => {
   let setCommitOption = core.getInput('set_commits');
-
-  // Default to "auto" if the input is empty or undefined
+  // default to auto
   if (!setCommitOption) {
-    return new Map([['mode', 'auto']]);
+    return 'auto';
   }
-
-  // Convert input to lower case for uniformity
-  setCommitOption = setCommitOption.trim().toLowerCase();
-
-  // Create a map for the output structure
-  const result = new Map<string, string>();
-
-  // Handle the different cases for set_commits
+  // convert to lower case
+  setCommitOption = setCommitOption.toLowerCase();
   switch (setCommitOption) {
     case 'auto':
-      result.set('mode', 'auto');
-      break;
+      return 'auto';
     case 'skip':
-      result.set('mode', 'skip');
-      break;
-    default: {
-      // Handle repo-owner/repo-name@commit or commit range
-      const regex = /^([\w\-]+\/[\w\-]+)@([\w\-.]+(?:\.\.|@[\w\-.]+)?)$/;
-      const match = regex.exec(setCommitOption);
-
-      if (!match) {
-        throw new Error(
-          'Invalid value for set_commits. Expected "auto", "skip", or "repo-owner/repo-name@commit" / "repo-owner/repo-name@<commit1>..<commit2>".'
-        );
-      }
-
-      // Parse repo and commit(s) from the input
-      const [, repository, commitRange] = match;
-      result.set('mode', 'manual');
-      result.set('repository', repository);
-
-      if (commitRange.includes('..')) {
-        // Handle commit range
-        const [previousCommit, currentCommit] = commitRange.split('..');
-        result.set('previous_commit', previousCommit);
-        result.set('commit', currentCommit);
-      } else {
-        // Single commit
-        result.set('commit', commitRange);
-      }
-      break;
-    }
+      return 'skip';
+    case 'manual':
+      return 'manual';
+    default:
+      throw Error('set_commits must be "auto", "skip" or "manual"');
   }
-
-  return result;
 };
 
+export const getSetCommitsManualOptions = (): { repo: string; commit: string; previousCommit: string } => {
+  const repo = core.getInput('repo');
+  const commit = core.getInput('commit');
+  const previousCommit = core.getInput('previous_commit');
+
+  return { repo, commit, previousCommit };
+};
 /**
  * Check for required environment variables.
  */

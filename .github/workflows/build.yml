@@ -266,4 +266,26 @@ jobs:
             echo "ERROR: Node version changed from ${{ steps.node_before.outputs.VERSION }} to $VERSION_AFTER"
             exit 1
           fi
+
           echo "SUCCESS: Node version preserved"
+
+  test-manual-commit-range:
+    needs: docker-build
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    name: Test manual commit range
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Create a release with manual commit range
+        uses: ./
+        with:
+          environment: production
+          set_commits: manual
+          repo: getsentry/action-release
+          commit: ${{ github.sha }}
+          previous_commit: ${{ github.sha }}

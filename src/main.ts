@@ -45,27 +45,32 @@ withTelemetry(
       core.debug(`Release version is ${release}`);
       await getCLI().new(release, { projects });
 
-      Sentry.setTag('set-commits', setCommitsOption.get('mode'));
+      Sentry.setTag('set-commits', setCommitsOption);
 
-      if (setCommitsOption.get('mode') === 'manual') {
-        await traceStep('set-commits', async () => {
-          core.debug(`Setting commits with options '${setCommitsOption}'`);
-          const previousCommit = setCommitsOption.get('previous_commit');
-          await getCLI().setCommits(release, {
-            auto: false,
-            repo: setCommitsOption.get('repo'),
-            commit: setCommitsOption.get('commit'),
-            ...(previousCommit && { previousCommit }),
-          });
-        });
-      } else if (setCommitsOption.get('mode') !== 'skip') {
+      if (setCommitsOption !== 'skip') {
         await traceStep('set-commits', async () => {
           core.debug(`Setting commits with option '${setCommitsOption}'`);
-          await getCLI().setCommits(release, {
-            auto: true,
-            ignoreMissing,
-            ignoreEmpty,
-          });
+
+          if (setCommitsOption === 'auto') {
+            await getCLI().setCommits(release, {
+              auto: true,
+              ignoreMissing,
+              ignoreEmpty,
+            });
+          } else if (setCommitsOption === 'manual') {
+            const { repo, commit, previousCommit } = options.getSetCommitsManualOptions();
+
+            if (!repo || !commit) {
+              throw new Error('Options `repo` and `commit` are required when `set_commits` is `manual`');
+            }
+
+            await getCLI().setCommits(release, {
+              auto: false,
+              repo,
+              commit,
+              ...(previousCommit && { previousCommit }),
+            });
+          }
         });
       }
 

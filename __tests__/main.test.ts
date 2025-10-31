@@ -11,6 +11,7 @@ import {
   getProjects,
   getUrlPrefixOption,
   getWorkingDirectory,
+  getSetCommitsManualOptions,
 } from '../src/options';
 
 describe('options', () => {
@@ -196,10 +197,34 @@ describe('options', () => {
       process.env['INPUT_SET_COMMITS'] = 'skip';
       expect(getSetCommitsOption()).toBe('skip');
     });
+    it('manual', () => {
+      process.env['INPUT_SET_COMMITS'] = 'manual';
+      expect(getSetCommitsOption()).toBe('manual');
+    });
     it('bad option', () => {
-      const errorMessage = 'set_commits must be "auto" or "skip"';
+      const errorMessage = 'set_commits must be "auto", "skip" or "manual"';
       process.env['INPUT_SET_COMMITS'] = 'bad';
       expect(() => getSetCommitsOption()).toThrow(errorMessage);
+    });
+  });
+
+  describe('getSetCommitsManualOptions', () => {
+    afterEach(() => {
+      delete process.env['INPUT_SET_COMMITS'];
+      delete process.env['INPUT_REPO'];
+      delete process.env['INPUT_COMMIT'];
+      delete process.env['INPUT_PREVIOUS_COMMIT'];
+    });
+    it('manual', () => {
+      process.env['INPUT_SET_COMMITS'] = 'manual';
+      process.env['INPUT_REPO'] = 'repo';
+      process.env['INPUT_COMMIT'] = 'commit';
+      process.env['INPUT_PREVIOUS_COMMIT'] = 'previous-commit';
+      expect(getSetCommitsManualOptions()).toEqual({
+        repo: 'repo',
+        commit: 'commit',
+        previousCommit: 'previous-commit',
+      });
     });
   });
 
