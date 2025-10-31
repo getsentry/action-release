@@ -296,6 +296,9 @@ jobs:
 
       - name: Create a release with manual commit range
         uses: ./
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_LOG_LEVEL: debug
         with:
           environment: production
           set_commits: manual
