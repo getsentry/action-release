@@ -299,6 +299,7 @@ jobs:
         env:
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
           SENTRY_LOG_LEVEL: debug
+          MOCK: true
         with:
           environment: production
           set_commits: manual
