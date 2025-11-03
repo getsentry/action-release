@@ -143,6 +143,8 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
     runs-on: ${{ matrix.os }}
+    permissions:
+      contents: read
     name: Test current action
     steps:
       - uses: actions/checkout@v4
@@ -160,6 +162,8 @@ jobs:
   test-runs-on-container:
     needs: docker-build
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     container:
       image: node:20.19.2
 
@@ -183,6 +187,8 @@ jobs:
         os: [ubuntu-latest, windows-latest, macos-latest]
     runs-on: ${{ matrix.os }}
     name: Mock a release
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v4
         with:
@@ -202,6 +208,8 @@ jobs:
         os: [ubuntu-latest, windows-latest, macos-latest]
     runs-on: ${{ matrix.os }}
     name: Mock a release in a different working directory
+    permissions:
+      contents: read
     steps:
       - name: Checkout directory we'll be running from
         uses: actions/checkout@v4
@@ -231,6 +239,8 @@ jobs:
         node-version: ['20.x', '22.x']
     runs-on: ${{ matrix.os }}
     name: Test Node version preserved on ${{ matrix.os }} with Node ${{ matrix.node-version }}
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v4
         with:
@@ -266,4 +276,33 @@ jobs:
             echo "ERROR: Node version changed from ${{ steps.node_before.outputs.VERSION }} to $VERSION_AFTER"
             exit 1
           fi
+
           echo "SUCCESS: Node version preserved"
+
+  test-manual-commit-range:
+    needs: docker-build
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    name: Test manual commit range
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Create a release with manual commit range
+        uses: ./
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_LOG_LEVEL: debug
+          MOCK: true
+        with:
+          environment: production
+          set_commits: manual
+          repo: getsentry/action-release
+          commit: ${{ github.sha }}
+          previous_commit: ${{ github.sha }}

@@ -127,7 +127,7 @@ export const getBooleanOption = (input: string, defaultValue: boolean): boolean 
   throw Error(`${input} is not a boolean`);
 };
 
-export const getSetCommitsOption = (): 'auto' | 'skip' => {
+export const getSetCommitsOption = (): 'auto' | 'skip' | 'manual' => {
   let setCommitOption = core.getInput('set_commits');
   // default to auto
   if (!setCommitOption) {
@@ -140,11 +140,20 @@ export const getSetCommitsOption = (): 'auto' | 'skip' => {
       return 'auto';
     case 'skip':
       return 'skip';
+    case 'manual':
+      return 'manual';
     default:
-      throw Error('set_commits must be "auto" or "skip"');
+      throw Error('set_commits must be "auto", "skip" or "manual"');
   }
 };
 
+export const getSetCommitsManualOptions = (): { repo: string; commit: string; previousCommit: string } => {
+  const repo = core.getInput('repo');
+  const commit = core.getInput('commit');
+  const previousCommit = core.getInput('previous_commit');
+
+  return { repo, commit, previousCommit };
+};
 /**
  * Check for required environment variables.
  */

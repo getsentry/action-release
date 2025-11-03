@@ -1,11 +1,19 @@
 # Changelog
 
+## 3.4.0
+
+- feat: Add support for setting manual commit range (#291) by @andreiborza
+
+Work in this release was contributed by @trevorkwhite. Thank you for your contribution!
+
 ## 3.3.0
 
 ### Various fixes & improvements
 
 - chore: pin cache action (#290) by @saibotk
 - chore: Set docker tag for master [skip ci] (ae1d1cd5) by @getsantry[bot]
+
+Work in this release was contributed by @saibotk. Thank you for your contribution!
 
 ## 3.2.0
 
