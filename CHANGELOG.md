@@ -1,5 +1,24 @@
 # Changelog
 
+## 3.5.0
+
+### New Features ✨
+
+#### Deps
+
+- Bump js-yaml to ^4.1.1 by @andreiborza in [#297](https://github.com/getsentry/action-release/pull/297)
+- Bump @actions/core to ^2.0.1 by @andreiborza in [#296](https://github.com/getsentry/action-release/pull/296)
+
+### Build / dependencies / internal 🔧
+
+- (cli) Upgrade Sentry CLI by @szokeasaurusrex in [#293](https://github.com/getsentry/action-release/pull/293)
+
+### Other
+
+- chore: Set docker tag for master [skip ci] by @getsantry[bot] in [49a6d4d3](https://github.com/getsentry/action-release/commit/49a6d4d3aa445c5fe4951a61b3d8c984f5feb34e)
+- chore: Set docker tag for master [skip ci] by @getsantry[bot] in [11744117](https://github.com/getsentry/action-release/commit/117441178b23ee21bcfe771d071d2a937d0d4a07)
+- chore: Set docker tag for master [skip ci] by @getsantry[bot] in [a181c127](https://github.com/getsentry/action-release/commit/a181c1274a0587b294e2a7563c3b677e979c51b1)
+
 ## 3.4.0
 
 - feat: Add support for setting manual commit range (#291) by @andreiborza
