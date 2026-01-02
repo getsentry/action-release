@@ -27,7 +27,7 @@
   "author": "Sentry",
   "license": "MIT",
   "dependencies": {
-    "@actions/core": "^1.11.1",
+    "@actions/core": "^2.0.1",
     "@sentry/node": "^8.54.0",
     "@sentry/cli": "^2.58.4"
   },
