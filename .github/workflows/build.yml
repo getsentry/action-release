@@ -30,7 +30,7 @@ jobs:
       docker_tag: ${{ steps.docker_tag.outputs.docker_tag }}
     steps:
       - name: Checkout repo
-        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4 # v2
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4 # v4 # v2
 
       - name: Get docker tag
         id: docker_tag
@@ -81,7 +81,7 @@ jobs:
             image: action-release-image
     steps:
       - name: Checkout repo
-        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4 # v2
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4 # v4 # v2
         with:
           fetch-depth: 0
 
@@ -119,7 +119,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4 # v2
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4 # v4 # v2
 
       - name: Install
         run: yarn install
@@ -147,7 +147,7 @@ jobs:
       contents: read
     name: Test current action
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4 # v2
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4 # v4 # v2
         with:
           fetch-depth: 0
 
@@ -168,7 +168,7 @@ jobs:
       image: node:20.19.2
 
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4 # v2
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4 # v4 # v2
         with:
           fetch-depth: 0
 
@@ -190,7 +190,7 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4 # v2
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4 # v4 # v2
         with:
           fetch-depth: 0
 
@@ -212,13 +212,13 @@ jobs:
       contents: read
     steps:
       - name: Checkout directory we'll be running from
-        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4 # v2
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4 # v4 # v2
         with:
           fetch-depth: 0
           path: main/
 
       - name: Checkout directory we'll be testing
-        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4 # v2
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4 # v4 # v2
         with:
           fetch-depth: 0
           path: test/
@@ -242,12 +242,12 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4 # v2
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4 # v4 # v2
         with:
           fetch-depth: 0
 
       - name: Setup Node
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4 # v4
         with:
           node-version: ${{ matrix.node-version }}
 
@@ -290,7 +290,7 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4 # v2
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4 # v4 # v2
         with:
           fetch-depth: 0
 
