@@ -60,7 +60,7 @@ jobs:
           private_key: ${{ secrets.SENTRY_INTERNAL_APP_PRIVATE_KEY }}
 
       - name: Commit changes
-        uses: getsentry/action-github-commit@v2.0.0
+        uses: getsentry/action-github-commit@31f6706ca1a7b9ad6d22c1b07bf3a92eabb05632 # v2.0.0
         if: github.ref == 'refs/heads/master'
         with:
           github-token: ${{ steps.token.outputs.token }}
@@ -86,13 +86,13 @@ jobs:
           fetch-depth: 0
 
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
+        uses: docker/setup-qemu-action@c7c53464625b32c7a7e944ae62b3e17d2b600130 # v3
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
 
       - name: Login to GitHub Container Registry
-        uses: docker/login-action@v3
+        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -106,7 +106,7 @@ jobs:
       # If you notice, please add more exceptions to .dockerignore since we loose the value
       # of using --cache-from on the app stage
       - name: Build and push
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
         with:
           platforms: linux/amd64,linux/arm64
           push: true
