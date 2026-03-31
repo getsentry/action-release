@@ -1,5 +1,31 @@
 # Changelog
 
+## 3.6.0
+
+### Internal Changes 🔧
+
+#### Deps
+
+- Bump flatted from 3.2.9 to 3.4.2 by @dependabot in [#309](https://github.com/getsentry/action-release/pull/309)
+- Bump picomatch from 2.3.1 to 2.3.2 by @dependabot in [#311](https://github.com/getsentry/action-release/pull/311)
+- Bump minimatch from 3.1.2 to 3.1.5 by @dependabot in [#308](https://github.com/getsentry/action-release/pull/308)
+
+#### Release
+
+- Fix changelog-preview permissions by @BYK in [#302](https://github.com/getsentry/action-release/pull/302)
+- Bump Craft version to fix issues by @BYK in [#299](https://github.com/getsentry/action-release/pull/299)
+- Switch from action-prepare-release to Craft by @BYK in [#298](https://github.com/getsentry/action-release/pull/298)
+
+#### Other
+
+- Bump to Node 24 LTS and setup-node v6 by @andreiborza in [#313](https://github.com/getsentry/action-release/pull/313)
+- Pin GitHub Actions to full-length commit SHAs by @joshuarli in [#310](https://github.com/getsentry/action-release/pull/310)
+- Set docker tag for master [skip ci] by @getsantry[bot] in [f988b254](https://github.com/getsentry/action-release/commit/f988b254a06c552925506508b1079b5ee98ed812)
+- Use pull_request_target for changelog preview by @BYK in [#301](https://github.com/getsentry/action-release/pull/301)
+- Add unlabeled trigger to changelog-preview by @BYK in [#300](https://github.com/getsentry/action-release/pull/300)
+- Set docker tag for master [skip ci] by @getsantry[bot] in [8873fc25](https://github.com/getsentry/action-release/commit/8873fc2571731d40b352010c064a650711f4f08c)
+- Set docker tag for master [skip ci] by @getsantry[bot] in [c7b892f7](https://github.com/getsentry/action-release/commit/c7b892f71890f69a78665ce3549545be34f24466)
+
 ## 3.5.0
 
 ### New Features ✨
