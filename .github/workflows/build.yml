@@ -34,9 +34,6 @@ jobs:
 
       - name: Get docker tag
         id: docker_tag
-        env:
-          GITHUB_REF: ${{ github.ref }}
-          GITHUB_EVENT_NAME: ${{ github.event_name }}
         run: |
           if [[ "$GITHUB_REF" == "refs/heads/master" ]]; then
             echo "docker_tag=master" >> $GITHUB_OUTPUT
