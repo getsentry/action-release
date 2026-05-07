@@ -60,7 +60,7 @@ Adding the following to your workflow will create a new Sentry release and tell 
 
 | name                | description                                                                                                          | default              |
 | ------------------- | -------------------------------------------------------------------------------------------------------------------- | -------------------- |
-| `SENTRY_AUTH_TOKEN` | **[Required]** Authentication token for Sentry. See [installation](#create-a-sentry-internal-integration).           | -                    |
+| `SENTRY_AUTH_TOKEN` | **[Required]** Authentication token for Sentry. See [Prerequisites](#prerequisites).           | -                    |
 | `SENTRY_ORG`        | **[Required]** The slug of the organization name in Sentry.                                                          | -                    |
 | `SENTRY_PROJECT`    | The slug of the project name in Sentry. One of `SENTRY_PROJECT` or `projects` is required.                           | -                    |
 | `SENTRY_URL`        | The URL used to connect to Sentry. (Only required for [Self-Hosted Sentry](https://develop.sentry.dev/self-hosted/)) | `https://sentry.io/` |
