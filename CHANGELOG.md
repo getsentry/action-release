@@ -1,5 +1,21 @@
 # Changelog
 
+## 3.6.1
+
+### Bug Fixes 🐛
+
+- Prevent shell injection in build workflow by @fix-it-felix-sentry in [#319](https://github.com/getsentry/action-release/pull/319)
+
+### Documentation 📚
+
+- Update SENTRY_AUTH_TOKEN reference in README by @angryfoxx in [#320](https://github.com/getsentry/action-release/pull/320)
+
+### Internal Changes 🔧
+
+- (agents) Add `dotagents` by @andreiborza in [#314](https://github.com/getsentry/action-release/pull/314)
+- (sentry-cli) Upgrade to 2.58.6 by @szokeasaurusrex in [#322](https://github.com/getsentry/action-release/pull/322)
+- Remove changelog preview by @andreiborza in [#316](https://github.com/getsentry/action-release/pull/316)
+
 ## 3.6.0
 
 ### Internal Changes 🔧
