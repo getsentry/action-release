@@ -202,7 +202,7 @@ runs:
     - name: Install Sentry CLI v2
       if: runner.os == 'macOS' || runner.os == 'Windows'
       shell: bash
-      run: npm install --no-package-lock @sentry/cli@^2.4
+      run: npm install --no-package-lock @sentry/cli@^2.58.6
       working-directory: ${{ github.action_path }}
 
     - name: Run Release Action
