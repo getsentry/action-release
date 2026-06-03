@@ -1,5 +1,11 @@
 # Changelog
 
+## 3.7.0
+
+### New Features ✨
+
+- (sentry-cli) Upgrade to 2.58.6 by @szokeasaurusrex in [#323](https://github.com/getsentry/action-release/pull/323)
+
 ## 3.6.1
 
 ### Bug Fixes 🐛
