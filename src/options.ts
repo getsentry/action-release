@@ -1,28 +1,37 @@
 import * as core from '@actions/core';
-import {getCLI} from './cli';
+import path from 'path';
+import { getCLI } from './cli';
 
 /**
  * Get the release version string from parameter or propose one.
  * @throws
  * @returns Promise<string>
  */
-export const getVersion = async (): Promise<string> => {
+export const getRelease = async (): Promise<string> => {
+  // TODO(v4): Remove `version` and `version_prefix`, they were deprecated in v3
+  const releaseOption: string = core.getInput('release');
   const versionOption: string = core.getInput('version');
+  const releasePrefixOption: string = core.getInput('release_prefix');
   const versionPrefixOption: string = core.getInput('version_prefix');
-  let version = '';
-  if (versionOption) {
-    // If the users passes in `${{github.ref}}, then it will have an unwanted prefix.
-    version = versionOption.replace(/^(refs\/tags\/)/, '');
+
+  let release = '';
+  if (releaseOption || versionOption) {
+    // Prefer `release` over the deprecated `version`
+    release = releaseOption ? releaseOption : versionOption;
+    // If users pass `${{ github.ref }}, strip the unwanted `refs/tags` prefix
+    release = release.replace(/^(refs\/tags\/)/, '');
   } else {
-    core.debug('Version not provided, proposing one...');
-    version = await getCLI().proposeVersion();
+    core.debug('Release version not provided, proposing one...');
+    release = await getCLI().proposeVersion();
   }
 
-  if (versionPrefixOption) {
-    version = `${versionPrefixOption}${version}`;
+  if (releasePrefixOption) {
+    release = `${releasePrefixOption}${release}`;
+  } else if (versionPrefixOption) {
+    release = `${versionPrefixOption}${release}`;
   }
 
-  return version;
+  return release;
 };
 
 /**
@@ -60,9 +69,7 @@ export const getStartedAt = (): number | null => {
   }
 
   if (!outputTimestamp || outputTimestamp < 0) {
-    throw new Error(
-      'started_at not in valid format. Unix timestamp or ISO 8601 date expected'
-    );
+    throw new Error('started_at not in valid format. Unix timestamp or ISO 8601 date expected');
   }
 
   return outputTimestamp;
@@ -100,10 +107,7 @@ export const getDist = (): string | undefined => {
  * @param defaultValue boolean
  * @returns boolean
  */
-export const getBooleanOption = (
-  input: string,
-  defaultValue: boolean
-): boolean => {
+export const getBooleanOption = (input: string, defaultValue: boolean): boolean => {
   const option = core.getInput(input);
   if (!option) {
     return defaultValue;
@@ -123,7 +127,7 @@ export const getBooleanOption = (
   throw Error(`${input} is not a boolean`);
 };
 
-export const getSetCommitsOption = (): 'auto' | 'skip' => {
+export const getSetCommitsOption = (): 'auto' | 'skip' | 'manual' => {
   let setCommitOption = core.getInput('set_commits');
   // default to auto
   if (!setCommitOption) {
@@ -136,24 +140,38 @@ export const getSetCommitsOption = (): 'auto' | 'skip' => {
       return 'auto';
     case 'skip':
       return 'skip';
+    case 'manual':
+      return 'manual';
     default:
-      throw Error('set_commits must be "auto" or "skip"');
+      throw Error('set_commits must be "auto", "skip" or "manual"');
   }
 };
 
+export const getSetCommitsManualOptions = (): { repo: string; commit: string; previousCommit: string } => {
+  const repo = core.getInput('repo');
+  const commit = core.getInput('commit');
+  const previousCommit = core.getInput('previous_commit');
+
+  return { repo, commit, previousCommit };
+};
 /**
  * Check for required environment variables.
  */
 export const checkEnvironmentVariables = (): void => {
+  if (process.env['MOCK']) {
+    // Set environment variables for mock runs if they aren't already
+    for (const variable of ['SENTRY_AUTH_TOKEN', 'SENTRY_ORG', 'SENTRY_PROJECT']) {
+      if (!(variable in process.env)) {
+        process.env[variable] = variable;
+      }
+    }
+  }
+
   if (!process.env['SENTRY_ORG']) {
-    throw Error(
-      'Environment variable SENTRY_ORG is missing an organization slug'
-    );
+    throw Error('Environment variable SENTRY_ORG is missing an organization slug');
   }
   if (!process.env['SENTRY_AUTH_TOKEN']) {
-    throw Error(
-      'Environment variable SENTRY_AUTH_TOKEN is missing an auth token'
-    );
+    throw Error('Environment variable SENTRY_AUTH_TOKEN is missing an auth token');
   }
 };
 
@@ -180,5 +198,8 @@ export const getUrlPrefixOption = (): string => {
 };
 
 export const getWorkingDirectory = (): string => {
-  return core.getInput('working_directory');
+  // The action runs inside `github.action_path` and as such
+  // doesn't automatically have access to the user's git
+  // We prefix all paths with `GITHUB_WORKSPACE` which is at the top of the repo.
+  return path.join(process.env.GITHUB_WORKSPACE || '', core.getInput('working_directory'));
 };

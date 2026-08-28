@@ -1,21 +1,74 @@
-name: "build"
+name: Build and Test
+
 on:
+  pull_request:
+    paths-ignore:
+      - '**.md'
   push:
     branches:
       - master
+      - release/**
+    paths-ignore:
+      - '**.md'
 
 env:
   # Variables defined in the repository
   SENTRY_ORG: ${{ vars.SENTRY_ORG }}
-  # For master we have an environment variable that selects the action-release project
+  # For master, we have an environment variable that selects the action-release project
   # instead of action-release-prs
   # For other branches: https://sentry-ecosystem.sentry.io/releases/?project=4505075304693760
   # For master branch: https://sentry-ecosystem.sentry.io/releases/?project=6576594
   SENTRY_PROJECT: ${{ vars.SENTRY_PROJECT }}
 
 jobs:
+  prepare-docker:
+    name: Prepare docker tag
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    outputs:
+      docker_tag: ${{ steps.docker_tag.outputs.docker_tag }}
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+
+      - name: Get docker tag
+        id: docker_tag
+        run: |
+          if [[ "$GITHUB_REF" == "refs/heads/master" ]]; then
+            echo "docker_tag=master" >> $GITHUB_OUTPUT
+            yarn set-docker-tag master
+          else
+            TAG=$(yq '... | select(has("uses") and .uses | test("docker://ghcr.io/getsentry/action-release-image:.*")) | .uses' action.yml | awk -F':' '{print $3}')
+            echo "docker_tag=$TAG" >> $GITHUB_OUTPUT
+
+            if [[ "$GITHUB_EVENT_NAME" == "pull_request" ]]; then
+              if [[ "$TAG" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+                echo "Error: docker_tag $TAG matching format MAJOR.MINOR.PATCH is not allowed inside pull requests."
+                echo "Please rename the docker tag in action.yml and try again."
+                exit 1
+              fi
+            fi
+          fi
+
+      - name: Get auth token
+        id: token
+        uses: actions/create-github-app-token@d72941d797fd3113feb6b93fd0dec494b13a2547 # v1.11.0
+        if: github.ref == 'refs/heads/master'
+        with:
+          app_id: ${{ vars.SENTRY_INTERNAL_APP_ID }}
+          private_key: ${{ secrets.SENTRY_INTERNAL_APP_PRIVATE_KEY }}
+
+      - name: Commit changes
+        uses: getsentry/action-github-commit@31f6706ca1a7b9ad6d22c1b07bf3a92eabb05632 # v2.0.0
+        if: github.ref == 'refs/heads/master'
+        with:
+          github-token: ${{ steps.token.outputs.token }}
+          message: 'chore: Set docker tag for master [skip ci]'
+
   docker-build:
-    name: Build & pubish Docker images
+    name: Build & publish Docker images
+    needs: prepare-docker
     runs-on: ubuntu-latest
     permissions:
       packages: write
@@ -23,53 +76,233 @@ jobs:
       matrix:
         target:
           - name: builder
-            image: action-release-builder-image:latest
+            image: action-release-builder-image
           - name: app
-            image: action-release-image:latest
+            image: action-release-image
     steps:
-    - name: Checkout repo
-      uses: actions/checkout@v3
-      with:
-        fetch-depth: 0
+      - name: Checkout repo
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          fetch-depth: 0
 
-    - name: Set up QEMU
-      uses: docker/setup-qemu-action@v3
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@c7c53464625b32c7a7e944ae62b3e17d2b600130 # v3
 
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v3
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
 
-    - name: Login to GitHub Container Registry
-      uses: docker/login-action@v3
-      with:
-        registry: ghcr.io
-        username: ${{ github.actor }}
-        password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-    # BUILDKIT_INLINE_CACHE creates the image in such a way that you can
-    # then use --cache-from (think of a remote cache)
-    # This feature is allowed thanks to using the buildx plugin
-    #
-    # There's a COPY command in the builder stage that can easily invalidate the cache
-    # If you notice, please add more exceptions to .dockerignore since we loose the value
-    # of using --cache-from on the app stage
-    - name: Build and push
-      uses: docker/build-push-action@v6
-      with:
-        platforms: linux/amd64,linux/arm64
-        push: ${{ github.ref == 'refs/heads/master' }}
-        tags: ghcr.io/${{ github.repository_owner }}/${{ matrix.target.image }}
-        cache-from: ghcr.io/${{ github.repository_owner }}/${{ matrix.target.image }}
-        target: ${{ matrix.target.name }}
-        build-args: BUILDKIT_INLINE_CACHE=1
+      # BUILDKIT_INLINE_CACHE creates the image in such a way that you can
+      # then use --cache-from (think of a remote cache)
+      # This feature is allowed thanks to using the buildx plugin
+      #
+      # There's a COPY command in the builder stage that can easily invalidate the cache
+      # If you notice, please add more exceptions to .dockerignore since we loose the value
+      # of using --cache-from on the app stage
+      - name: Build and push
+        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
+        with:
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ghcr.io/${{ github.repository_owner }}/${{ matrix.target.image }}:${{ needs.prepare-docker.outputs.docker_tag }}
+          cache-from: ghcr.io/${{ github.repository_owner }}/${{ matrix.target.image }}:master
+          target: ${{ matrix.target.name }}
+          build-args: BUILDKIT_INLINE_CACHE=1
 
-    # This step creates real Sentry releases for the action itself:
-    # https://sentry-ecosystem.sentry.io/releases/?project=6576594
-    - name: Sentry Release
-      uses: getsentry/action-release@v1
-      if: vars.SENTRY_ORG != ''
-      env:
-        SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-        SENTRY_LOG_LEVEL: debug
-      with:
-        environment: 'production'
-        ignore_missing: true
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+
+      - name: Install
+        run: yarn install
+
+      - name: Check format
+        run: yarn format-check
+
+      - name: Lint
+        run: yarn lint
+
+      - name: Build
+        run: yarn build
+
+  #############
+  # E2E Tests
+  #############
+
+  test-create-staging-release-per-push:
+    needs: docker-build
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    permissions:
+      contents: read
+    name: Test current action
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          fetch-depth: 0
+
+      - name: Create a staging release
+        uses: ./
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_LOG_LEVEL: debug
+        with:
+          ignore_missing: true
+
+  test-runs-on-container:
+    needs: docker-build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    container:
+      image: node:20.19.2
+
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          fetch-depth: 0
+
+      - name: Create a staging release
+        uses: ./
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_LOG_LEVEL: debug
+        with:
+          ignore_missing: true
+
+  test-mock-release:
+    needs: docker-build
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    name: Mock a release
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          fetch-depth: 0
+
+      - name: Mock creating a Sentry release
+        uses: ./
+        env:
+          MOCK: true
+        with:
+          environment: production
+
+  test-mock-release-working-directory:
+    needs: docker-build
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    name: Mock a release in a different working directory
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout directory we'll be running from
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          fetch-depth: 0
+          path: main/
+
+      - name: Checkout directory we'll be testing
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          fetch-depth: 0
+          path: test/
+
+      - name: Mock creating a Sentry release in a different directory
+        uses: ./main
+        env:
+          MOCK: true
+        with:
+          environment: production
+          working_directory: ./test
+
+  test-node-version-preserved:
+    needs: docker-build
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        node-version: ['20.x', '22.x', '24.x']
+    runs-on: ${{ matrix.os }}
+    name: Test Node version preserved on ${{ matrix.os }} with Node ${{ matrix.node-version }}
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Print Node Version (Before)
+        id: node_before
+        shell: bash
+        run: |
+          VERSION=$(node --version)
+          echo "Node version before: $VERSION"
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Mock creating a Sentry release
+        uses: ./
+        env:
+          MOCK: true
+        with:
+          environment: production
+
+      - name: Print Node Version (After)
+        shell: bash
+        run: |
+          VERSION_AFTER=$(node --version)
+          echo "Node version after: $VERSION_AFTER"
+          echo "Expected: ${{ steps.node_before.outputs.VERSION }}"
+          if [ "$VERSION_AFTER" != "${{ steps.node_before.outputs.VERSION }}" ]; then
+            echo "ERROR: Node version changed from ${{ steps.node_before.outputs.VERSION }} to $VERSION_AFTER"
+            exit 1
+          fi
+
+          echo "SUCCESS: Node version preserved"
+
+  test-manual-commit-range:
+    needs: docker-build
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    name: Test manual commit range
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          fetch-depth: 0
+
+      - name: Create a release with manual commit range
+        uses: ./
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_LOG_LEVEL: debug
+          MOCK: true
+        with:
+          environment: production
+          set_commits: manual
+          repo: getsentry/action-release
+          commit: ${{ github.sha }}
+          previous_commit: ${{ github.sha }}

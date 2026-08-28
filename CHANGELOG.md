@@ -1,0 +1,198 @@
+# Changelog
+
+## 3.7.0
+
+### New Features ✨
+
+- (sentry-cli) Upgrade to 2.58.6 by @szokeasaurusrex in [#323](https://github.com/getsentry/action-release/pull/323)
+
+## 3.6.1
+
+### Bug Fixes 🐛
+
+- Prevent shell injection in build workflow by @fix-it-felix-sentry in [#319](https://github.com/getsentry/action-release/pull/319)
+
+### Documentation 📚
+
+- Update SENTRY_AUTH_TOKEN reference in README by @angryfoxx in [#320](https://github.com/getsentry/action-release/pull/320)
+
+### Internal Changes 🔧
+
+- (agents) Add `dotagents` by @andreiborza in [#314](https://github.com/getsentry/action-release/pull/314)
+- (sentry-cli) Upgrade to 2.58.6 by @szokeasaurusrex in [#322](https://github.com/getsentry/action-release/pull/322)
+- Remove changelog preview by @andreiborza in [#316](https://github.com/getsentry/action-release/pull/316)
+
+## 3.6.0
+
+### Internal Changes 🔧
+
+#### Deps
+
+- Bump flatted from 3.2.9 to 3.4.2 by @dependabot in [#309](https://github.com/getsentry/action-release/pull/309)
+- Bump picomatch from 2.3.1 to 2.3.2 by @dependabot in [#311](https://github.com/getsentry/action-release/pull/311)
+- Bump minimatch from 3.1.2 to 3.1.5 by @dependabot in [#308](https://github.com/getsentry/action-release/pull/308)
+
+#### Release
+
+- Fix changelog-preview permissions by @BYK in [#302](https://github.com/getsentry/action-release/pull/302)
+- Bump Craft version to fix issues by @BYK in [#299](https://github.com/getsentry/action-release/pull/299)
+- Switch from action-prepare-release to Craft by @BYK in [#298](https://github.com/getsentry/action-release/pull/298)
+
+#### Other
+
+- Bump to Node 24 LTS and setup-node v6 by @andreiborza in [#313](https://github.com/getsentry/action-release/pull/313)
+- Pin GitHub Actions to full-length commit SHAs by @joshuarli in [#310](https://github.com/getsentry/action-release/pull/310)
+- Set docker tag for master [skip ci] by @getsantry[bot] in [f988b254](https://github.com/getsentry/action-release/commit/f988b254a06c552925506508b1079b5ee98ed812)
+- Use pull_request_target for changelog preview by @BYK in [#301](https://github.com/getsentry/action-release/pull/301)
+- Add unlabeled trigger to changelog-preview by @BYK in [#300](https://github.com/getsentry/action-release/pull/300)
+- Set docker tag for master [skip ci] by @getsantry[bot] in [8873fc25](https://github.com/getsentry/action-release/commit/8873fc2571731d40b352010c064a650711f4f08c)
+- Set docker tag for master [skip ci] by @getsantry[bot] in [c7b892f7](https://github.com/getsentry/action-release/commit/c7b892f71890f69a78665ce3549545be34f24466)
+
+## 3.5.0
+
+### New Features ✨
+
+#### Deps
+
+- Bump js-yaml to ^4.1.1 by @andreiborza in [#297](https://github.com/getsentry/action-release/pull/297)
+- Bump @actions/core to ^2.0.1 by @andreiborza in [#296](https://github.com/getsentry/action-release/pull/296)
+
+### Build / dependencies / internal 🔧
+
+- (cli) Upgrade Sentry CLI by @szokeasaurusrex in [#293](https://github.com/getsentry/action-release/pull/293)
+
+### Other
+
+- chore: Set docker tag for master [skip ci] by @getsantry[bot] in [49a6d4d3](https://github.com/getsentry/action-release/commit/49a6d4d3aa445c5fe4951a61b3d8c984f5feb34e)
+- chore: Set docker tag for master [skip ci] by @getsantry[bot] in [11744117](https://github.com/getsentry/action-release/commit/117441178b23ee21bcfe771d071d2a937d0d4a07)
+- chore: Set docker tag for master [skip ci] by @getsantry[bot] in [a181c127](https://github.com/getsentry/action-release/commit/a181c1274a0587b294e2a7563c3b677e979c51b1)
+
+## 3.4.0
+
+- feat: Add support for setting manual commit range (#291) by @andreiborza
+
+Work in this release was contributed by @trevorkwhite. Thank you for your contribution!
+
+## 3.3.0
+
+### Various fixes & improvements
+
+- chore: pin cache action (#290) by @saibotk
+- chore: Set docker tag for master [skip ci] (ae1d1cd5) by @getsantry[bot]
+
+Work in this release was contributed by @saibotk. Thank you for your contribution!
+
+## 3.2.0
+
+### Various fixes & improvements
+
+- chore: Set docker tag for master [skip ci] (e8340952) by @getsantry[bot]
+- feat: Bump to node 20.19.2 (#284) by @andreiborza
+- chore: Set docker tag for master [skip ci] (ec695e24) by @getsantry[bot]
+
+## 3.1.2
+
+- fix: Preserve existing Node version on macOS and Windows runners (#280) by @andreiborza
+
+## 3.1.1
+
+- fix: Only pass `urlPrefix` to sentry-cli if it's not empty (#275) by @andreiborza
+
+## 3.1.0
+
+- feat: Add `release` and `release_prefix` in favor of `version` and `version_prefix` (#273) by @andreiborza
+
+Input parameter `version` has been deprecated and will be removed in a future version in favor of a newly introduced `release` parameter.
+
+Input parameter `version_prefix` has been deprecated and will be removed in a future version in favor of a newly introduced `release_prefix` parameter.
+
+## 3.0.0
+
+Version `3.0.0` contains breaking changes:
+
+- feat(sourcemaps)!: Enable injecting debug ids by default (#272) by @andreiborza
+
+The action now automatically injects Debug IDs into your JavaScript source files and source maps to ensure your stacktraces can be
+properly un-minified.
+
+This is a **breaking change as it modifies your source files**. You can disable this behavior by setting `inject: false`:
+
+```yaml
+- uses: getsentry/action-release@v3
+  with:
+    environment: 'production'
+    sourcemaps: './dist'
+    inject: false
+```
+
+Read more about [Artifact Bundles and Debug IDs here](https://docs.sentry.io/platforms/javascript/sourcemaps/troubleshooting_js/artifact-bundles/).
+
+## 1.11.0
+
+- feat: Use hybrid docker/composite action approach (#265) by @andreiborza
+
+After receiving user feedback both on runtime and compatibility issues for `1.10.0`
+the action has been reworked to use a Docker based approach on Linux runners, mimicking
+`< 1.9.0` versions, while Mac OS and Windows runners will follow the `1.10.0` approach
+of installing `@sentry/cli` in the run step.
+
+## 1.10.5
+
+### Various fixes & improvements
+
+- fix: Mark `GITHUB_WORKSPACE` a safe git directory (#260) by @andreiborza
+
+## 2.0.0
+
+> [!NOTE]
+> This release contains no changes over `v1.10.4` and is just meant to unblock users that have upgraded to `v2` before.
+>
+> We **recommend** pinning to `v1`.
+
+Last week we pushed a `v2` branch that triggered dependabot which treated it as a release.
+This was not meant to be a release, but many users have upgraded to `v2`.
+
+This release will help unblock users that have upgraded to `v2`.
+
+Please see: #209
+
+## 1.10.4
+
+### Various fixes & improvements
+
+- fix(action): Use `action/setup-node` instead of unofficial volta action (#256) by @andreiborza
+
+## 1.10.3
+
+### Various fixes & improvements
+
+- fix(ci): Use volta to ensure node and npm are available (#255) by @andreiborza
+
+## 1.10.2
+
+- fix(action): Ensure working directory always starts out at repo root (#250)
+- fix(action): Use `npm` instead of `yarn` to install `sentry-cli` (#251)
+
+## 1.10.1
+
+This release contains changes concerning maintainers of the repo and has no user-facing changes.
+
+## 1.10.0
+
+- **feat(action): Support macos and windows runners**
+  We now publish a composite action that runs on all runners. Actions can now be properly versioned, allowing pinning versions from here on out.
+
+## 1.9.0
+
+**Important Changes**
+
+- **feat(sourcemaps): Add inject option to inject debug ids into source files and sourcemaps (#229)**
+  A new option to inject Debug IDs into source files and sourcemaps was added to the action to ensure proper un-minifaction of your stacktraces. We strongly recommend enabling this by setting inject: true in your action alongside providing a path to sourcemaps.
+
+**Other Changes**
+
+- feat(telemetry): Collect project specific tags (#228)
+
+## Previous Releases
+
+For previous releases, check the [Github Releases](https://github.com/getsentry/action-release/releases) page.

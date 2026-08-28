@@ -1,87 +1,151 @@
+import * as Sentry from '@sentry/node';
 import * as core from '@actions/core';
-import {getCLI} from './cli';
+import { SentryCliUploadSourceMapsOptions } from '@sentry/cli';
+import { getCLI } from './cli';
 import * as options from './options';
 import * as process from 'process';
+import { isTelemetryEnabled, traceStep, withTelemetry } from './telemetry';
 
-(async () => {
-  try {
-    const cli = getCLI();
+withTelemetry(
+  {
+    enabled: isTelemetryEnabled(),
+  },
+  async () => {
+    try {
+      const workingDirectory = options.getWorkingDirectory();
+      const currentWorkingDirectory = process.cwd();
 
-    // Validate options first so we can fail early.
-    options.checkEnvironmentVariables();
+      if (workingDirectory) {
+        process.chdir(workingDirectory);
+      }
 
-    const environment = options.getEnvironment();
-    const sourcemaps = options.getSourcemaps();
-    const dist = options.getDist();
-    const shouldFinalize = options.getBooleanOption('finalize', true);
-    const ignoreMissing = options.getBooleanOption('ignore_missing', false);
-    const ignoreEmpty = options.getBooleanOption('ignore_empty', false);
-    const deployStartedAtOption = options.getStartedAt();
-    const setCommitsOption = options.getSetCommitsOption();
-    const projects = options.getProjects();
-    const urlPrefix = options.getUrlPrefixOption();
-    const stripCommonPrefix = options.getBooleanOption(
-      'strip_common_prefix',
-      false
-    );
-    const version = await options.getVersion();
-    const workingDirectory = options.getWorkingDirectory();
+      // Validate options first so we can fail early.
+      options.checkEnvironmentVariables();
 
-    core.debug(`Version is ${version}`);
-    await cli.new(version, {projects});
+      const environment = options.getEnvironment();
+      const inject = options.getBooleanOption('inject', true);
+      const sourcemaps = options.getSourcemaps();
+      const dist = options.getDist();
+      const shouldFinalize = options.getBooleanOption('finalize', true);
+      const ignoreMissing = options.getBooleanOption('ignore_missing', false);
+      const ignoreEmpty = options.getBooleanOption('ignore_empty', false);
+      const deployStartedAtOption = options.getStartedAt();
+      const setCommitsOption = options.getSetCommitsOption();
+      const projects = options.getProjects();
+      const urlPrefix = options.getUrlPrefixOption();
+      const stripCommonPrefix = options.getBooleanOption('strip_common_prefix', false);
+      const release = await options.getRelease();
 
-    const currentWorkingDirectory = process.cwd();
-    if (workingDirectory !== null && workingDirectory.length > 0) {
-      process.chdir(workingDirectory);
-    }
+      if (projects.length === 1) {
+        Sentry.setTag('project', projects[0]);
+      } else {
+        Sentry.setTag('projects', projects.join(','));
+      }
 
-    if (setCommitsOption !== 'skip') {
-      core.debug(`Setting commits with option '${setCommitsOption}'`);
-      await cli.setCommits(version, {
-        auto: true,
-        ignoreMissing,
-        ignoreEmpty,
-      });
-    }
+      core.debug(`Release version is ${release}`);
+      await getCLI().new(release, { projects });
 
-    if (sourcemaps.length) {
-      core.debug(`Adding sourcemaps`);
-      await Promise.all(
-        projects.map(async project => {
-          // upload source maps can only do one project at a time
-          const localProjects: [string] = [project];
-          const sourceMapOptions = {
+      Sentry.setTag('set-commits', setCommitsOption);
+
+      if (setCommitsOption !== 'skip') {
+        await traceStep('set-commits', async () => {
+          core.debug(`Setting commits with option '${setCommitsOption}'`);
+
+          if (setCommitsOption === 'auto') {
+            await getCLI().setCommits(release, {
+              auto: true,
+              ignoreMissing,
+              ignoreEmpty,
+            });
+          } else if (setCommitsOption === 'manual') {
+            const { repo, commit, previousCommit } = options.getSetCommitsManualOptions();
+
+            if (!repo || !commit) {
+              throw new Error('Options `repo` and `commit` are required when `set_commits` is `manual`');
+            }
+
+            await getCLI().setCommits(release, {
+              auto: false,
+              repo,
+              commit,
+              ...(previousCommit && { previousCommit }),
+            });
+          }
+        });
+      }
+
+      Sentry.setTag('sourcemaps', sourcemaps.length > 0);
+      Sentry.setTag('inject', inject);
+
+      if (sourcemaps.length) {
+        if (inject) {
+          await traceStep('inject-debug-ids', async () => {
+            core.debug(`Injecting Debug IDs`);
+            // Unfortunately, @sentry/cli does not yet have an alias for inject
+            await getCLI().execute(['sourcemaps', 'inject', ...sourcemaps], true);
+          });
+        }
+
+        await traceStep('upload-sourcemaps', async () => {
+          core.debug(`Adding sourcemaps`);
+          const sourceMapsOptions: SentryCliUploadSourceMapsOptions = {
             include: sourcemaps,
-            projects: localProjects,
             dist,
-            urlPrefix,
             stripCommonPrefix,
           };
-          return cli.uploadSourceMaps(version, sourceMapOptions);
-        })
-      );
-    }
 
-    if (environment) {
-      core.debug(`Adding deploy to release`);
-      await cli.newDeploy(version, {
-        env: environment,
-        ...(deployStartedAtOption && {started: deployStartedAtOption}),
-      });
-    }
+          // only set the urlPrefix if it's not empty
+          if (urlPrefix) {
+            sourceMapsOptions.urlPrefix = urlPrefix;
+          }
 
-    core.debug(`Finalizing the release`);
-    if (shouldFinalize) {
-      await cli.finalize(version);
-    }
+          // sentry-cli supports multiple projects, but only uploads sourcemaps for the
+          // first project so we need to upload sourcemaps for each project individually
+          await Promise.all(
+            projects.map(async (project: string) =>
+              getCLI().uploadSourceMaps(release, {
+                ...sourceMapsOptions,
+                projects: [project],
+              } as SentryCliUploadSourceMapsOptions & { projects: string[] })
+            )
+          );
 
-    if (workingDirectory !== null && workingDirectory.length > 0) {
-      process.chdir(currentWorkingDirectory);
-    }
+          Sentry.setTag('sourcemaps-uploaded', true);
+        });
+      }
 
-    core.debug(`Done`);
-    core.setOutput('version', version);
-  } catch (error) {
-    core.setFailed((error as Error).message);
+      if (environment) {
+        await traceStep('add-environment', async () => {
+          core.debug(`Adding deploy to release`);
+          await getCLI().newDeploy(release, {
+            env: environment,
+            ...(deployStartedAtOption && { started: deployStartedAtOption }),
+          });
+        });
+      }
+
+      Sentry.setTag('finalize', shouldFinalize);
+
+      if (shouldFinalize) {
+        await traceStep('finalizing-release', async () => {
+          core.debug(`Finalizing the release`);
+          await getCLI().finalize(release);
+
+          Sentry.setTag('finalized', true);
+        });
+      }
+
+      if (workingDirectory) {
+        process.chdir(currentWorkingDirectory);
+      }
+
+      core.debug(`Done`);
+      // TODO(v4): Remove `version`
+      core.setOutput('version', release);
+      core.setOutput('release', release);
+    } catch (error) {
+      core.setFailed((error as Error).message);
+      throw error;
+    }
   }
-})();
+);

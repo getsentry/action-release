@@ -1,0 +1,8 @@
+minVersion: 0.23.1
+changelogPolicy: auto
+preReleaseCommand: bash scripts/craft-pre-release.sh
+artifactProvider:
+  name: none
+targets:
+  - name: github
+    tagPrefix: v
