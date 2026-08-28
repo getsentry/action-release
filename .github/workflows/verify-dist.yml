@@ -38,8 +38,17 @@ jobs:
       - name: Compare expected and actual dist
         run: |
           if [ "$(git diff --ignore-space-at-eol dist/ | wc -l)" -gt "0" ]; then
-            echo "Detected uncommitted changes after build. Did you forget to commit `dist/index.js`?"
+            echo 'Detected uncommitted changes after build. Did you forget to commit dist/?'
             echo "Diff:"
-            git diff
+            git diff dist/
+            exit 1
+          fi
+          # ncc emits code-split chunks (e.g. dist/319.index.js) next to index.js
+          # whenever a dependency uses a dynamic import. A new chunk shows up as an
+          # untracked file, which `git diff` does not report, so check for it too.
+          untracked="$(git ls-files --others --exclude-standard dist/)"
+          if [ -n "$untracked" ]; then
+            echo 'Detected untracked files in dist/ after build. Did you forget to commit them?'
+            echo "$untracked"
             exit 1
           fi
