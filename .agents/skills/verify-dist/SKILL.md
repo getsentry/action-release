@@ -6,7 +6,9 @@ argument-hint: [--check | --fix]
 
 # Verify Dist Skill
 
-`action-release` ships a bundled `dist/index.js` built by `ncc`. The `verify-dist` CI workflow (`.github/workflows/verify-dist.yml`) fails any PR where the committed bundle does not match the source. This skill keeps them in sync locally.
+`action-release` ships a bundle in `dist/` built by `ncc`. The `verify-dist` CI workflow (`.github/workflows/verify-dist.yml`) fails any PR where the committed bundle does not match the source. This skill keeps them in sync locally.
+
+`dist/` is a directory, not a single file. Alongside `dist/index.js`, `ncc` emits code-split chunks (`dist/319.index.js` and friends) for every dynamic `import()` in a dependency. `@opentelemetry/resources` loads its per-platform `getMachineId` that way, so the chunks arrive with `@sentry/node`. `index.js` loads them at runtime with a relative `require`, so they must sit next to it and must all be committed.
 
 ## When to invoke
 
@@ -24,10 +26,11 @@ Report whether `dist/` is in sync with the current source tree. Do not modify an
 yarn install --frozen-lockfile
 yarn build
 git diff --ignore-space-at-eol --stat dist/
+git ls-files --others --exclude-standard dist/   # new chunks show up here, not in git diff
 ```
 
-- If the diff is empty → `dist/` is in sync. Done.
-- If the diff is non-empty → report the changed files and line counts, then ask the user whether to switch to `--fix`.
+- If both commands print nothing → `dist/` is in sync. Done.
+- If either prints something → report the changed files and line counts, then ask the user whether to switch to `--fix`.
 
 ### `--fix`
 
@@ -70,9 +73,10 @@ CI does **not** run pre-commit. CI's `prepare-docker` job rejects PRs where `act
 ## Notes
 
 - The CI check runs `git diff --ignore-space-at-eol dist/` — whitespace-only diffs pass, anything else fails. Match that locally.
+- CI also fails on untracked files in `dist/` via `git ls-files --others --exclude-standard dist/`. `git diff` alone never reports a brand-new chunk, so a missing chunk would otherwise pass CI and only break at runtime on whichever platform needs it.
 - `yarn build` shells out to `ncc build src/main.ts -e @sentry/cli`. `@sentry/cli` is deliberately excluded from the bundle because it ships its own native binaries at runtime.
 - The bundle diff can be large even for small source changes (minifier + bundler reshuffles). That is expected; just verify the intended symbols are present.
-- Never hand-edit `dist/index.js`. Always regenerate.
+- Never hand-edit `dist/index.js` or any chunk. Always regenerate.
 
 ## Related files
 
