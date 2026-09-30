@@ -66,10 +66,10 @@ jobs:
           github-token: ${{ steps.token.outputs.token }}
           message: 'chore: Set docker tag for master [skip ci]'
 
-  docker-build:
+  docker-build-platform:
     name: Build & publish Docker images
     needs: prepare-docker
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.platform.runner }}
     permissions:
       packages: write
     strategy:
@@ -79,14 +79,19 @@ jobs:
             image: action-release-builder-image
           - name: app
             image: action-release-image
+        # Build each arch on a native runner. QEMU emulation of arm64 crashes Node.
+        platform:
+          - name: linux/amd64
+            arch: amd64
+            runner: ubuntu-latest
+          - name: linux/arm64
+            arch: arm64
+            runner: ubuntu-24.04-arm
     steps:
       - name: Checkout repo
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
         with:
           fetch-depth: 0
-
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@c7c53464625b32c7a7e944ae62b3e17d2b600130 # v3
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
@@ -108,12 +113,41 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
         with:
-          platforms: linux/amd64,linux/arm64
+          platforms: ${{ matrix.platform.name }}
           push: true
-          tags: ghcr.io/${{ github.repository_owner }}/${{ matrix.target.image }}:${{ needs.prepare-docker.outputs.docker_tag }}
+          tags: ghcr.io/${{ github.repository_owner }}/${{ matrix.target.image }}:${{ needs.prepare-docker.outputs.docker_tag }}-${{ matrix.platform.arch }}
           cache-from: ghcr.io/${{ github.repository_owner }}/${{ matrix.target.image }}:master
           target: ${{ matrix.target.name }}
           build-args: BUILDKIT_INLINE_CACHE=1
+
+  docker-build:
+    name: Merge multi-arch Docker images
+    needs: [prepare-docker, docker-build-platform]
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+    strategy:
+      matrix:
+        image:
+          - action-release-builder-image
+          - action-release-image
+    steps:
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create and verify multi-arch manifest
+        env:
+          IMAGE: ghcr.io/${{ github.repository_owner }}/${{ matrix.image }}:${{ needs.prepare-docker.outputs.docker_tag }}
+        run: |
+          docker buildx imagetools create -t "$IMAGE" "$IMAGE-amd64" "$IMAGE-arm64"
+          PLATFORMS=$(docker buildx imagetools inspect "$IMAGE" --format '{{json .Manifest}}' | jq -r '.manifests[].platform | "\(.os)/\(.architecture)"')
+          echo "$PLATFORMS"
+          grep -qx linux/amd64 <<< "$PLATFORMS"
+          grep -qx linux/arm64 <<< "$PLATFORMS"
 
   lint:
     runs-on: ubuntu-latest
