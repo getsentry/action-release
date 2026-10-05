@@ -1,5 +1,44 @@
 # Changelog
 
+## 3.7.1
+
+### New Features ✨
+
+- (deps) Bump @sentry/node to 10.71.0 by @andreiborza in [#331](https://github.com/getsentry/action-release/pull/331)
+
+### Bug Fixes 🐛
+
+#### Deps
+
+- Pin transitive js-yaml 3.x to 3.15.2 by @andreiborza in [#329](https://github.com/getsentry/action-release/pull/329)
+- Bump @actions/core to 2.0.3 to get undici 6.28.0 by @andreiborza in [#330](https://github.com/getsentry/action-release/pull/330)
+
+### Internal Changes 🔧
+
+#### Deps
+
+- Bump brace-expansion from 1.1.16 to 1.1.21 by @dependabot in [#338](https://github.com/getsentry/action-release/pull/338)
+- Bump undici from 6.28.0 to 6.29.0 by @andreiborza in [#339](https://github.com/getsentry/action-release/pull/339)
+- Bump browserslist from 4.22.1 to 4.28.8 by @dependabot in [#333](https://github.com/getsentry/action-release/pull/333)
+- Bump brace-expansion from 1.1.11 to 1.1.16 by @dependabot in [#327](https://github.com/getsentry/action-release/pull/327)
+- Bump @babel/core from 7.23.2 to 7.29.7 by @dependabot in [#325](https://github.com/getsentry/action-release/pull/325)
+
+#### Deps Dev
+
+- Bump js-yaml from 4.3.1 to 4.3.2 by @dependabot in [#334](https://github.com/getsentry/action-release/pull/334)
+- Bump js-yaml from 4.3.0 to 4.3.1 by @dependabot in [#328](https://github.com/getsentry/action-release/pull/328)
+- Bump js-yaml from 4.2.0 to 4.3.0 by @dependabot in [#326](https://github.com/getsentry/action-release/pull/326)
+- Bump js-yaml from 4.1.1 to 4.2.0 by @dependabot in [#324](https://github.com/getsentry/action-release/pull/324)
+
+#### Other
+
+- Build arm64 Docker images on native runners by @andreiborza in [#337](https://github.com/getsentry/action-release/pull/337)
+- Limit GITHUB_TOKEN permissions for lint and check-dist by @andreiborza in [#332](https://github.com/getsentry/action-release/pull/332)
+
+### Other
+
+- Fix handling of INPUT_URL_PREFIX in test by @jramos in [#203](https://github.com/getsentry/action-release/pull/203)
+
 ## 3.7.0
 
 ### New Features ✨
