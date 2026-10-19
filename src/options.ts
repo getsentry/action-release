@@ -197,6 +197,41 @@ export const getUrlPrefixOption = (): string => {
   return core.getInput('url_prefix');
 };
 
+/**
+ * Build separate uploads only when individual URL prefixes are provided.
+ * Preserve the original single-prefix upload for all source-map paths.
+ */
+export const groupSourcemapsByUrlPrefix = (
+  sourcemaps: string[],
+  prefixInput: string
+): { include: string[]; urlPrefix?: string }[] => {
+  if (sourcemaps.length === 0) {
+    return [];
+  }
+
+  const prefixes = prefixInput.trim().split(/\s+/).filter(Boolean);
+
+  if (prefixes.length <= 1) {
+    return [
+      {
+        include: sourcemaps,
+        ...(prefixes[0] && { urlPrefix: prefixes[0] }),
+      },
+    ];
+  }
+
+  if (prefixes.length !== sourcemaps.length) {
+    throw new Error(
+      'When url_prefix has multiple values, each sourcemaps path must have exactly one corresponding prefix'
+    );
+  }
+
+  return sourcemaps.map((sourceMapPath, index) => ({
+    include: [sourceMapPath],
+    urlPrefix: prefixes[index],
+  }));
+};
+
 export const getWorkingDirectory = (): string => {
   // The action runs inside `github.action_path` and as such
   // doesn't automatically have access to the user's git

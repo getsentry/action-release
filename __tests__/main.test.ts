@@ -10,6 +10,7 @@ import {
   getSetCommitsOption,
   getProjects,
   getUrlPrefixOption,
+  groupSourcemapsByUrlPrefix,
   getWorkingDirectory,
   getSetCommitsManualOptions,
 } from '../src/options';
@@ -64,6 +65,35 @@ describe('options', () => {
     test('should return array when sourcemaps is false', () => {
       process.env['INPUT_SOURCEMAPS'] = './lib';
       expect(getSourcemaps()).toEqual(['./lib']);
+    });
+  });
+
+  describe('groupSourcemapsByUrlPrefix', () => {
+    const paths = ['./dist', './sourcemaps'];
+
+    test('uses one upload with no prefix', () => {
+      expect(groupSourcemapsByUrlPrefix(paths, '')).toEqual([{ include: paths }]);
+    });
+
+    test('preserves the existing single-prefix upload for all paths', () => {
+      expect(groupSourcemapsByUrlPrefix(paths, '~/')).toEqual([{ include: paths, urlPrefix: '~/' }]);
+    });
+
+    test('maps multiple prefixes to the corresponding paths', () => {
+      expect(groupSourcemapsByUrlPrefix(paths, ' ~/   ~/sourcemaps ')).toEqual([
+        { include: ['./dist'], urlPrefix: '~/' },
+        { include: ['./sourcemaps'], urlPrefix: '~/sourcemaps' },
+      ]);
+    });
+
+    test('rejects mismatched multiple prefixes before creating a release', () => {
+      expect(() => groupSourcemapsByUrlPrefix(paths, '~/a ~/b ~/c')).toThrow(
+        /each sourcemaps path must have exactly one corresponding prefix/
+      );
+    });
+
+    test('ignores prefix settings when no sourcemaps were configured', () => {
+      expect(groupSourcemapsByUrlPrefix([], '~/a ~/b')).toEqual([]);
     });
   });
 

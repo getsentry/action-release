@@ -102,6 +102,8 @@ inputs:
   url_prefix:
     description: |-
       Adds a prefix to source map urls after stripping them.
+      For multiple sourcemaps paths, provide a space-separated prefix per path
+      in the same order. One prefix is applied to all paths.
     required: false
   strip_common_prefix:
     description: |-

@@ -60,7 +60,7 @@ Adding the following to your workflow will create a new Sentry release and tell 
 
 | name                | description                                                                                                          | default              |
 | ------------------- | -------------------------------------------------------------------------------------------------------------------- | -------------------- |
-| `SENTRY_AUTH_TOKEN` | **[Required]** Authentication token for Sentry. See [Prerequisites](#prerequisites).           | -                    |
+| `SENTRY_AUTH_TOKEN` | **[Required]** Authentication token for Sentry. See [Prerequisites](#prerequisites).                                 | -                    |
 | `SENTRY_ORG`        | **[Required]** The slug of the organization name in Sentry.                                                          | -                    |
 | `SENTRY_PROJECT`    | The slug of the project name in Sentry. One of `SENTRY_PROJECT` or `projects` is required.                           | -                    |
 | `SENTRY_URL`        | The URL used to connect to Sentry. (Only required for [Self-Hosted Sentry](https://develop.sentry.dev/self-hosted/)) | `https://sentry.io/` |
@@ -86,11 +86,23 @@ Adding the following to your workflow will create a new Sentry release and tell 
 | `commit`                 | The commit SHA of the current release you are creating. Only used when `set_commits` is "manual".                                                                                                                            | -                                        |
 | `previous_commit`        | The commit SHA of the previous release. Required when `set_commits` is "manual".                                                                                                                                             | -                                        |
 | `projects`               | Space-separated list of paths of projects. When omitted, falls back to the environment variable `SENTRY_PROJECT` to determine the project.                                                                                   | -                                        |
-| `url_prefix`             | Adds a prefix to source map urls after stripping them.                                                                                                                                                                       | -                                        |
+| `url_prefix`             | Adds one URL prefix to all paths, or a matching prefix per path (see example below).                                                                                                                                         | -                                        |
 | `strip_common_prefix`    | Will remove a common prefix from uploaded filenames. Useful for removing a path that is build-machine-specific.                                                                                                              | `false`                                  |
 | `working_directory`      | Directory to collect sentry release information from. Useful when collecting information from a non-standard checkout directory.                                                                                             | -                                        |
 | `disable_telemetry`      | The action sends telemetry data and crash reports to Sentry. This helps us improve the action. You can turn this off by setting this flag.                                                                                   | `false`                                  |
 | `disable_safe_directory` | The action needs access to the repo it runs in. For that we need to configure git to mark the repo as a safe directory. You can turn this off by setting this flag.                                                          | `false`                                  |
+
+Use matching space-separated values for `sourcemaps` and `url_prefix`
+when your release has files at different URL roots. A single URL prefix
+continues to apply to all source-map paths. If you supply multiple prefixes,
+you must provide exactly one prefix per path; otherwise the action stops
+before creating a release.
+
+```yaml
+with:
+  sourcemaps: './dist ./sourcemaps'
+  url_prefix: '~/ ~/sourcemaps'
+```
 
 ### Examples
 
