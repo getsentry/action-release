@@ -85,7 +85,7 @@ export const getSourcemaps = (): string[] => {
     return [];
   }
 
-  return sourcemapsOption.split(' ');
+  return sourcemapsOption.trim().split(/\s+/).filter(Boolean);
 };
 
 /**
