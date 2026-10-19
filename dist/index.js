@@ -99948,7 +99948,7 @@ const getSourcemaps = () => {
     if (!sourcemapsOption) {
         return [];
     }
-    return sourcemapsOption.split(' ');
+    return sourcemapsOption.trim().split(/\s+/).filter(Boolean);
 };
 exports.getSourcemaps = getSourcemaps;
 /**
