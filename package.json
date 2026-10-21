@@ -50,7 +50,7 @@
     "**/@istanbuljs/load-nyc-config/js-yaml": "3.15.2"
   },
   "volta": {
-    "node": "24.14.1",
+    "node": "24.22.1",
     "yarn": "1.22.4"
   }
 }
