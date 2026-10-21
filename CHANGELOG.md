@@ -1,5 +1,14 @@
 # Changelog
 
+## 3.7.2
+
+### Internal Changes 🔧
+
+#### Node
+
+- Bump Node to 24.22.1 by @sentry-junior in [#342](https://github.com/getsentry/action-release/pull/342)
+- Bump Linux container to Node 24 by @sentry-junior in [#343](https://github.com/getsentry/action-release/pull/343)
+
 ## 3.7.1
 
 ### New Features ✨
