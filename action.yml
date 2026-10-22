@@ -136,61 +136,18 @@ inputs:
 runs:
   using: 'composite'
   steps:
-    # Linux runners without a Docker daemon (for example ubuntu-slim) use the
-    # same npm fallback as macOS and Windows.
-    - name: Detect Docker support
-      id: docker
-      if: runner.os == 'Linux'
-      shell: bash
-      run: |
-        if command -v docker >/dev/null 2>&1 && docker info >/dev/null 2>&1; then
-          echo "available=true" >> "$GITHUB_OUTPUT"
-        else
-          echo "available=false" >> "$GITHUB_OUTPUT"
-        fi
-
-    # Prefer the container when Docker is actually usable.
-    - name: Run docker image
-      if: runner.os == 'Linux' && steps.docker.outputs.available == 'true'
-      env:
-        # Composite actions don't pass the outer action's inputs
-        # down into these steps, so we have to replicate all inputs to be accessible
-        # via @actions/core here and in the `Run Release Action` step further down.
-        INPUT_ENVIRONMENT: ${{ inputs.environment }}
-        INPUT_INJECT: ${{ inputs.inject }}
-        INPUT_SOURCEMAPS: ${{ inputs.sourcemaps }}
-        INPUT_DIST: ${{ inputs.dist }}
-        INPUT_FINALIZE: ${{ inputs.finalize }}
-        INPUT_IGNORE_MISSING: ${{ inputs.ignore_missing }}
-        INPUT_IGNORE_EMPTY: ${{ inputs.ignore_empty }}
-        INPUT_STARTED_AT: ${{ inputs.started_at }}
-        INPUT_VERSION: ${{ inputs.version }}
-        INPUT_RELEASE: ${{ inputs.release }}
-        INPUT_VERSION_PREFIX: ${{ inputs.version_prefix }}
-        INPUT_RELEASE_PREFIX: ${{ inputs.release_prefix }}
-        INPUT_SET_COMMITS: ${{ inputs.set_commits }}
-        INPUT_REPO: ${{ inputs.repo }}
-        INPUT_COMMIT: ${{ inputs.commit }}
-        INPUT_PREVIOUS_COMMIT: ${{ inputs.previous_commit }}
-        INPUT_PROJECTS: ${{ inputs.projects }}
-        INPUT_URL_PREFIX: ${{ inputs.url_prefix }}
-        INPUT_STRIP_COMMON_PREFIX: ${{ inputs.strip_common_prefix }}
-        INPUT_WORKING_DIRECTORY: ${{ inputs.working_directory }}
-        INPUT_DISABLE_TELEMETRY: ${{ inputs.disable_telemetry }}
-        INPUT_DISABLE_SAFE_DIRECTORY: ${{ inputs.disable_safe_directory }}
-      uses: docker://ghcr.io/getsentry/action-release-image:3.7.1
-
-    # On macOS, Windows, and Docker-less Linux runners, install the native CLI
-    # with npm. This is slower than the container path but needs no Docker daemon.
+    # Docker image steps can be pulled during runner preparation before
+    # their condition is evaluated, blocking Docker-less Linux runners.
+    # Use the existing native Node path for all OSes instead of recreating
+    # GitHub's image credential, workspace and output mount behavior.
     - name: Mark GitHub workspace a safe directory in git
-      if: ${{ (runner.os != 'Linux' || steps.docker.outputs.available != 'true') && inputs.disable_safe_directory != 'true' }}
+      if: ${{ inputs.disable_safe_directory != 'true' }}
       shell: bash
       run: |
         git config --global --add safe.directory "$GITHUB_WORKSPACE"
 
     # Save the current Node version before changing it
     - name: Save current Node version
-      if: runner.os != 'Linux' || steps.docker.outputs.available != 'true'
       id: node_version
       shell: bash
       run: |
@@ -199,7 +156,6 @@ runs:
         fi
 
     - name: Setup node
-      if: runner.os != 'Linux' || steps.docker.outputs.available != 'true'
       uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
       with:
         # setup-node doesn't allow absolute paths, so we can't
@@ -209,13 +165,11 @@ runs:
         package-manager-cache: false
 
     - name: Install Sentry CLI v2
-      if: runner.os != 'Linux' || steps.docker.outputs.available != 'true'
       shell: bash
       run: npm install --no-package-lock @sentry/cli@^2.58.6
       working-directory: ${{ github.action_path }}
 
     - name: Run Release Action
-      if: runner.os != 'Linux' || steps.docker.outputs.available != 'true'
       env:
         # Composite actions don't pass the outer action's inputs
         # down into these steps, so we have to replicate all inputs to be accessible
@@ -248,7 +202,7 @@ runs:
 
     # Restore the original Node version
     - name: Restore original Node version
-      if: (runner.os != 'Linux' || steps.docker.outputs.available != 'true') && steps.node_version.outputs.NODE_VERSION != ''
+      if: steps.node_version.outputs.NODE_VERSION != ''
       uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
       with:
         node-version: ${{ steps.node_version.outputs.NODE_VERSION }}
