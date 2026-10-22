@@ -1,13 +1,23 @@
 #!/bin/bash
-set -eux
+set -euo pipefail
+set -x
 
-DOCKER_REGISTRY_IMAGE="docker://ghcr.io/getsentry/action-release-image"
-TAG="${1}"
+TAG="${1:?Provide the image tag}"
+if [[ ! "$TAG" =~ ^[a-zA-Z0-9][a-zA-Z0-9_.-]*$ ]]; then
+  echo "Invalid Docker image tag: $TAG" >&2
+  exit 1
+fi
 
-# Move to the project root
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-cd $SCRIPT_DIR/..
+cd "$SCRIPT_DIR/.."
 
-# We don't want the backup but this is the only way to make this
-# work on macos as well
-sed -i.bak -e "s|\($DOCKER_REGISTRY_IMAGE:\)[^']*|\1$TAG|" action.yml && rm -f action.yml.bak
+# Marker is metadata for the image-publishing workflow, not an action step.
+MARKER='# ci-docker-image: ghcr.io/getsentry/action-release-image:'
+if ! grep -Eq '^# ci-docker-image: ghcr.io/getsentry/action-release-image:[a-zA-Z0-9][a-zA-Z0-9_.-]*$' action.yml; then
+  echo "Missing or invalid CI image marker in action.yml" >&2
+  exit 1
+fi
+
+# GNU and BSD/macOS sed accept -i.bak.
+sed -i.bak -E "s|^(${MARKER})[a-zA-Z0-9][a-zA-Z0-9_.-]*$|\\1${TAG}|" action.yml
+rm -f action.yml.bak

@@ -39,7 +39,12 @@ jobs:
             echo "docker_tag=master" >> $GITHUB_OUTPUT
             yarn set-docker-tag master
           else
-            TAG=$(yq '... | select(has("uses") and .uses | test("docker://ghcr.io/getsentry/action-release-image:.*")) | .uses' action.yml | awk -F':' '{print $3}')
+            # Read the CI-only publishing tag marker, not a docker:// action step.
+            TAG=$(sed -nE 's|^# ci-docker-image: ghcr.io/getsentry/action-release-image:([a-zA-Z0-9][a-zA-Z0-9_.-]*)$|\1|p' action.yml)
+            if [[ -z "$TAG" ]]; then
+              echo "::error::Missing or invalid CI Docker image tag in action.yml"
+              exit 1
+            fi
             echo "docker_tag=$TAG" >> $GITHUB_OUTPUT
 
             if [[ "$GITHUB_EVENT_NAME" == "pull_request" ]]; then

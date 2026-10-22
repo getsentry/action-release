@@ -133,6 +133,10 @@ inputs:
     default: false
     required: false
 
+# CI-only image tag, rewritten by scripts/set-docker-tag.sh for releases.
+# Never use docker:// in a composite step: runner initialization pre-pulls it.
+# ci-docker-image: ghcr.io/getsentry/action-release-image:fix-321-linux-no-docker-fallback
+
 runs:
   using: 'composite'
   steps:
