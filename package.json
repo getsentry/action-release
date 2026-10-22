@@ -1,6 +1,6 @@
 {
   "name": "action-release",
-  "version": "3.7.1",
+  "version": "3.7.2",
   "private": true,
   "description": "GitHub Action for creating a release on Sentry",
   "main": "dist/index.js",
@@ -50,7 +50,7 @@
     "**/@istanbuljs/load-nyc-config/js-yaml": "3.15.2"
   },
   "volta": {
-    "node": "24.14.1",
+    "node": "24.22.1",
     "yarn": "1.22.4"
   }
 }

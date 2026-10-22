@@ -26,7 +26,7 @@ describe('Docker-less Linux runners (#321)', () => {
     for (const name of ['Save current Node version', 'Setup node', 'Install Sentry CLI v2', 'Run Release Action']) {
       expect(step(name).if).toBeUndefined();
     }
-    expect(step('Setup node').with['node-version']).toBe('24.14.1');
+    expect(step('Setup node').with['node-version']).toBe(require('../package.json').volta.node);
     expect(step('Install Sentry CLI v2').run).toContain('@sentry/cli@^2.58.6');
     expect(step('Run Release Action')).toMatchObject({ run: 'npm run start', shell: 'bash' });
   });

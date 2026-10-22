@@ -140,10 +140,9 @@ inputs:
 runs:
   using: 'composite'
   steps:
-    # Docker image steps can be pulled during runner preparation before
-    # their condition is evaluated, blocking Docker-less Linux runners.
-    # Use the existing native Node path for all OSes instead of recreating
-    # GitHub's image credential, workspace and output mount behavior.
+    # Docker image steps are pre-pulled by GitHub Runner before conditions
+    # execute. Reuse the native Node path on every OS, including ubuntu-slim.
+    # Keep the Docker image tag above as CI publishing metadata only.
     - name: Mark GitHub workspace a safe directory in git
       if: ${{ inputs.disable_safe_directory != 'true' }}
       shell: bash
@@ -165,7 +164,7 @@ runs:
         # setup-node doesn't allow absolute paths, so we can't
         # just use `github.action_path` to read this out from the `package.json`
         # any changes to the runtime need to be reflected here
-        node-version: 24.14.1
+        node-version: 24.22.1
         package-manager-cache: false
 
     - name: Install Sentry CLI v2
