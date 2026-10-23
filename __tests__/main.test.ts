@@ -138,6 +138,16 @@ describe('options', () => {
       expect(await getRelease()).toBe('v1.0.0');
     });
 
+    test(`should strip branch refs from ${params.release}`, async () => {
+      process.env[params.release] = 'refs/heads/release-candidate-1';
+      expect(await getRelease()).toBe('release-candidate-1');
+    });
+
+    test(`should not strip non-tag or non-branch refs from ${params.release}`, async () => {
+      process.env[params.release] = 'refs/pull/123/head';
+      expect(await getRelease()).toBe('refs/pull/123/head');
+    });
+
     test(`should get release version from ${params.release}`, async () => {
       process.env[params.release] = 'v1.0.0';
       expect(await getRelease()).toBe('v1.0.0');
