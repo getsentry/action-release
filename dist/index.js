@@ -99891,8 +99891,8 @@ const getRelease = () => __awaiter(void 0, void 0, void 0, function* () {
     if (releaseOption || versionOption) {
         // Prefer `release` over the deprecated `version`
         release = releaseOption ? releaseOption : versionOption;
-        // If users pass `${{ github.ref }}, strip the unwanted `refs/tags` prefix
-        release = release.replace(/^(refs\/tags\/)/, '');
+        // Strip GitHub tag or branch ref prefixes from explicit release inputs.
+        release = release.replace(/^refs\/(?:tags|heads)\//, '');
     }
     else {
         core.debug('Release version not provided, proposing one...');
