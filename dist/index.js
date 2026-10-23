@@ -99732,6 +99732,7 @@ const telemetry_1 = __nccwpck_require__(12417);
         const environment = options.getEnvironment();
         const inject = options.getBooleanOption('inject', true);
         const sourcemaps = options.getSourcemaps();
+        const sourcemapExtensions = options.getSourcemapExtensions();
         const dist = options.getDist();
         const shouldFinalize = options.getBooleanOption('finalize', true);
         const ignoreMissing = options.getBooleanOption('ignore_missing', false);
@@ -99788,6 +99789,10 @@ const telemetry_1 = __nccwpck_require__(12417);
                     dist,
                     stripCommonPrefix,
                 };
+                // Let Sentry CLI choose its default extensions unless explicitly overridden.
+                if (sourcemapExtensions.length) {
+                    sourceMapsOptions.ext = sourcemapExtensions;
+                }
                 // only set the urlPrefix if it's not empty
                 if (urlPrefix) {
                     sourceMapsOptions.urlPrefix = urlPrefix;
@@ -99872,7 +99877,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.getWorkingDirectory = exports.getUrlPrefixOption = exports.getProjects = exports.checkEnvironmentVariables = exports.getSetCommitsManualOptions = exports.getSetCommitsOption = exports.getBooleanOption = exports.getDist = exports.getSourcemaps = exports.getStartedAt = exports.getEnvironment = exports.getRelease = void 0;
+exports.getWorkingDirectory = exports.getUrlPrefixOption = exports.getProjects = exports.checkEnvironmentVariables = exports.getSetCommitsManualOptions = exports.getSetCommitsOption = exports.getBooleanOption = exports.getDist = exports.getSourcemapExtensions = exports.getSourcemaps = exports.getStartedAt = exports.getEnvironment = exports.getRelease = void 0;
 const core = __importStar(__nccwpck_require__(42186));
 const path_1 = __importDefault(__nccwpck_require__(71017));
 const cli_1 = __nccwpck_require__(56733);
@@ -99957,6 +99962,15 @@ const getSourcemaps = () => {
     return sourcemapsOption.split(' ');
 };
 exports.getSourcemaps = getSourcemaps;
+/**
+ * Source map extensions to pass to Sentry CLI instead of its built-in defaults.
+ * Omitting the input keeps the CLI's normal js/map/jsbundle/bundle handling.
+ */
+const getSourcemapExtensions = () => {
+    const extensions = core.getInput('ext');
+    return extensions ? extensions.split(/\s+/).filter(Boolean) : [];
+};
+exports.getSourcemapExtensions = getSourcemapExtensions;
 /**
  * Dist is optional, but should be a string when provided.
  * @returns string

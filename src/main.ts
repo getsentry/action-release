@@ -25,6 +25,7 @@ withTelemetry(
       const environment = options.getEnvironment();
       const inject = options.getBooleanOption('inject', true);
       const sourcemaps = options.getSourcemaps();
+      const sourcemapExtensions = options.getSourcemapExtensions();
       const dist = options.getDist();
       const shouldFinalize = options.getBooleanOption('finalize', true);
       const ignoreMissing = options.getBooleanOption('ignore_missing', false);
@@ -93,6 +94,11 @@ withTelemetry(
             dist,
             stripCommonPrefix,
           };
+
+          // Let Sentry CLI choose its default extensions unless explicitly overridden.
+          if (sourcemapExtensions.length) {
+            sourceMapsOptions.ext = sourcemapExtensions;
+          }
 
           // only set the urlPrefix if it's not empty
           if (urlPrefix) {

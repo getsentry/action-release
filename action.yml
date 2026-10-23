@@ -13,6 +13,12 @@ inputs:
       Space-separated list of paths to JavaScript source maps.
       Omit to skip uploading sourcemaps.
     required: false
+  ext:
+    description: |-
+      Space-separated list of file extensions that Sentry CLI should scan
+      when uploading source maps (for example: "js map ts").
+      Omit to keep Sentry CLI's default extensions.
+    required: false
   inject:
     description: |-
       Injects Debug IDs into source files and source maps to ensure proper
@@ -148,6 +154,7 @@ runs:
         INPUT_ENVIRONMENT: ${{ inputs.environment }}
         INPUT_INJECT: ${{ inputs.inject }}
         INPUT_SOURCEMAPS: ${{ inputs.sourcemaps }}
+        INPUT_EXT: ${{ inputs.ext }}
         INPUT_DIST: ${{ inputs.dist }}
         INPUT_FINALIZE: ${{ inputs.finalize }}
         INPUT_IGNORE_MISSING: ${{ inputs.ignore_missing }}
@@ -167,7 +174,7 @@ runs:
         INPUT_WORKING_DIRECTORY: ${{ inputs.working_directory }}
         INPUT_DISABLE_TELEMETRY: ${{ inputs.disable_telemetry }}
         INPUT_DISABLE_SAFE_DIRECTORY: ${{ inputs.disable_safe_directory }}
-      uses: docker://ghcr.io/getsentry/action-release-image:3.7.2
+      uses: docker://ghcr.io/getsentry/action-release-image:feat-sourcemap-ext-46-20261023
 
     # For actions running on macos or windows runners, we use a composite
     # action approach which allows us to install the arch specific sentry-cli
@@ -214,6 +221,7 @@ runs:
         INPUT_ENVIRONMENT: ${{ inputs.environment }}
         INPUT_INJECT: ${{ inputs.inject }}
         INPUT_SOURCEMAPS: ${{ inputs.sourcemaps }}
+        INPUT_EXT: ${{ inputs.ext }}
         INPUT_DIST: ${{ inputs.dist }}
         INPUT_FINALIZE: ${{ inputs.finalize }}
         INPUT_IGNORE_MISSING: ${{ inputs.ignore_missing }}

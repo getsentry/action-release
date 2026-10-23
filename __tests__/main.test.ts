@@ -5,6 +5,7 @@ import {
   getBooleanOption,
   getDist,
   getSourcemaps,
+  getSourcemapExtensions,
   getStartedAt,
   getRelease,
   getSetCommitsOption,
@@ -64,6 +65,21 @@ describe('options', () => {
     test('should return array when sourcemaps is false', () => {
       process.env['INPUT_SOURCEMAPS'] = './lib';
       expect(getSourcemaps()).toEqual(['./lib']);
+    });
+  });
+
+  describe('getSourcemapExtensions', () => {
+    afterEach(() => {
+      delete process.env['INPUT_EXT'];
+    });
+
+    test('preserves CLI defaults when ext is not specified', () => {
+      expect(getSourcemapExtensions()).toEqual([]);
+    });
+
+    test('passes the provided whitespace-separated extensions', () => {
+      process.env['INPUT_EXT'] = 'js   map  ts\n mjs';
+      expect(getSourcemapExtensions()).toEqual(['js', 'map', 'ts', 'mjs']);
     });
   });
 
