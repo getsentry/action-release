@@ -92,15 +92,15 @@ export const getSourcemaps = (): string[] => {
  * Source map extensions to pass to Sentry CLI instead of its built-in defaults.
  * Omitting the input keeps the CLI's normal js/map/jsbundle/bundle handling.
  */
-/**
- * Dist is optional, but should be a string when provided.
- * @returns string
- */
 export const getSourcemapExtensions = (): string[] => {
   const extensions = core.getInput('ext');
   return extensions ? extensions.split(/\s+/).filter(Boolean) : [];
 };
 
+/**
+ * Dist is optional, but should be a string when provided.
+ * @returns string
+ */
 export const getDist = (): string | undefined => {
   const distOption: string = core.getInput('dist');
   if (!distOption) {
