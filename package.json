@@ -11,7 +11,6 @@
     "format-check": "prettier --check **/*.ts **/*.md",
     "lint": "eslint src/**/*.ts",
     "set-docker-tag": "./scripts/set-docker-tag.sh",
-    "set-docker-tag-from-branch": "./scripts/set-docker-tag-from-branch.sh",
     "start": "node dist/index.js",
     "test": "jest"
   },

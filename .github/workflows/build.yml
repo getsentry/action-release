@@ -11,18 +11,10 @@ on:
     paths-ignore:
       - '**.md'
 
-env:
-  # Variables defined in the repository
-  SENTRY_ORG: ${{ vars.SENTRY_ORG }}
-  # For master, we have an environment variable that selects the action-release project
-  # instead of action-release-prs
-  # For other branches: https://sentry-ecosystem.sentry.io/releases/?project=4505075304693760
-  # For master branch: https://sentry-ecosystem.sentry.io/releases/?project=6576594
-  SENTRY_PROJECT: ${{ vars.SENTRY_PROJECT }}
-
 jobs:
   prepare-docker:
     name: Prepare docker tag
+    if: github.event_name == 'push'
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -41,14 +33,6 @@ jobs:
           else
             TAG=$(yq '... | select(has("uses") and .uses | test("docker://ghcr.io/getsentry/action-release-image:.*")) | .uses' action.yml | awk -F':' '{print $3}')
             echo "docker_tag=$TAG" >> $GITHUB_OUTPUT
-
-            if [[ "$GITHUB_EVENT_NAME" == "pull_request" ]]; then
-              if [[ "$TAG" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-                echo "Error: docker_tag $TAG matching format MAJOR.MINOR.PATCH is not allowed inside pull requests."
-                echo "Please rename the docker tag in action.yml and try again."
-                exit 1
-              fi
-            fi
           fi
 
       - name: Get auth token
@@ -66,12 +50,14 @@ jobs:
           github-token: ${{ steps.token.outputs.token }}
           message: 'chore: Set docker tag for master [skip ci]'
 
-  docker-build-platform:
-    name: Build & publish Docker images
-    needs: prepare-docker
+  # Builds the images without a push, so this job needs no write access. PRs
+  # (including fork PRs) and pushes use the same build. The e2e tests load the
+  # app image into a local registry, see `use-local-image`.
+  docker-build:
+    name: Build Docker images
     runs-on: ${{ matrix.platform.runner }}
     permissions:
-      packages: write
+      contents: read
     strategy:
       matrix:
         target:
@@ -83,25 +69,16 @@ jobs:
         platform:
           - name: linux/amd64
             arch: amd64
-            runner: ubuntu-latest
+            runner: ubuntu-26.04
           - name: linux/arm64
             arch: arm64
-            runner: ubuntu-24.04-arm
+            runner: ubuntu-26.04-arm
     steps:
       - name: Checkout repo
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
-        with:
-          fetch-depth: 0
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
-
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
 
       # BUILDKIT_INLINE_CACHE creates the image in such a way that you can
       # then use --cache-from (think of a remote cache)
@@ -110,19 +87,37 @@ jobs:
       # There's a COPY command in the builder stage that can easily invalidate the cache
       # If you notice, please add more exceptions to .dockerignore since we loose the value
       # of using --cache-from on the app stage
-      - name: Build and push
+      - name: Build
         uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
         with:
           platforms: ${{ matrix.platform.name }}
-          push: true
-          tags: ghcr.io/${{ github.repository_owner }}/${{ matrix.target.image }}:${{ needs.prepare-docker.outputs.docker_tag }}-${{ matrix.platform.arch }}
-          cache-from: ghcr.io/${{ github.repository_owner }}/${{ matrix.target.image }}:master
+          # Local name inside the tar only, also on master and release runs. It is never
+          # pushed to ghcr.io. `docker-publish` pushes the image under its ghcr.io name.
+          tags: localhost:5000/${{ matrix.target.image }}:pr
+          # OCI archive, so it keeps the provenance attestation and `docker-publish`
+          # can push the exact bytes that the e2e tests used.
+          outputs: type=oci,dest=${{ runner.temp }}/image.tar
+          # Inline cache only holds the final stage, so the app build also
+          # reads the builder image to reuse the builder stage.
+          cache-from: |
+            ghcr.io/${{ github.repository_owner }}/action-release-builder-image:master
+            ghcr.io/${{ github.repository_owner }}/action-release-image:master
           target: ${{ matrix.target.name }}
           build-args: BUILDKIT_INLINE_CACHE=1
 
-  docker-build:
-    name: Merge multi-arch Docker images
-    needs: [prepare-docker, docker-build-platform]
+      - name: Upload image
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: ${{ matrix.target.image }}-${{ matrix.platform.arch }}
+          path: ${{ runner.temp }}/image.tar
+          retention-days: 1
+
+  # The only job that can write to ghcr.io. It runs only on push (reviewed code),
+  # after the e2e tests pass, and publishes the exact images they tested.
+  docker-publish:
+    name: Publish Docker images
+    needs: [prepare-docker, e2e]
+    if: github.event_name == 'push'
     runs-on: ubuntu-latest
     permissions:
       packages: write
@@ -132,12 +127,30 @@ jobs:
           - action-release-builder-image
           - action-release-image
     steps:
+      - name: Download images
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          pattern: ${{ matrix.image }}-*
+          path: ${{ runner.temp }}/images
+
       - name: Login to GitHub Container Registry
         uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+
+      # skopeo reads the credentials of `docker login`. `--preserve-digests` fails
+      # the push if the image would change, so ghcr.io gets the tested bytes.
+      - name: Push arch images
+        env:
+          IMAGE: ghcr.io/${{ github.repository_owner }}/${{ matrix.image }}:${{ needs.prepare-docker.outputs.docker_tag }}
+        run: |
+          for ARCH in amd64 arm64; do
+            skopeo copy --all --preserve-digests \
+              "oci-archive:$RUNNER_TEMP/images/${{ matrix.image }}-$ARCH/image.tar" \
+              "docker://$IMAGE-$ARCH"
+          done
 
       - name: Create and verify multi-arch manifest
         env:
@@ -169,176 +182,11 @@ jobs:
       - name: Build
         run: yarn build
 
-  #############
-  # E2E Tests
-  #############
-
-  test-create-staging-release-per-push:
+  # All E2E tests are in e2e.yml. Add new tests there, so they also gate docker-publish.
+  e2e:
+    name: E2E
     needs: docker-build
-    strategy:
-      matrix:
-        os: [ubuntu-latest, ubuntu-24.04-arm, windows-latest, macos-latest]
-    runs-on: ${{ matrix.os }}
+    uses: ./.github/workflows/e2e.yml
+    secrets: inherit
     permissions:
       contents: read
-    name: Test current action
-    steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
-        with:
-          fetch-depth: 0
-
-      - name: Create a staging release
-        uses: ./
-        env:
-          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-          SENTRY_LOG_LEVEL: debug
-        with:
-          ignore_missing: true
-
-  test-runs-on-container:
-    needs: docker-build
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-    container:
-      image: node:20.19.2
-
-    steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
-        with:
-          fetch-depth: 0
-
-      - name: Create a staging release
-        uses: ./
-        env:
-          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-          SENTRY_LOG_LEVEL: debug
-        with:
-          ignore_missing: true
-
-  test-mock-release:
-    needs: docker-build
-    strategy:
-      matrix:
-        os: [ubuntu-latest, ubuntu-24.04-arm, windows-latest, macos-latest]
-    runs-on: ${{ matrix.os }}
-    name: Mock a release
-    permissions:
-      contents: read
-    steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
-        with:
-          fetch-depth: 0
-
-      - name: Mock creating a Sentry release
-        uses: ./
-        env:
-          MOCK: true
-        with:
-          environment: production
-
-  test-mock-release-working-directory:
-    needs: docker-build
-    strategy:
-      matrix:
-        os: [ubuntu-latest, ubuntu-24.04-arm, windows-latest, macos-latest]
-    runs-on: ${{ matrix.os }}
-    name: Mock a release in a different working directory
-    permissions:
-      contents: read
-    steps:
-      - name: Checkout directory we'll be running from
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
-        with:
-          fetch-depth: 0
-          path: main/
-
-      - name: Checkout directory we'll be testing
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
-        with:
-          fetch-depth: 0
-          path: test/
-
-      - name: Mock creating a Sentry release in a different directory
-        uses: ./main
-        env:
-          MOCK: true
-        with:
-          environment: production
-          working_directory: ./test
-
-  test-node-version-preserved:
-    needs: docker-build
-    strategy:
-      matrix:
-        os: [ubuntu-latest, ubuntu-24.04-arm, windows-latest, macos-latest]
-        node-version: ['20.x', '22.x', '24.x']
-    runs-on: ${{ matrix.os }}
-    name: Test Node version preserved on ${{ matrix.os }} with Node ${{ matrix.node-version }}
-    permissions:
-      contents: read
-    steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
-        with:
-          fetch-depth: 0
-
-      - name: Setup Node
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
-        with:
-          node-version: ${{ matrix.node-version }}
-
-      - name: Print Node Version (Before)
-        id: node_before
-        shell: bash
-        run: |
-          VERSION=$(node --version)
-          echo "Node version before: $VERSION"
-          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
-
-      - name: Mock creating a Sentry release
-        uses: ./
-        env:
-          MOCK: true
-        with:
-          environment: production
-
-      - name: Print Node Version (After)
-        shell: bash
-        run: |
-          VERSION_AFTER=$(node --version)
-          echo "Node version after: $VERSION_AFTER"
-          echo "Expected: ${{ steps.node_before.outputs.VERSION }}"
-          if [ "$VERSION_AFTER" != "${{ steps.node_before.outputs.VERSION }}" ]; then
-            echo "ERROR: Node version changed from ${{ steps.node_before.outputs.VERSION }} to $VERSION_AFTER"
-            exit 1
-          fi
-
-          echo "SUCCESS: Node version preserved"
-
-  test-manual-commit-range:
-    needs: docker-build
-
-    strategy:
-      matrix:
-        os: [ubuntu-latest, ubuntu-24.04-arm, windows-latest, macos-latest]
-    runs-on: ${{ matrix.os }}
-    name: Test manual commit range
-    permissions:
-      contents: read
-    steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
-        with:
-          fetch-depth: 0
-
-      - name: Create a release with manual commit range
-        uses: ./
-        env:
-          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-          SENTRY_LOG_LEVEL: debug
-          MOCK: true
-        with:
-          environment: production
-          set_commits: manual
-          repo: getsentry/action-release
-          commit: ${{ github.sha }}
-          previous_commit: ${{ github.sha }}
