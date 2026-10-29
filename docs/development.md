@@ -51,15 +51,15 @@ Telemetry for internal development is collected using `@sentry/node`, see `src/t
 Members of this repo will not have to set anything up since [the integration](https://sentry-ecosystem.sentry.io/settings/developer-settings/end-to-end-action-release-integration-416eb2/) is already set-up. Just open the PR and you will see [a release created](https://sentry-ecosystem.sentry.io/releases/?project=4505075304693760) for your PR.
 
 1. Create a branch
-2. Run `yarn set-docker-tag-from-branch` to set a docker tag based on your github branch name. This is important so that the action gets its own Docker image, allowing you to test the action in a different repo.
-3. Make changes
-4. If possible, add unit and E2E tests (inside `.github/workflows/build.yml`)
-5. Run `yarn install` to install deps
-6. Run `yarn build` to build the action
-7. Commit the changes and the build inside `dist/`
+2. Make changes
+3. If possible, add unit and E2E tests (inside `.github/workflows/build.yml`)
+4. Run `yarn install` to install deps
+5. Run `yarn build` to build the action
+6. Commit the changes and the build inside `dist/`
 
-If you forget to run `yarn set-docker-tag-from-branch` the repo's pre-commit hooks will do it for you and fail the commit.
-Just add the changes to staging and commit again.
+Do not change the Docker image tag in `action.yml`. PR builds do not publish an image to ghcr.io.
+The E2E tests load the image of the PR into a local registry (see `.github/actions/use-local-image`).
+To use your changes from a different repo, merge them and use `getsentry/action-release@master`.
 
 ## Testing
 

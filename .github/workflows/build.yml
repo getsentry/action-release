@@ -23,6 +23,7 @@ env:
 jobs:
   prepare-docker:
     name: Prepare docker tag
+    if: github.event_name == 'push'
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -41,14 +42,6 @@ jobs:
           else
             TAG=$(yq '... | select(has("uses") and .uses | test("docker://ghcr.io/getsentry/action-release-image:.*")) | .uses' action.yml | awk -F':' '{print $3}')
             echo "docker_tag=$TAG" >> $GITHUB_OUTPUT
-
-            if [[ "$GITHUB_EVENT_NAME" == "pull_request" ]]; then
-              if [[ "$TAG" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-                echo "Error: docker_tag $TAG matching format MAJOR.MINOR.PATCH is not allowed inside pull requests."
-                echo "Please rename the docker tag in action.yml and try again."
-                exit 1
-              fi
-            fi
           fi
 
       - name: Get auth token
@@ -69,6 +62,7 @@ jobs:
   docker-build-platform:
     name: Build & publish Docker images
     needs: prepare-docker
+    if: github.event_name == 'push'
     runs-on: ${{ matrix.platform.runner }}
     permissions:
       packages: write
@@ -123,6 +117,7 @@ jobs:
   docker-build:
     name: Merge multi-arch Docker images
     needs: [prepare-docker, docker-build-platform]
+    if: github.event_name == 'push'
     runs-on: ubuntu-latest
     permissions:
       packages: write
@@ -149,6 +144,46 @@ jobs:
           grep -qx linux/amd64 <<< "$PLATFORMS"
           grep -qx linux/arm64 <<< "$PLATFORMS"
 
+  # PRs (including fork PRs, which get a read-only token) do not push to ghcr.io.
+  # The e2e tests load this image into a local registry, see `use-local-image`.
+  docker-build-pr:
+    name: Build Docker image for PR
+    if: github.event_name == 'pull_request'
+    runs-on: ${{ matrix.platform.runner }}
+    permissions:
+      contents: read
+    strategy:
+      matrix:
+        platform:
+          - name: linux/amd64
+            arch: amd64
+            runner: ubuntu-latest
+          - name: linux/arm64
+            arch: arm64
+            runner: ubuntu-24.04-arm
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
+
+      - name: Build
+        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
+        with:
+          platforms: ${{ matrix.platform.name }}
+          tags: localhost:5000/action-release-image:pr
+          outputs: type=docker,dest=${{ runner.temp }}/image.tar
+          cache-from: ghcr.io/${{ github.repository_owner }}/action-release-image:master
+          target: app
+
+      - name: Upload image
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: action-release-image-${{ matrix.platform.arch }}
+          path: ${{ runner.temp }}/image.tar
+          retention-days: 1
+
   lint:
     runs-on: ubuntu-latest
     permissions:
@@ -174,7 +209,9 @@ jobs:
   #############
 
   test-create-staging-release-per-push:
-    needs: docker-build
+    needs: [docker-build, docker-build-pr]
+    # Needs SENTRY_AUTH_TOKEN, which fork PRs do not get.
+    if: ${{ !failure() && !cancelled() && !github.event.pull_request.head.repo.fork }}
     strategy:
       matrix:
         os: [ubuntu-latest, ubuntu-24.04-arm, windows-latest, macos-latest]
@@ -187,6 +224,10 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Use local action image
+        if: github.event_name == 'pull_request' && runner.os == 'Linux'
+        uses: ./.github/actions/use-local-image
+
       - name: Create a staging release
         uses: ./
         env:
@@ -196,7 +237,9 @@ jobs:
           ignore_missing: true
 
   test-runs-on-container:
-    needs: docker-build
+    needs: [docker-build, docker-build-pr]
+    # Needs SENTRY_AUTH_TOKEN, which fork PRs do not get.
+    if: ${{ !failure() && !cancelled() && !github.event.pull_request.head.repo.fork }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -208,6 +251,10 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Use local action image
+        if: github.event_name == 'pull_request' && runner.os == 'Linux'
+        uses: ./.github/actions/use-local-image
+
       - name: Create a staging release
         uses: ./
         env:
@@ -217,7 +264,8 @@ jobs:
           ignore_missing: true
 
   test-mock-release:
-    needs: docker-build
+    needs: [docker-build, docker-build-pr]
+    if: ${{ !failure() && !cancelled() }}
     strategy:
       matrix:
         os: [ubuntu-latest, ubuntu-24.04-arm, windows-latest, macos-latest]
@@ -230,6 +278,10 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Use local action image
+        if: github.event_name == 'pull_request' && runner.os == 'Linux'
+        uses: ./.github/actions/use-local-image
+
       - name: Mock creating a Sentry release
         uses: ./
         env:
@@ -238,7 +290,8 @@ jobs:
           environment: production
 
   test-mock-release-working-directory:
-    needs: docker-build
+    needs: [docker-build, docker-build-pr]
+    if: ${{ !failure() && !cancelled() }}
     strategy:
       matrix:
         os: [ubuntu-latest, ubuntu-24.04-arm, windows-latest, macos-latest]
@@ -259,6 +312,12 @@ jobs:
           fetch-depth: 0
           path: test/
 
+      - name: Use local action image
+        if: github.event_name == 'pull_request' && runner.os == 'Linux'
+        uses: ./main/.github/actions/use-local-image
+        with:
+          path: main
+
       - name: Mock creating a Sentry release in a different directory
         uses: ./main
         env:
@@ -268,7 +327,8 @@ jobs:
           working_directory: ./test
 
   test-node-version-preserved:
-    needs: docker-build
+    needs: [docker-build, docker-build-pr]
+    if: ${{ !failure() && !cancelled() }}
     strategy:
       matrix:
         os: [ubuntu-latest, ubuntu-24.04-arm, windows-latest, macos-latest]
@@ -281,6 +341,10 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
         with:
           fetch-depth: 0
+
+      - name: Use local action image
+        if: github.event_name == 'pull_request' && runner.os == 'Linux'
+        uses: ./.github/actions/use-local-image
 
       - name: Setup Node
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
@@ -316,7 +380,8 @@ jobs:
           echo "SUCCESS: Node version preserved"
 
   test-manual-commit-range:
-    needs: docker-build
+    needs: [docker-build, docker-build-pr]
+    if: ${{ !failure() && !cancelled() }}
 
     strategy:
       matrix:
@@ -329,6 +394,10 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
         with:
           fetch-depth: 0
+
+      - name: Use local action image
+        if: github.event_name == 'pull_request' && runner.os == 'Linux'
+        uses: ./.github/actions/use-local-image
 
       - name: Create a release with manual commit range
         uses: ./
