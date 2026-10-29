@@ -100,6 +100,8 @@ jobs:
         uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
         with:
           platforms: ${{ matrix.platform.name }}
+          # Local name inside the tar only, also on master and release runs. It is never
+          # pushed to ghcr.io. `docker-publish` retags the image before it pushes it.
           tags: localhost:5000/${{ matrix.target.image }}:pr
           outputs: type=docker,dest=${{ runner.temp }}/image.tar
           # Inline cache only holds the final stage, so the app build also

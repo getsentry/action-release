@@ -59,7 +59,13 @@ Members of this repo will not have to set anything up since [the integration](ht
 
 Do not change the Docker image tag in `action.yml`. PR builds do not publish an image to ghcr.io.
 The E2E tests load the image of the PR into a local registry (see `.github/actions/use-local-image`).
-To use your changes from a different repo, merge them and use `getsentry/action-release@master`.
+
+### Testing in a different repo
+
+- After the PR is merged, use `getsentry/action-release@master`. CI publishes the `master` image after the E2E tests pass.
+- Before the PR is merged, use `getsentry/action-release@<your-branch>` on a macOS or Windows runner.
+  These runners do not use the Docker image. They run `dist/` from your branch.
+  Linux runners use the Docker image, and CI does not publish an image for PR branches.
 
 ## Testing
 
