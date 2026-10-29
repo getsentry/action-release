@@ -52,7 +52,7 @@ Members of this repo will not have to set anything up since [the integration](ht
 
 1. Create a branch
 2. Make changes
-3. If possible, add unit and E2E tests (inside `.github/workflows/build.yml`)
+3. If possible, add unit and E2E tests (E2E tests go in `.github/workflows/e2e.yml`)
 4. Run `yarn install` to install deps
 5. Run `yarn build` to build the action
 6. Commit the changes and the build inside `dist/`

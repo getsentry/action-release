@@ -1,0 +1,210 @@
+name: E2E Tests
+
+# Called from build.yml after the images are built. The `e2e` job there passes
+# only if all jobs here pass, and docker-publish waits for it.
+on:
+  workflow_call:
+
+env:
+  # Variables defined in the repository
+  SENTRY_ORG: ${{ vars.SENTRY_ORG }}
+  # For master, we have an environment variable that selects the action-release project
+  # instead of action-release-prs
+  # For other branches: https://sentry-ecosystem.sentry.io/releases/?project=4505075304693760
+  # For master branch: https://sentry-ecosystem.sentry.io/releases/?project=6576594
+  SENTRY_PROJECT: ${{ vars.SENTRY_PROJECT }}
+
+jobs:
+  test-create-staging-release-per-push:
+    # Needs SENTRY_AUTH_TOKEN, which fork PRs do not get.
+    if: ${{ !github.event.pull_request.head.repo.fork }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, ubuntu-24.04-arm, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    permissions:
+      contents: read
+    name: Test current action
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          fetch-depth: 0
+
+      - name: Use local action image
+        if: runner.os == 'Linux'
+        uses: ./.github/actions/use-local-image
+
+      - name: Create a staging release
+        uses: ./
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_LOG_LEVEL: debug
+        with:
+          ignore_missing: true
+
+  test-runs-on-container:
+    # Needs SENTRY_AUTH_TOKEN, which fork PRs do not get.
+    if: ${{ !github.event.pull_request.head.repo.fork }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    container:
+      image: node:20.19.2
+
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          fetch-depth: 0
+
+      - name: Use local action image
+        if: runner.os == 'Linux'
+        uses: ./.github/actions/use-local-image
+
+      - name: Create a staging release
+        uses: ./
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_LOG_LEVEL: debug
+        with:
+          ignore_missing: true
+
+  test-mock-release:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, ubuntu-24.04-arm, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    name: Mock a release
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          fetch-depth: 0
+
+      - name: Use local action image
+        if: runner.os == 'Linux'
+        uses: ./.github/actions/use-local-image
+
+      - name: Mock creating a Sentry release
+        uses: ./
+        env:
+          MOCK: true
+        with:
+          environment: production
+
+  test-mock-release-working-directory:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, ubuntu-24.04-arm, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    name: Mock a release in a different working directory
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout directory we'll be running from
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          fetch-depth: 0
+          path: main/
+
+      - name: Checkout directory we'll be testing
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          fetch-depth: 0
+          path: test/
+
+      - name: Use local action image
+        if: runner.os == 'Linux'
+        uses: ./main/.github/actions/use-local-image
+        with:
+          path: main
+
+      - name: Mock creating a Sentry release in a different directory
+        uses: ./main
+        env:
+          MOCK: true
+        with:
+          environment: production
+          working_directory: ./test
+
+  test-node-version-preserved:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, ubuntu-24.04-arm, windows-latest, macos-latest]
+        node-version: ['20.x', '22.x', '24.x']
+    runs-on: ${{ matrix.os }}
+    name: Test Node version preserved on ${{ matrix.os }} with Node ${{ matrix.node-version }}
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          fetch-depth: 0
+
+      - name: Use local action image
+        if: runner.os == 'Linux'
+        uses: ./.github/actions/use-local-image
+
+      - name: Setup Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Print Node Version (Before)
+        id: node_before
+        shell: bash
+        run: |
+          VERSION=$(node --version)
+          echo "Node version before: $VERSION"
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Mock creating a Sentry release
+        uses: ./
+        env:
+          MOCK: true
+        with:
+          environment: production
+
+      - name: Print Node Version (After)
+        shell: bash
+        run: |
+          VERSION_AFTER=$(node --version)
+          echo "Node version after: $VERSION_AFTER"
+          echo "Expected: ${{ steps.node_before.outputs.VERSION }}"
+          if [ "$VERSION_AFTER" != "${{ steps.node_before.outputs.VERSION }}" ]; then
+            echo "ERROR: Node version changed from ${{ steps.node_before.outputs.VERSION }} to $VERSION_AFTER"
+            exit 1
+          fi
+
+          echo "SUCCESS: Node version preserved"
+
+  test-manual-commit-range:
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest, ubuntu-24.04-arm, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    name: Test manual commit range
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          fetch-depth: 0
+
+      - name: Use local action image
+        if: runner.os == 'Linux'
+        uses: ./.github/actions/use-local-image
+
+      - name: Create a release with manual commit range
+        uses: ./
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_LOG_LEVEL: debug
+          MOCK: true
+        with:
+          environment: production
+          set_commits: manual
+          repo: getsentry/action-release
+          commit: ${{ github.sha }}
+          previous_commit: ${{ github.sha }}
