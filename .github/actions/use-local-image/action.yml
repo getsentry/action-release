@@ -1,8 +1,9 @@
 name: 'Use local action image'
 description: |-
   Loads the action image built in this workflow run into a local registry
-  and points the checked-out action.yml to it. PR runs use this, because
-  they cannot push to ghcr.io (fork PRs get a read-only token).
+  and points the checked-out action.yml to it. The e2e tests use this, so
+  they can run before any image goes to ghcr.io (and on fork PRs, which get
+  a read-only token).
 
 inputs:
   path:
@@ -36,7 +37,7 @@ runs:
       shell: bash
       run: |
         docker run -d --rm -p 5000:5000 --name action-release-registry \
-          registry:2@sha256:a3d8aaa63ed8681a604f1dea0aa03f100d5895b6a58ace528858a7b332415373
+          registry:3.1.2@sha256:d4032d4cc323c1731c707931ecada07a53076eac38e3b61ae57533f170f2c6c3
         docker load -i .action-release-image/image.tar
         rm -rf .action-release-image
         # Retry until the registry is ready. A curl check does not work in
