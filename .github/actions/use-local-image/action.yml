@@ -53,4 +53,5 @@ runs:
       working-directory: ${{ inputs.path }}
       run: |
         sed -i -e 's|docker://ghcr.io/getsentry/action-release-image:.*|docker://localhost:5000/action-release-image:pr|' action.yml
+        # Make sure the replacement worked
         grep -q 'docker://localhost:5000/action-release-image:pr' action.yml
