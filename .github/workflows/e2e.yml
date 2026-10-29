@@ -5,14 +5,18 @@ name: E2E Tests
 on:
   workflow_call:
 
+# Linux jobs use Ubuntu 26.04 runners (Docker 29). `use-local-image` loads an OCI
+# archive, and the Docker 28 on Ubuntu 24.04 runners cannot load it.
+
 env:
   # Variables defined in the repository
-  SENTRY_ORG: ${{ vars.SENTRY_ORG }}
+  # Fork PRs do not get repository variables, so fall back to the values for PRs.
+  SENTRY_ORG: ${{ vars.SENTRY_ORG || 'sentry-ecosystem' }}
   # For master, we have an environment variable that selects the action-release project
   # instead of action-release-prs
   # For other branches: https://sentry-ecosystem.sentry.io/releases/?project=4505075304693760
   # For master branch: https://sentry-ecosystem.sentry.io/releases/?project=6576594
-  SENTRY_PROJECT: ${{ vars.SENTRY_PROJECT }}
+  SENTRY_PROJECT: ${{ vars.SENTRY_PROJECT || 'action-release-prs' }}
 
 jobs:
   test-create-staging-release-per-push:
@@ -20,7 +24,7 @@ jobs:
     if: ${{ !github.event.pull_request.head.repo.fork }}
     strategy:
       matrix:
-        os: [ubuntu-latest, ubuntu-24.04-arm, windows-latest, macos-latest]
+        os: [ubuntu-26.04, ubuntu-26.04-arm, windows-latest, macos-latest]
     runs-on: ${{ matrix.os }}
     permissions:
       contents: read
@@ -45,7 +49,8 @@ jobs:
   test-runs-on-container:
     # Needs SENTRY_AUTH_TOKEN, which fork PRs do not get.
     if: ${{ !github.event.pull_request.head.repo.fork }}
-    runs-on: ubuntu-latest
+    # Pinned like the Linux jobs above, see the comment at the top of this file.
+    runs-on: ubuntu-26.04
     permissions:
       contents: read
     container:
@@ -71,7 +76,7 @@ jobs:
   test-mock-release:
     strategy:
       matrix:
-        os: [ubuntu-latest, ubuntu-24.04-arm, windows-latest, macos-latest]
+        os: [ubuntu-26.04, ubuntu-26.04-arm, windows-latest, macos-latest]
     runs-on: ${{ matrix.os }}
     name: Mock a release
     permissions:
@@ -95,7 +100,7 @@ jobs:
   test-mock-release-working-directory:
     strategy:
       matrix:
-        os: [ubuntu-latest, ubuntu-24.04-arm, windows-latest, macos-latest]
+        os: [ubuntu-26.04, ubuntu-26.04-arm, windows-latest, macos-latest]
     runs-on: ${{ matrix.os }}
     name: Mock a release in a different working directory
     permissions:
@@ -130,7 +135,7 @@ jobs:
   test-node-version-preserved:
     strategy:
       matrix:
-        os: [ubuntu-latest, ubuntu-24.04-arm, windows-latest, macos-latest]
+        os: [ubuntu-26.04, ubuntu-26.04-arm, windows-latest, macos-latest]
         node-version: ['20.x', '22.x', '24.x']
     runs-on: ${{ matrix.os }}
     name: Test Node version preserved on ${{ matrix.os }} with Node ${{ matrix.node-version }}
@@ -182,7 +187,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [ubuntu-latest, ubuntu-24.04-arm, windows-latest, macos-latest]
+        os: [ubuntu-26.04, ubuntu-26.04-arm, windows-latest, macos-latest]
     runs-on: ${{ matrix.os }}
     name: Test manual commit range
     permissions:
