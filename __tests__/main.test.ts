@@ -1,4 +1,5 @@
 import { execSync } from 'child_process';
+import { afterEach, beforeAll, describe, expect, it, test } from 'vitest';
 import * as path from 'path';
 import * as process from 'process';
 import {
