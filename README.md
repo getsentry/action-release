@@ -72,6 +72,7 @@ Adding the following to your workflow will create a new Sentry release and tell 
 | `environment`            | Set the environment for this release. E.g. "production" or "staging". Omit to skip adding deploy to release.                                                                                                                 | -                                        |
 | `sourcemaps`             | Space-separated list of paths to JavaScript sourcemaps. Omit to skip uploading sourcemaps.                                                                                                                                   | -                                        |
 | `inject`                 | Injects Debug IDs into source files and source maps to ensure proper un-minifcation of your stacktraces. Does nothing if `sourcemaps` was not set.                                                                           | `true`                                   |
+| `debug_files`            | Space-separated list of paths to debug information files (e.g. dSYM, PDB, ELF, Breakpad). Omit to skip uploading debug files.                                                                                                | -                                        |
 | `finalize`               | When false, omit marking the release as finalized and released.                                                                                                                                                              | `true`                                   |
 | `ignore_missing`         | When the flag is set and the previous release commit was not found in the repository, will create a release with the default commits count instead of failing the command.                                                   | `false`                                  |
 | `ignore_empty`           | When the flag is set, command will not fail and just exit silently if no new commits for a given release have been found.                                                                                                    | `false`                                  |
@@ -101,6 +102,15 @@ Adding the following to your workflow will create a new Sentry release and tell 
     with:
       environment: 'production'
       sourcemaps: './dist'
+  ```
+
+- Create a new Sentry release and upload debug information files for a native app.
+
+  ```yaml
+  - uses: getsentry/action-release@v3
+    with:
+      environment: 'production'
+      debug_files: './build/app.pdb ./build/app.dSYM'
   ```
 
 - Create a new Sentry release for the `production` environment of your project at version `v1.0.1`.

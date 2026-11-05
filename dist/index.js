@@ -99836,6 +99836,7 @@ const telemetry_1 = __nccwpck_require__(12417);
         const environment = options.getEnvironment();
         const inject = options.getBooleanOption('inject', true);
         const sourcemaps = options.getSourcemaps();
+        const debugFiles = options.getDebugFiles();
         const dist = options.getDist();
         const shouldFinalize = options.getBooleanOption('finalize', true);
         const ignoreMissing = options.getBooleanOption('ignore_missing', false);
@@ -99902,6 +99903,16 @@ const telemetry_1 = __nccwpck_require__(12417);
                     return (0, cli_1.getCLI)().uploadSourceMaps(release, Object.assign(Object.assign({}, sourceMapsOptions), { projects: [project] }));
                 })));
                 Sentry.setTag('sourcemaps-uploaded', true);
+            }));
+        }
+        Sentry.setTag('debug-files', debugFiles.length > 0);
+        if (debugFiles.length) {
+            yield (0, telemetry_1.traceStep)('upload-debug-files', () => __awaiter(void 0, void 0, void 0, function* () {
+                core.debug(`Uploading debug files`);
+                // Debug files belong to a project, not a release, so upload them for each project
+                for (const project of projects) {
+                    yield (0, cli_1.getCLI)().execute(['debug-files', 'upload', '--project', project, ...debugFiles], true);
+                }
             }));
         }
         if (environment) {
@@ -99976,7 +99987,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.getWorkingDirectory = exports.getUrlPrefixOption = exports.getProjects = exports.checkEnvironmentVariables = exports.getSetCommitsManualOptions = exports.getSetCommitsOption = exports.getBooleanOption = exports.getDist = exports.getSourcemaps = exports.getStartedAt = exports.getEnvironment = exports.getRelease = void 0;
+exports.getWorkingDirectory = exports.getUrlPrefixOption = exports.getProjects = exports.checkEnvironmentVariables = exports.getSetCommitsManualOptions = exports.getSetCommitsOption = exports.getBooleanOption = exports.getDist = exports.getDebugFiles = exports.getSourcemaps = exports.getStartedAt = exports.getEnvironment = exports.getRelease = void 0;
 const core = __importStar(__nccwpck_require__(42186));
 const path_1 = __importDefault(__nccwpck_require__(71017));
 const cli_1 = __nccwpck_require__(56733);
@@ -100061,6 +100072,18 @@ const getSourcemaps = () => {
     return sourcemapsOption.split(' ');
 };
 exports.getSourcemaps = getSourcemaps;
+/**
+ * Debug files are optional, but there may be several as a space-separated list.
+ * @returns string[]
+ */
+const getDebugFiles = () => {
+    const debugFilesOption = core.getInput('debug_files');
+    if (!debugFilesOption) {
+        return [];
+    }
+    return debugFilesOption.split(' ');
+};
+exports.getDebugFiles = getDebugFiles;
 /**
  * Dist is optional, but should be a string when provided.
  * @returns string
