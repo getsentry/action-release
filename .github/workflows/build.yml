@@ -386,9 +386,10 @@ jobs:
           DEBUG_ID: ${{ steps.dif.outputs.debug_id }}
         run: |
           for i in 1 2 3 4 5; do
-            COUNT=$(curl -sf -H "Authorization: Bearer $SENTRY_AUTH_TOKEN" \
-              "https://sentry.io/api/0/projects/$SENTRY_ORG/$SENTRY_PROJECT/files/dsyms/?query=$DEBUG_ID" | jq length)
-            if [ "$COUNT" -gt 0 ]; then
+            # Use the jq exit code, not its output: jq on Windows writes CRLF.
+            if curl -sf -H "Authorization: Bearer $SENTRY_AUTH_TOKEN" \
+              "https://sentry.io/api/0/projects/$SENTRY_ORG/$SENTRY_PROJECT/files/dsyms/?query=$DEBUG_ID" \
+              | jq -e 'length > 0' > /dev/null; then
               echo "SUCCESS: Found debug file $DEBUG_ID"
               exit 0
             fi
