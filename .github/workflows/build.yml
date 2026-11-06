@@ -342,3 +342,58 @@ jobs:
           repo: getsentry/action-release
           commit: ${{ github.sha }}
           previous_commit: ${{ github.sha }}
+
+  test-upload-debug-files:
+    needs: docker-build
+    strategy:
+      matrix:
+        os: [ubuntu-latest, ubuntu-24.04-arm, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    name: Test debug files upload
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          fetch-depth: 0
+
+      # Breakpad symbol files are plain text, so we can create one on every OS
+      # without a compiler. A random debug ID per run makes sure we find this
+      # upload and not one from an earlier run.
+      - name: Create a Breakpad debug file
+        id: dif
+        shell: bash
+        run: |
+          HEX=$(od -An -N16 -tx1 /dev/urandom | tr -d ' \n' | tr 'a-f' 'A-F')
+          mkdir -p e2e-debug-files
+          printf 'MODULE Linux x86_64 %s0 action-release-e2e\nFILE 0 main.c\nFUNC 1000 10 0 main\n1000 10 1 0\n' "$HEX" > e2e-debug-files/action-release-e2e.sym
+          DEBUG_ID=$(echo "$HEX" | tr 'A-F' 'a-f' | sed -E 's/(.{8})(.{4})(.{4})(.{4})(.{12})/\1-\2-\3-\4-\5/')
+          echo "debug_id=$DEBUG_ID" >> $GITHUB_OUTPUT
+
+      - name: Create a release and upload debug files
+        uses: ./
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_LOG_LEVEL: debug
+        with:
+          ignore_missing: true
+          debug_files: ./e2e-debug-files
+
+      - name: Check that Sentry has the debug file
+        shell: bash
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          DEBUG_ID: ${{ steps.dif.outputs.debug_id }}
+        run: |
+          for i in 1 2 3 4 5; do
+            # Use the jq exit code, not its output: jq on Windows writes CRLF.
+            if curl -sf -H "Authorization: Bearer $SENTRY_AUTH_TOKEN" \
+              "https://sentry.io/api/0/projects/$SENTRY_ORG/$SENTRY_PROJECT/files/dsyms/?query=$DEBUG_ID" \
+              | jq -e --arg id "$DEBUG_ID" 'any(.[]; .debugId == $id)' > /dev/null; then
+              echo "SUCCESS: Found debug file $DEBUG_ID"
+              exit 0
+            fi
+            sleep 5
+          done
+          echo "ERROR: Debug file $DEBUG_ID not found in Sentry"
+          exit 1

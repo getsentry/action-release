@@ -89,6 +89,18 @@ export const getSourcemaps = (): string[] => {
 };
 
 /**
+ * Debug files are optional, but there may be several as a whitespace-separated list.
+ * Paths cannot contain spaces.
+ * @returns string[]
+ */
+export const getDebugFiles = (): string[] => {
+  return core
+    .getInput('debug_files')
+    .split(/\s+/)
+    .filter(file => file.length > 0);
+};
+
+/**
  * Dist is optional, but should be a string when provided.
  * @returns string
  */
