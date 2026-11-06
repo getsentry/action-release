@@ -4,6 +4,7 @@ changelog:
 versioning:
   policy: manual
 preReleaseCommand: bash scripts/craft-pre-release.sh
+postReleaseCommand: bash scripts/post-release.sh
 artifactProvider:
   name: none
 targets:
