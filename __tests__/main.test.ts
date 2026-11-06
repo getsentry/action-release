@@ -78,8 +78,8 @@ describe('options', () => {
       expect(getDebugFiles()).toEqual([]);
     });
 
-    test('should split space-separated paths', () => {
-      process.env['INPUT_DEBUG_FILES'] = './build/app.pdb ./build/app.dSYM';
+    test('should split whitespace-separated paths and drop empty entries', () => {
+      process.env['INPUT_DEBUG_FILES'] = '  ./build/app.pdb   ./build/app.dSYM\n';
       expect(getDebugFiles()).toEqual(['./build/app.pdb', './build/app.dSYM']);
     });
   });

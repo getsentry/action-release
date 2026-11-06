@@ -100073,15 +100073,15 @@ const getSourcemaps = () => {
 };
 exports.getSourcemaps = getSourcemaps;
 /**
- * Debug files are optional, but there may be several as a space-separated list.
+ * Debug files are optional, but there may be several as a whitespace-separated list.
+ * Paths cannot contain spaces.
  * @returns string[]
  */
 const getDebugFiles = () => {
-    const debugFilesOption = core.getInput('debug_files');
-    if (!debugFilesOption) {
-        return [];
-    }
-    return debugFilesOption.split(' ');
+    return core
+        .getInput('debug_files')
+        .split(/\s+/)
+        .filter(file => file.length > 0);
 };
 exports.getDebugFiles = getDebugFiles;
 /**

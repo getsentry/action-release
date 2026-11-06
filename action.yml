@@ -24,7 +24,7 @@ inputs:
     description: |-
       Space-separated list of paths to debug information files (e.g. dSYM, PDB,
       ELF, Breakpad). Uploaded with "sentry-cli debug-files upload".
-      Omit to skip uploading debug files.
+      Paths cannot contain spaces. Omit to skip uploading debug files.
     required: false
   dist:
     description: |-
