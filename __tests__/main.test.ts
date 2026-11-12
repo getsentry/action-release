@@ -155,6 +155,11 @@ describe('options', () => {
       expect(await getRelease()).toBe('v1.0.0');
     });
 
+    test(`should strip refs/heads from ${params.release}`, async () => {
+      process.env[params.release] = 'refs/heads/release-candidate';
+      expect(await getRelease()).toBe('release-candidate');
+    });
+
     test(`should get release version from ${params.release}`, async () => {
       process.env[params.release] = 'v1.0.0';
       expect(await getRelease()).toBe('v1.0.0');
