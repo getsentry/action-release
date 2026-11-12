@@ -18,8 +18,8 @@ export const getRelease = async (): Promise<string> => {
   if (releaseOption || versionOption) {
     // Prefer `release` over the deprecated `version`
     release = releaseOption ? releaseOption : versionOption;
-    // If users pass `${{ github.ref }}, strip the unwanted `refs/tags` prefix
-    release = release.replace(/^(refs\/tags\/)/, '');
+    // If users pass `${{ github.ref }}`, strip the unwanted `refs/tags` or `refs/heads` prefix
+    release = release.replace(/^(refs\/tags\/|refs\/heads\/)/, '');
   } else {
     core.debug('Release version not provided, proposing one...');
     release = await getCLI().proposeVersion();
