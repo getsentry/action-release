@@ -100071,7 +100071,12 @@ const getSourcemaps = () => {
     if (!sourcemapsOption) {
         return [];
     }
-    return sourcemapsOption.split(' ');
+    // Split on any whitespace and drop empty entries, so consecutive spaces
+    // cannot create phantom paths. This matches getUrlPrefixOption, which
+    // already splits this way — the two lists must stay the same length.
+    return sourcemapsOption
+        .split(/\s+/)
+        .filter(sourcemap => sourcemap.length > 0);
 };
 exports.getSourcemaps = getSourcemaps;
 /**
@@ -100201,6 +100206,13 @@ exports.getUrlPrefixOption = getUrlPrefixOption;
  */
 const getUrlPrefixesForSourcemaps = (sourcemaps) => {
     const urlPrefixes = (0, exports.getUrlPrefixOption)();
+    // No sourcemaps paths means there is nothing to upload, so url_prefix
+    // values have nothing to apply to. Ignore them instead of throwing:
+    // this runs before release creation in main.ts, so throwing here would
+    // abort the whole action even though the user asked for no sourcemaps.
+    if (sourcemaps.length === 0) {
+        return [];
+    }
     if (urlPrefixes.length === 0) {
         return sourcemaps.map(() => '');
     }
