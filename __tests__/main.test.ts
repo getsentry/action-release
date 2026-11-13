@@ -68,6 +68,11 @@ describe('options', () => {
       process.env['INPUT_SOURCEMAPS'] = './lib';
       expect(getSourcemaps()).toEqual(['./lib']);
     });
+
+    test('ignores empty entries from consecutive spaces', () => {
+      process.env['INPUT_SOURCEMAPS'] = './dist  ./sourcemaps';
+      expect(getSourcemaps()).toEqual(['./dist', './sourcemaps']);
+    });
   });
 
   describe('getDebugFiles', () => {
@@ -308,6 +313,10 @@ describe('options', () => {
       expect(() => getUrlPrefixesForSourcemaps(['./dist', './sourcemaps'])).toThrow(
         'Expected 2 url_prefix value(s) for 2 sourcemaps path(s), but got 3. Provide one url_prefix per sourcemaps path, or a single url_prefix to apply to all paths.'
       );
+    });
+    it('ignores url_prefix values when no sourcemaps are given', () => {
+      process.env['INPUT_URL_PREFIX'] = '~/ ~/sourcemaps';
+      expect(getUrlPrefixesForSourcemaps([])).toEqual([]);
     });
   });
 
