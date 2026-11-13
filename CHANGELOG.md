@@ -1,5 +1,18 @@
 # Changelog
 
+## 3.8.0
+
+### New Features ✨
+
+- Add `debug_files` input to upload debug information files by @andreiborza and @claude in [#351](https://github.com/getsentry/action-release/pull/351)
+
+### Internal Changes 🔧
+
+- (deps) Bump undici from 6.29.0 to 6.29.1 by @dependabot in [#348](https://github.com/getsentry/action-release/pull/348)
+- (node) Bump Node to 24.22.3 by @Jeffreyhung with @sentry-junior in [#352](https://github.com/getsentry/action-release/pull/352)
+- (release) Bump craft to 3.9.0 and update config by @BYK with @sentry-junior in [#349](https://github.com/getsentry/action-release/pull/349)
+- Migrate from Jest to Vitest by @andreiborza and @claude in [#350](https://github.com/getsentry/action-release/pull/350)
+
 ## 3.7.2
 
 ### Internal Changes 🔧
