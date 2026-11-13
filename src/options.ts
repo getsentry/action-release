@@ -205,8 +205,39 @@ export const getProjects = (): string[] => {
   return [project];
 };
 
-export const getUrlPrefixOption = (): string => {
-  return core.getInput('url_prefix');
+export const getUrlPrefixOption = (): string[] => {
+  return core
+    .getInput('url_prefix')
+    .split(/\s+/)
+    .filter(prefix => prefix.length > 0);
+};
+
+/**
+ * Map url_prefix values to sourcemaps paths, in order.
+ * A single prefix applies to every sourcemaps path, and no prefix means no
+ * prefix is applied. When several prefixes are given, their count must match
+ * the number of sourcemaps paths.
+ * @throws when the number of prefixes does not match the number of sourcemaps paths.
+ * @returns string[] one url prefix per sourcemaps path, in the same order.
+ */
+export const getUrlPrefixesForSourcemaps = (sourcemaps: string[]): string[] => {
+  const urlPrefixes = getUrlPrefixOption();
+
+  if (urlPrefixes.length === 0) {
+    return sourcemaps.map(() => '');
+  }
+
+  if (urlPrefixes.length === 1) {
+    return sourcemaps.map(() => urlPrefixes[0]);
+  }
+
+  if (urlPrefixes.length !== sourcemaps.length) {
+    throw new Error(
+      `Expected ${sourcemaps.length} url_prefix value(s) for ${sourcemaps.length} sourcemaps path(s), but got ${urlPrefixes.length}. Provide one url_prefix per sourcemaps path, or a single url_prefix to apply to all paths.`
+    );
+  }
+
+  return urlPrefixes;
 };
 
 export const getWorkingDirectory = (): string => {
