@@ -25,6 +25,7 @@ withTelemetry(
       const environment = options.getEnvironment();
       const inject = options.getBooleanOption('inject', true);
       const sourcemaps = options.getSourcemaps();
+      const urlPrefixes = options.getUrlPrefixesForSourcemaps(sourcemaps);
       const debugFiles = options.getDebugFiles();
       const dist = options.getDist();
       const shouldFinalize = options.getBooleanOption('finalize', true);
@@ -33,7 +34,6 @@ withTelemetry(
       const deployStartedAtOption = options.getStartedAt();
       const setCommitsOption = options.getSetCommitsOption();
       const projects = options.getProjects();
-      const urlPrefix = options.getUrlPrefixOption();
       const stripCommonPrefix = options.getBooleanOption('strip_common_prefix', false);
       const release = await options.getRelease();
 
@@ -89,16 +89,18 @@ withTelemetry(
 
         await traceStep('upload-sourcemaps', async () => {
           core.debug(`Adding sourcemaps`);
+
+          // @sentry/cli supports a urlPrefix per sourcemaps path via a path
+          // descriptor, so several url prefixes map to their sourcemaps path
+          // in a single upload. A path without a prefix stays a plain string.
           const sourceMapsOptions: SentryCliUploadSourceMapsOptions = {
-            include: sourcemaps,
+            include: sourcemaps.map((sourcemap, index) => {
+              const urlPrefix = urlPrefixes[index];
+              return urlPrefix ? { paths: [sourcemap], urlPrefix } : sourcemap;
+            }),
             dist,
             stripCommonPrefix,
           };
-
-          // only set the urlPrefix if it's not empty
-          if (urlPrefix) {
-            sourceMapsOptions.urlPrefix = urlPrefix;
-          }
 
           // sentry-cli supports multiple projects, but only uploads sourcemaps for the
           // first project so we need to upload sourcemaps for each project individually
