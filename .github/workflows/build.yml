@@ -385,9 +385,9 @@ jobs:
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
           DEBUG_ID: ${{ steps.dif.outputs.debug_id }}
         run: |
-          # Sentry can take some time to list a new debug file, so poll for up to 60s.
+          # Sentry can take some time to list a new debug file, so poll every 15s for up to 5 minutes.
           BODY="$RUNNER_TEMP/dsyms.json"
-          for i in $(seq 1 12); do
+          for i in $(seq 1 20); do
             STATUS=$(curl -s -o "$BODY" -w '%{http_code}' -H "Authorization: Bearer $SENTRY_AUTH_TOKEN" \
               "https://sentry.io/api/0/projects/$SENTRY_ORG/$SENTRY_PROJECT/files/dsyms/?query=$DEBUG_ID" || true)
             # Use the jq exit code, not its output: jq on Windows writes CRLF.
@@ -396,7 +396,7 @@ jobs:
               exit 0
             fi
             echo "Attempt $i: HTTP $STATUS, debug file not listed yet"
-            sleep 5
+            sleep 15
           done
           echo "ERROR: Debug file $DEBUG_ID not found in Sentry"
           exit 1
