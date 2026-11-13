@@ -99836,6 +99836,7 @@ const telemetry_1 = __nccwpck_require__(12417);
         const environment = options.getEnvironment();
         const inject = options.getBooleanOption('inject', true);
         const sourcemaps = options.getSourcemaps();
+        const urlPrefixes = options.getUrlPrefixesForSourcemaps(sourcemaps);
         const debugFiles = options.getDebugFiles();
         const dist = options.getDist();
         const shouldFinalize = options.getBooleanOption('finalize', true);
@@ -99844,7 +99845,6 @@ const telemetry_1 = __nccwpck_require__(12417);
         const deployStartedAtOption = options.getStartedAt();
         const setCommitsOption = options.getSetCommitsOption();
         const projects = options.getProjects();
-        const urlPrefix = options.getUrlPrefixOption();
         const stripCommonPrefix = options.getBooleanOption('strip_common_prefix', false);
         const release = yield options.getRelease();
         if (projects.length === 1) {
@@ -99888,15 +99888,17 @@ const telemetry_1 = __nccwpck_require__(12417);
             }
             yield (0, telemetry_1.traceStep)('upload-sourcemaps', () => __awaiter(void 0, void 0, void 0, function* () {
                 core.debug(`Adding sourcemaps`);
+                // @sentry/cli supports a urlPrefix per sourcemaps path via a path
+                // descriptor, so several url prefixes map to their sourcemaps path
+                // in a single upload. A path without a prefix stays a plain string.
                 const sourceMapsOptions = {
-                    include: sourcemaps,
+                    include: sourcemaps.map((sourcemap, index) => {
+                        const urlPrefix = urlPrefixes[index];
+                        return urlPrefix ? { paths: [sourcemap], urlPrefix } : sourcemap;
+                    }),
                     dist,
                     stripCommonPrefix,
                 };
-                // only set the urlPrefix if it's not empty
-                if (urlPrefix) {
-                    sourceMapsOptions.urlPrefix = urlPrefix;
-                }
                 // sentry-cli supports multiple projects, but only uploads sourcemaps for the
                 // first project so we need to upload sourcemaps for each project individually
                 yield Promise.all(projects.map((project) => __awaiter(void 0, void 0, void 0, function* () {
@@ -99987,7 +99989,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.getWorkingDirectory = exports.getUrlPrefixOption = exports.getProjects = exports.checkEnvironmentVariables = exports.getSetCommitsManualOptions = exports.getSetCommitsOption = exports.getBooleanOption = exports.getDist = exports.getDebugFiles = exports.getSourcemaps = exports.getStartedAt = exports.getEnvironment = exports.getRelease = void 0;
+exports.getWorkingDirectory = exports.getUrlPrefixesForSourcemaps = exports.getUrlPrefixOption = exports.getProjects = exports.checkEnvironmentVariables = exports.getSetCommitsManualOptions = exports.getSetCommitsOption = exports.getBooleanOption = exports.getDist = exports.getDebugFiles = exports.getSourcemaps = exports.getStartedAt = exports.getEnvironment = exports.getRelease = void 0;
 const core = __importStar(__nccwpck_require__(42186));
 const path_1 = __importDefault(__nccwpck_require__(71017));
 const cli_1 = __nccwpck_require__(56733);
@@ -100183,9 +100185,34 @@ const getProjects = () => {
 };
 exports.getProjects = getProjects;
 const getUrlPrefixOption = () => {
-    return core.getInput('url_prefix');
+    return core
+        .getInput('url_prefix')
+        .split(/\s+/)
+        .filter(prefix => prefix.length > 0);
 };
 exports.getUrlPrefixOption = getUrlPrefixOption;
+/**
+ * Map url_prefix values to sourcemaps paths, in order.
+ * A single prefix applies to every sourcemaps path, and no prefix means no
+ * prefix is applied. When several prefixes are given, their count must match
+ * the number of sourcemaps paths.
+ * @throws when the number of prefixes does not match the number of sourcemaps paths.
+ * @returns string[] one url prefix per sourcemaps path, in the same order.
+ */
+const getUrlPrefixesForSourcemaps = (sourcemaps) => {
+    const urlPrefixes = (0, exports.getUrlPrefixOption)();
+    if (urlPrefixes.length === 0) {
+        return sourcemaps.map(() => '');
+    }
+    if (urlPrefixes.length === 1) {
+        return sourcemaps.map(() => urlPrefixes[0]);
+    }
+    if (urlPrefixes.length !== sourcemaps.length) {
+        throw new Error(`Expected ${sourcemaps.length} url_prefix value(s) for ${sourcemaps.length} sourcemaps path(s), but got ${urlPrefixes.length}. Provide one url_prefix per sourcemaps path, or a single url_prefix to apply to all paths.`);
+    }
+    return urlPrefixes;
+};
+exports.getUrlPrefixesForSourcemaps = getUrlPrefixesForSourcemaps;
 const getWorkingDirectory = () => {
     // The action runs inside `github.action_path` and as such
     // doesn't automatically have access to the user's git
