@@ -6,6 +6,7 @@ import {
   getBooleanOption,
   getDist,
   getSourcemaps,
+  getDebugFiles,
   getStartedAt,
   getRelease,
   getSetCommitsOption,
@@ -65,6 +66,21 @@ describe('options', () => {
     test('should return array when sourcemaps is false', () => {
       process.env['INPUT_SOURCEMAPS'] = './lib';
       expect(getSourcemaps()).toEqual(['./lib']);
+    });
+  });
+
+  describe('getDebugFiles', () => {
+    afterEach(() => {
+      delete process.env['INPUT_DEBUG_FILES'];
+    });
+
+    test('should return empty list when debug_files is omitted', () => {
+      expect(getDebugFiles()).toEqual([]);
+    });
+
+    test('should split whitespace-separated paths and drop empty entries', () => {
+      process.env['INPUT_DEBUG_FILES'] = '  ./build/app.pdb   ./build/app.dSYM\n';
+      expect(getDebugFiles()).toEqual(['./build/app.pdb', './build/app.dSYM']);
     });
   });
 

@@ -20,6 +20,12 @@ inputs:
       Does nothing if "sourcemaps" was not set.
     default: true
     required: false
+  debug_files:
+    description: |-
+      Space-separated list of paths to debug information files (e.g. dSYM, PDB,
+      ELF, Breakpad). Uploaded with "sentry-cli debug-files upload".
+      Paths cannot contain spaces. Omit to skip uploading debug files.
+    required: false
   dist:
     description: |-
       Unique identifier for the distribution, used to further segment your
@@ -148,6 +154,7 @@ runs:
         INPUT_ENVIRONMENT: ${{ inputs.environment }}
         INPUT_INJECT: ${{ inputs.inject }}
         INPUT_SOURCEMAPS: ${{ inputs.sourcemaps }}
+        INPUT_DEBUG_FILES: ${{ inputs.debug_files }}
         INPUT_DIST: ${{ inputs.dist }}
         INPUT_FINALIZE: ${{ inputs.finalize }}
         INPUT_IGNORE_MISSING: ${{ inputs.ignore_missing }}
@@ -214,6 +221,7 @@ runs:
         INPUT_ENVIRONMENT: ${{ inputs.environment }}
         INPUT_INJECT: ${{ inputs.inject }}
         INPUT_SOURCEMAPS: ${{ inputs.sourcemaps }}
+        INPUT_DEBUG_FILES: ${{ inputs.debug_files }}
         INPUT_DIST: ${{ inputs.dist }}
         INPUT_FINALIZE: ${{ inputs.finalize }}
         INPUT_IGNORE_MISSING: ${{ inputs.ignore_missing }}

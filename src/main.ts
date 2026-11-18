@@ -25,6 +25,7 @@ withTelemetry(
       const environment = options.getEnvironment();
       const inject = options.getBooleanOption('inject', true);
       const sourcemaps = options.getSourcemaps();
+      const debugFiles = options.getDebugFiles();
       const dist = options.getDist();
       const shouldFinalize = options.getBooleanOption('finalize', true);
       const ignoreMissing = options.getBooleanOption('ignore_missing', false);
@@ -111,6 +112,18 @@ withTelemetry(
           );
 
           Sentry.setTag('sourcemaps-uploaded', true);
+        });
+      }
+
+      Sentry.setTag('debug-files', debugFiles.length > 0);
+
+      if (debugFiles.length) {
+        await traceStep('upload-debug-files', async () => {
+          core.debug(`Uploading debug files`);
+          // Debug files belong to a project, not a release, so upload them for each project
+          for (const project of projects) {
+            await getCLI().execute(['debug-files', 'upload', '--project', project, ...debugFiles], true);
+          }
         });
       }
 
