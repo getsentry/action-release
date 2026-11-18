@@ -16,7 +16,8 @@ inputs:
   ext:
     description: |-
       Space-separated list of file extensions to upload from `sourcemaps`
-      directories (e.g. "js map ts"). Replaces the sentry-cli defaults.
+      directories (e.g. "js map ts"). Replaces the sentry-cli defaults
+      (js cjs mjs map jsbundle bundle), so list them too if you still need them.
       Omit to use the defaults.
     required: false
   inject:
