@@ -8,6 +8,7 @@ import {
   getBooleanOption,
   getDist,
   getSourcemaps,
+  getSourcemapExtensions,
   getDebugFiles,
   getStartedAt,
   getRelease,
@@ -131,6 +132,17 @@ describe('options', () => {
     test('should split space-separated prefixes', () => {
       process.env['INPUT_STRIP_PREFIX'] = '.. webpack://';
       expect(getStripPrefix()).toEqual(['..', 'webpack://']);
+    });
+  });
+
+  describe('getSourcemapExtensions', () => {
+    afterEach(() => {
+      delete process.env['INPUT_EXT'];
+    });
+
+    test('should split whitespace-separated extensions', () => {
+      process.env['INPUT_EXT'] = 'js   map  ts\n mjs';
+      expect(getSourcemapExtensions()).toEqual(['js', 'map', 'ts', 'mjs']);
     });
   });
 
