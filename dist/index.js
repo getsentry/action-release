@@ -99989,6 +99989,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.getWorkingDirectory = exports.getUrlPrefixOption = exports.getProjects = exports.checkEnvironmentVariables = exports.getSetCommitsManualOptions = exports.getSetCommitsOption = exports.getBooleanOption = exports.getDist = exports.getDebugFiles = exports.getSourcemaps = exports.getStartedAt = exports.getEnvironment = exports.getRelease = void 0;
 const core = __importStar(__nccwpck_require__(42186));
+const fs_1 = __nccwpck_require__(57147);
 const path_1 = __importDefault(__nccwpck_require__(71017));
 const cli_1 = __nccwpck_require__(56733);
 /**
@@ -100062,6 +100063,7 @@ const getStartedAt = () => {
 exports.getStartedAt = getStartedAt;
 /**
  * Source maps are optional, but there may be several as a space-separated list.
+ * Entries with glob patterns (e.g. `build/*.map`) are expanded to the matching paths.
  * @returns string[]
  */
 const getSourcemaps = () => {
@@ -100069,7 +100071,17 @@ const getSourcemaps = () => {
     if (!sourcemapsOption) {
         return [];
     }
-    return sourcemapsOption.split(' ');
+    return sourcemapsOption.split(' ').flatMap(entry => {
+        // Keep existing paths as-is, e.g. framework route folders like `[slug]` look like globs.
+        if (!/[*?[\]{}]/.test(entry) || (0, fs_1.existsSync)(entry)) {
+            return [entry];
+        }
+        const matches = (0, fs_1.globSync)(entry);
+        if (!matches.length) {
+            core.warning(`No files match the sourcemaps pattern "${entry}".`);
+        }
+        return matches;
+    });
 };
 exports.getSourcemaps = getSourcemaps;
 /**
