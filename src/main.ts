@@ -34,6 +34,7 @@ withTelemetry(
       const deployStartedAtOption = options.getStartedAt();
       const setCommitsOption = options.getSetCommitsOption();
       const projects = options.getProjects();
+      const stripPrefix = options.getStripPrefix();
       const stripCommonPrefix = options.getBooleanOption('strip_common_prefix', false);
       const release = await options.getRelease();
 
@@ -93,6 +94,7 @@ withTelemetry(
             include: sourcemaps,
             ext: options.getSourcemapExtensions(),
             dist,
+            stripPrefix,
             stripCommonPrefix,
           };
 
