@@ -131,7 +131,7 @@ inputs:
   strip_prefix:
     description: |-
       Space-separated list of prefixes to remove from the source paths
-      inside uploaded source maps. E.g. ".." removes "../" from "../src/app.ts".
+      inside uploaded source maps. E.g. "../" turns "../src/app.ts" into "src/app.ts".
     required: false
   working_directory:
     description: |-
