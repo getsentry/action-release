@@ -1,0 +1,57 @@
+name: 'Use local action image'
+description: |-
+  Loads the action image built in this workflow run into a local registry
+  and points the checked-out action.yml to it. The e2e tests use this, so
+  they can run before any image goes to ghcr.io (and on fork PRs, which get
+  a read-only token).
+
+inputs:
+  path:
+    description: Directory of the checked-out action that the tests run.
+    default: '.'
+    required: false
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Download image
+      uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+      with:
+        name: action-release-image-${{ runner.arch == 'ARM64' && 'arm64' || 'amd64' }}
+        # Relative path, because `runner.temp` is a host path in container jobs.
+        path: .action-release-image
+
+    # Container jobs have the host docker socket mounted but usually no docker CLI.
+    - name: Install docker CLI
+      shell: bash
+      run: |
+        if command -v docker &> /dev/null; then
+          exit 0
+        fi
+        curl -fsSL "https://download.docker.com/linux/static/stable/$(uname -m)/docker-29.9.1.tgz" \
+          | tar -xz -C /usr/local/bin --strip-components=1 docker/docker
+
+    # The runner always pulls `docker://` images, so a local copy is not enough.
+    # The daemon trusts registries on localhost without TLS.
+    - name: Push image to local registry
+      shell: bash
+      run: |
+        docker run -d --rm -p 5000:5000 --name action-release-registry \
+          registry:3.1.2@sha256:d4032d4cc323c1731c707931ecada07a53076eac38e3b61ae57533f170f2c6c3
+        docker load -i .action-release-image/image.tar
+        rm -rf .action-release-image
+        # Retry until the registry is ready. A curl check does not work in
+        # container jobs, because there localhost is the job container.
+        for i in $(seq 1 10); do
+          docker push localhost:5000/action-release-image:pr && exit 0
+          sleep 2
+        done
+        exit 1
+
+    - name: Point action.yml to local image
+      shell: bash
+      working-directory: ${{ inputs.path }}
+      run: |
+        sed -i -e 's|docker://ghcr.io/getsentry/action-release-image:.*|docker://localhost:5000/action-release-image:pr|' action.yml
+        # Make sure the replacement worked
+        grep -q 'docker://localhost:5000/action-release-image:pr' action.yml
