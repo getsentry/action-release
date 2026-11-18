@@ -1,4 +1,6 @@
 import * as core from '@actions/core';
+import { SourceMapsPathDescriptor } from '@sentry/cli';
+import { existsSync, globSync } from 'fs';
 import path from 'path';
 import { getCLI } from './cli';
 
@@ -75,27 +77,58 @@ export const getStartedAt = (): number | null => {
   return outputTimestamp;
 };
 
-/**
- * Source maps are optional, but there may be several as a space-separated list.
- * @returns string[]
- */
-export const getSourcemaps = (): string[] => {
-  const sourcemapsOption: string = core.getInput('sourcemaps');
-  if (!sourcemapsOption) {
-    return [];
+const splitList = (input: string): string[] => input.split(/\s+/).filter(Boolean);
+
+const expandSourcemapsEntry = (entry: string): string[] => {
+  // Keep existing paths as-is, e.g. framework route folders like `[slug]` look like globs.
+  if (!/[*?[\]{}]/.test(entry) || existsSync(entry)) {
+    return [entry];
   }
 
-  return sourcemapsOption.split(' ');
+  const matches = globSync(entry);
+  if (!matches.length) {
+    core.warning(`No files match the sourcemaps pattern "${entry}".`);
+  }
+  return matches;
 };
 
 /**
- * Source map extensions to pass to Sentry CLI instead of its built-in defaults.
- * Omitting the input keeps the CLI's normal js/map/jsbundle/bundle handling.
+ * Source maps are optional, but there may be several as a space-separated list.
+ * Entries with glob patterns (e.g. `build/*.map`) are expanded to the matching paths.
+ * `url_prefix` takes one prefix for all entries, or one prefix per entry in the same order.
+ * @throws when several prefixes are given and their count does not match the sourcemaps entries.
  */
-export const getSourcemapExtensions = (): string[] => {
-  const extensions = core.getInput('ext');
-  return extensions ? extensions.split(/\s+/).filter(Boolean) : [];
+export const getSourcemaps = (): SourceMapsPathDescriptor[] => {
+  const entries = splitList(core.getInput('sourcemaps'));
+  const prefixes = splitList(core.getInput('url_prefix'));
+
+  if (prefixes.length > 1 && prefixes.length !== entries.length) {
+    throw new Error('When `url_prefix` has multiple values, each `sourcemaps` entry must have exactly one prefix');
+  }
+
+  return entries.map((entry, index) => {
+    const urlPrefix = prefixes.length > 1 ? prefixes[index] : prefixes[0];
+    return { paths: expandSourcemapsEntry(entry), ...(urlPrefix && { urlPrefix }) };
+  });
 };
+
+/**
+ * Debug files are optional, but there may be several as a whitespace-separated list.
+ * Paths cannot contain spaces.
+ * @returns string[]
+ */
+export const getDebugFiles = (): string[] => {
+  return core
+    .getInput('debug_files')
+    .split(/\s+/)
+    .filter(file => file.length > 0);
+};
+
+/**
+ * File extensions that sentry-cli scans when it uploads source maps from a directory.
+ * An empty list keeps the sentry-cli defaults.
+ */
+export const getSourcemapExtensions = (): string[] => splitList(core.getInput('ext'));
 
 /**
  * Dist is optional, but should be a string when provided.
@@ -200,10 +233,6 @@ export const getProjects = (): string[] => {
     );
   }
   return [project];
-};
-
-export const getUrlPrefixOption = (): string => {
-  return core.getInput('url_prefix');
 };
 
 export const getWorkingDirectory = (): string => {

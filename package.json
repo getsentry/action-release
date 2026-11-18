@@ -1,6 +1,6 @@
 {
   "name": "action-release",
-  "version": "3.7.2",
+  "version": "3.8.0",
   "private": true,
   "description": "GitHub Action for creating a release on Sentry",
   "main": "dist/index.js",
@@ -11,9 +11,8 @@
     "format-check": "prettier --check **/*.ts **/*.md",
     "lint": "eslint src/**/*.ts",
     "set-docker-tag": "./scripts/set-docker-tag.sh",
-    "set-docker-tag-from-branch": "./scripts/set-docker-tag-from-branch.sh",
     "start": "node dist/index.js",
-    "test": "jest"
+    "test": "vitest run"
   },
   "repository": {
     "type": "git",
@@ -32,25 +31,22 @@
     "@sentry/node": "^10.71.0"
   },
   "devDependencies": {
-    "@types/jest": "^29.5.6",
     "@types/node": "^24.0.0",
     "@typescript-eslint/parser": "^6.9.0",
     "@vercel/ncc": "^0.38.1",
     "eslint": "^8.52.0",
     "eslint-plugin-github": "^4.10.1",
-    "eslint-plugin-jest": "^27.4.3",
-    "jest": "^29.7.0",
-    "jest-circus": "^29.7.0",
     "js-yaml": "^4.3.2",
     "prettier": "^3.0.3",
-    "ts-jest": "^29.1.1",
-    "typescript": "^5.2.2"
+    "typescript": "^5.2.2",
+    "vite": "^8.3.6",
+    "vitest": "^5.1.0"
   },
   "resolutions": {
     "**/@istanbuljs/load-nyc-config/js-yaml": "3.15.2"
   },
   "volta": {
-    "node": "24.22.1",
+    "node": "24.22.3",
     "yarn": "1.22.4"
   }
 }
