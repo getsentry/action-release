@@ -61,14 +61,12 @@ Regenerates dist/index.js.
 
 Whoever runs the follow-up commit needs the repo's pre-commit hooks installed. Verify with `ls .git/hooks/pre-commit`; if missing, run `make` (installs yarn deps + `pre-commit install`) or `pre-commit install`.
 
-The `set-docker-tag-from-branch` hook will rewrite `action.yml` on the first commit of a branch and fail the commit. Recover by staging `action.yml` and committing again (**never `--amend`** — the hook-failed commit never landed):
+If a hook modifies files, the commit fails. Recover by staging the modified files and committing again (**never `--amend`**, because the hook-failed commit never landed):
 
 ```bash
-git add action.yml
+git add <modified files>
 git commit -m "<same message>"
 ```
-
-CI does **not** run pre-commit. CI's `prepare-docker` job rejects PRs where `action.yml`'s Docker tag still matches a semver like `3.6.0`, so keeping the tag in sync via the local hook is what prevents the CI failure.
 
 ## Notes
 

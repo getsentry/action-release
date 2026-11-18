@@ -10,7 +10,7 @@ inputs:
     required: false
   sourcemaps:
     description: |-
-      Space-separated list of paths to JavaScript source maps.
+      Space-separated list of paths or glob patterns to JavaScript source maps.
       Omit to skip uploading sourcemaps.
     required: false
   inject:
@@ -19,6 +19,12 @@ inputs:
       un-minifcation of your stacktraces.
       Does nothing if "sourcemaps" was not set.
     default: true
+    required: false
+  debug_files:
+    description: |-
+      Space-separated list of paths to debug information files (e.g. dSYM, PDB,
+      ELF, Breakpad). Uploaded with "sentry-cli debug-files upload".
+      Paths cannot contain spaces. Omit to skip uploading debug files.
     required: false
   dist:
     description: |-
@@ -102,6 +108,8 @@ inputs:
   url_prefix:
     description: |-
       Adds a prefix to source map urls after stripping them.
+      A single prefix applies to all sourcemaps entries. To use a different prefix
+      per entry, give a space-separated list with one prefix per entry, in the same order.
     required: false
   strip_common_prefix:
     description: |-
@@ -164,7 +172,7 @@ runs:
         # setup-node doesn't allow absolute paths, so we can't
         # just use `github.action_path` to read this out from the `package.json`
         # any changes to the runtime need to be reflected here
-        node-version: 24.22.1
+        node-version: 24.22.3
         package-manager-cache: false
 
     - name: Install Sentry CLI v2
@@ -180,6 +188,7 @@ runs:
         INPUT_ENVIRONMENT: ${{ inputs.environment }}
         INPUT_INJECT: ${{ inputs.inject }}
         INPUT_SOURCEMAPS: ${{ inputs.sourcemaps }}
+        INPUT_DEBUG_FILES: ${{ inputs.debug_files }}
         INPUT_DIST: ${{ inputs.dist }}
         INPUT_FINALIZE: ${{ inputs.finalize }}
         INPUT_IGNORE_MISSING: ${{ inputs.ignore_missing }}

@@ -75737,7 +75737,7 @@ function defaultFactory (origin, opts) {
 }
 
 class Agent extends DispatcherBase {
-  constructor ({ factory = defaultFactory, maxRedirections = 0, connect, ...options } = {}) {
+  constructor ({ factory = defaultFactory, maxRedirections = 0, connect, tls, ...options } = {}) {
     if (typeof factory !== 'function') {
       throw new InvalidArgumentError('factory must be a function.')
     }
@@ -75756,11 +75756,15 @@ class Agent extends DispatcherBase {
       connect = { ...connect }
     }
 
+    if (tls && typeof tls !== 'function') {
+      tls = { ...tls }
+    }
+
     this[kInterceptors] = options.interceptors?.Agent && Array.isArray(options.interceptors.Agent)
       ? options.interceptors.Agent
       : [createRedirectInterceptor({ maxRedirections })]
 
-    this[kOptions] = { ...util.deepClone(options), connect }
+    this[kOptions] = { ...util.deepClone(options), connect, tls }
     this[kOptions].interceptors = options.interceptors
       ? { ...options.interceptors }
       : undefined
@@ -76795,8 +76799,6 @@ async function connectH1 (client, socket) {
   socket[kParser] = new Parser(client, socket, llhttpInstance)
 
   addListener(socket, 'error', function (err) {
-    assert(err.code !== 'ERR_TLS_CERT_ALTNAME_INVALID')
-
     const parser = this[kParser]
 
     // On Mac OS, we get an ECONNRESET even if there is a full body to be forwarded
@@ -77727,8 +77729,6 @@ async function connectH2 (client, socket) {
   socket[kHTTP2Session] = session
 
   util.addListener(socket, 'error', function (err) {
-    assert(err.code !== 'ERR_TLS_CERT_ALTNAME_INVALID')
-
     this[kError] = err
 
     this[kClient][kOnError](err)
@@ -77802,8 +77802,6 @@ function resumeH2 (client) {
 }
 
 function onHttp2SessionError (err) {
-  assert(err.code !== 'ERR_TLS_CERT_ALTNAME_INVALID')
-
   this[kSocket][kError] = err
   this[kClient][kOnError](err)
 }
@@ -78502,9 +78500,10 @@ class Client extends DispatcherBase {
     // h2
     maxConcurrentStreams,
     allowH2,
-    webSocket
+    webSocket,
+    eventSource
   } = {}) {
-    super({ webSocket })
+    super({ webSocket, eventSource })
 
     if (keepAlive !== undefined) {
       throw new InvalidArgumentError('unsupported keepAlive, use pipelining=0 instead')
@@ -79026,6 +79025,7 @@ module.exports = Client
 "use strict";
 
 
+const buffer = __nccwpck_require__(72254)
 const Dispatcher = __nccwpck_require__(87781)
 const {
   ClientDestroyedError,
@@ -79038,6 +79038,7 @@ const kOnDestroyed = Symbol('onDestroyed')
 const kOnClosed = Symbol('onClosed')
 const kInterceptedDispatch = Symbol('Intercepted Dispatch')
 const kWebSocketOptions = Symbol('webSocketOptions')
+const kEventSourceOptions = Symbol('eventSourceOptions')
 
 class DispatcherBase extends Dispatcher {
   constructor (opts) {
@@ -79048,12 +79049,19 @@ class DispatcherBase extends Dispatcher {
     this[kClosed] = false
     this[kOnClosed] = []
     this[kWebSocketOptions] = opts?.webSocket ?? {}
+    this[kEventSourceOptions] = opts?.eventSource ?? {}
   }
 
   get webSocketOptions () {
     return {
       maxFragments: this[kWebSocketOptions].maxFragments ?? 131072,
       maxPayloadSize: this[kWebSocketOptions].maxPayloadSize ?? 128 * 1024 * 1024
+    }
+  }
+
+  get eventSourceOptions () {
+    return {
+      maxEventSize: this[kEventSourceOptions].maxEventSize ?? buffer.kStringMaxLength
     }
   }
 
@@ -85454,6 +85462,7 @@ module.exports = {
 
 "use strict";
 
+const buffer = __nccwpck_require__(72254)
 const { Transform } = __nccwpck_require__(84492)
 const { isASCIINumber, isValidLastEventId } = __nccwpck_require__(8865)
 
@@ -85478,10 +85487,18 @@ const COLON = 0x3A
  */
 const SPACE = 0x20
 
+const defaultMaxEventSize = buffer.kStringMaxLength
+
 const DATA = Buffer.from('data')
 const EVENT = Buffer.from('event')
 const ID = Buffer.from('id')
 const RETRY = Buffer.from('retry')
+
+// Each data field creates a string node, and each unconsumed input chunk keeps
+// a Buffer wrapper. The absolute ceiling protects the large default byte limit.
+const minParserItems = 1024
+const maxParserItems = 131072
+const bytesPerParserItem = 128
 
 function isASCIINumberBytes (buffer, start) {
   if (start >= buffer.length) {
@@ -85519,6 +85536,12 @@ function isFieldName (line, length, field) {
   }
 
   return true
+}
+
+function createMaxEventSizeExceededError () {
+  const error = new Error('EventSource message size exceeded')
+  error.aborted = false
+  return error
 }
 
 /**
@@ -85569,6 +85592,13 @@ class EventSourceStream extends Transform {
   pos = 0
   lineChunkIndex = 0
   linePos = 0
+  lineLength = 0
+  eventSize = 0
+  eventFieldSizes = { data: 0, event: 0, id: 0, retry: 0 }
+  dataLineCount = 0
+  maxEventSize
+  maxDataLines
+  maxBufferedChunks
 
   event = {
     data: undefined,
@@ -85579,6 +85609,7 @@ class EventSourceStream extends Transform {
 
   /**
    * @param {object} options
+   * @param {number} [options.maxEventSize]
    * @param {eventSourceSettings} options.eventSourceSettings
    * @param {Function} [options.push]
    */
@@ -85590,6 +85621,12 @@ class EventSourceStream extends Transform {
     super(options)
 
     this.state = options.eventSourceSettings || {}
+    this.maxEventSize = options.maxEventSize ?? defaultMaxEventSize
+    const parserItemLimit = this.maxEventSize > 0
+      ? Math.min(maxParserItems, Math.max(minParserItems, Math.floor(this.maxEventSize / bytesPerParserItem)))
+      : 0
+    this.maxDataLines = parserItemLimit
+    this.maxBufferedChunks = parserItemLimit
     if (options.push) {
       this.push = options.push
     }
@@ -85607,6 +85644,14 @@ class EventSourceStream extends Transform {
       return
     }
 
+    // A leading line ending can immediately release the currently buffered
+    // line, even when it uses the final allowed chunk slot.
+    if (this.maxEventSize > 0 &&
+        this.chunks.length >= this.maxBufferedChunks &&
+        chunk[0] !== LF && chunk[0] !== CR) {
+      callback(createMaxEventSizeExceededError())
+      return
+    }
     this.chunks.push(chunk)
 
     // Strip leading byte-order-mark if we opened the stream and started
@@ -85685,7 +85730,12 @@ class EventSourceStream extends Transform {
 
         // In any case, we can process the line as we reached an
         // end-of-line character
-        this.parseLine(this.readLine(), this.event)
+        try {
+          this.parseLine(this.readLine(), this.event)
+        } catch (error) {
+          callback(error)
+          return
+        }
         this.consumeCurrentByte()
         // A line was processed and this could be the end of the event. We need
         // to check if the next line is empty to determine if the event is
@@ -85694,15 +85744,28 @@ class EventSourceStream extends Transform {
         continue
       }
 
+      // readLine() is only called after CR or LF. Reject an unfinished line
+      // before it can retain an unbounded number of decoded chunks. The seven
+      // extra bytes allow the longest field prefix ("event: " or "retry: ").
+      if (this.maxEventSize > 0 && ++this.lineLength > this.maxEventSize + 7) {
+        callback(createMaxEventSizeExceededError())
+        return
+      }
       this.advanceCursor()
     }
 
     callback()
   }
 
+  _destroy (error, callback) {
+    this.chunks.length = 0
+    this.clearEvent()
+    super._destroy(error, callback)
+  }
+
   /**
    * @param {Buffer} line
-   * @param {EventStreamEvent} event
+   * @param {EventSourceStreamEvent} event
    */
   parseLine (line, event) {
     // If the line is empty (a blank line)
@@ -85736,6 +85799,13 @@ class EventSourceStream extends Transform {
     }
 
     if (isFieldName(line, fieldLength, DATA)) {
+      if (this.maxEventSize > 0 && this.dataLineCount >= this.maxDataLines) {
+        throw createMaxEventSizeExceededError()
+      }
+      const valueBytes = line.length - valueStart
+      const dataSize = this.eventFieldSizes.data + (event.data === undefined ? 0 : 1) + valueBytes
+      this.setEventFieldSize('data', dataSize)
+
       const value = line.toString('utf8', valueStart)
 
       if (event.data === undefined) {
@@ -85743,11 +85813,13 @@ class EventSourceStream extends Transform {
       } else {
         event.data += `\n${value}`
       }
+      this.dataLineCount++
       return
     }
 
     if (isFieldName(line, fieldLength, RETRY)) {
       if (isASCIINumberBytes(line, valueStart)) {
+        this.setEventFieldSize('retry', line.length - valueStart)
         event.retry = line.toString('utf8', valueStart)
       }
       return
@@ -85755,18 +85827,27 @@ class EventSourceStream extends Transform {
 
     if (isFieldName(line, fieldLength, ID)) {
       if (isValidLastEventIdBytes(line, valueStart)) {
+        this.setEventFieldSize('id', line.length - valueStart)
         event.id = line.toString('utf8', valueStart)
       }
       return
     }
 
     if (isFieldName(line, fieldLength, EVENT)) {
-      const value = line.toString('utf8', valueStart)
-
-      if (value.length > 0) {
-        event.event = value
+      if (valueStart < line.length) {
+        this.setEventFieldSize('event', line.length - valueStart)
+        event.event = line.toString('utf8', valueStart)
       }
     }
+  }
+
+  setEventFieldSize (field, size) {
+    const eventSize = this.eventSize - this.eventFieldSizes[field] + size
+    if (this.maxEventSize > 0 && eventSize > this.maxEventSize) {
+      throw createMaxEventSizeExceededError()
+    }
+    this.eventSize = eventSize
+    this.eventFieldSizes[field] = size
   }
 
   /**
@@ -85799,6 +85880,12 @@ class EventSourceStream extends Transform {
     this.event.event = undefined
     this.event.id = undefined
     this.event.retry = undefined
+    this.eventSize = 0
+    this.dataLineCount = 0
+    this.eventFieldSizes.data = 0
+    this.eventFieldSizes.event = 0
+    this.eventFieldSizes.id = 0
+    this.eventFieldSizes.retry = 0
   }
 
   hasPendingEvent () {
@@ -85834,14 +85921,16 @@ class EventSourceStream extends Transform {
   syncLineStartToCursor () {
     this.lineChunkIndex = this.chunkIndex
     this.linePos = this.pos
+    this.lineLength = 0
     this.dropConsumedChunks()
   }
 
   dropConsumedChunks () {
-    while (this.lineChunkIndex > 0) {
-      this.chunks.shift()
-      this.lineChunkIndex--
-      this.chunkIndex--
+    if (this.lineChunkIndex > 0) {
+      const consumed = this.lineChunkIndex
+      this.chunks.splice(0, consumed)
+      this.lineChunkIndex = 0
+      this.chunkIndex -= consumed
     }
 
     if (this.chunkIndex === this.chunks.length) {
@@ -85967,6 +86056,7 @@ const { isNetworkError } = __nccwpck_require__(12583)
 const { delay } = __nccwpck_require__(8865)
 const { kEnumerableProperty } = __nccwpck_require__(83983)
 const { environmentSettingsObject } = __nccwpck_require__(1310)
+const { getGlobalDispatcher } = __nccwpck_require__(21892)
 
 let experimentalWarned = false
 
@@ -86248,6 +86338,7 @@ class EventSource extends EventTarget {
 
       const eventSourceStream = new EventSourceStream({
         eventSourceSettings: this.#state,
+        maxEventSize: this.#dispatcher.eventSourceOptions?.maxEventSize,
         push: (event) => {
           this.dispatchEvent(createFastMessageEvent(
             event.type,
@@ -86426,7 +86517,8 @@ webidl.converters.EventSourceInitDict = webidl.dictionaryConverter([
   },
   {
     key: 'dispatcher', // undici only
-    converter: webidl.converters.any
+    converter: webidl.converters.any,
+    defaultValue: () => getGlobalDispatcher()
   }
 ])
 
@@ -91533,8 +91625,10 @@ async function httpNetworkFetch (
   // 19. Run these steps in parallel:
 
   //    1. Run these steps, but abort when fetchParams is canceled:
-  fetchParams.controller.onAborted = onAborted
-  fetchParams.controller.on('terminated', onAborted)
+  if (!fetchParams.controller.resume) {
+    fetchParams.controller.on('terminated', onAborted)
+  }
+
   fetchParams.controller.resume = async () => {
     // 1. While true
     while (true) {
@@ -91703,8 +91797,6 @@ async function httpNetworkFetch (
           }
           location = headersList.get('location', true)
 
-          this.body = new Readable({ read: resume })
-
           const decoders = []
 
           const willFollow = location && request.redirect === 'follow' &&
@@ -91722,7 +91814,7 @@ async function httpNetworkFetch (
             // CVE fix similar to urllib3 (GHSA-gm62-xv2j-4w53) and curl (CVE-2022-32206).
             const maxContentEncodings = 5
             if (codings.length > maxContentEncodings) {
-              reject(new Error(`too many content-encodings in response: ${codings.length}, maximum allowed is ${maxContentEncodings}`))
+              this.abort(new Error(`too many content-encodings in response: ${codings.length}, maximum allowed is ${maxContentEncodings}`))
               return true
             }
 
@@ -91754,6 +91846,8 @@ async function httpNetworkFetch (
               }
             }
           }
+
+          this.body = new Readable({ read: resume })
 
           const onError = this.onError.bind(this)
 
@@ -91799,10 +91893,6 @@ async function httpNetworkFetch (
         onComplete () {
           if (this.abort) {
             fetchParams.controller.off('terminated', this.abort)
-          }
-
-          if (fetchParams.controller.onAborted) {
-            fetchParams.controller.off('terminated', fetchParams.controller.onAborted)
           }
 
           fetchParams.controller.ended = true
@@ -98295,6 +98385,20 @@ class ByteParser extends Writable {
         if (isControlFrame(this.#info.opcode)) {
           this.#loop = this.parseControlFrame(body)
           this.#state = parserStates.INFO
+
+          // If the automatic PONG/CLOSE reply filled the socket's write buffer,
+          // stop parsing and resume on drain so a PING flood cannot grow the
+          // outbound queue without bound.
+          const socket = this.ws[kResponse].socket
+          if (this.#loop && socket.writableNeedDrain) {
+            this.#loop = false
+            socket.once('drain', () => {
+              if (this.destroyed) return
+              this.#loop = true
+              this.run(callback)
+            })
+            return
+          }
         } else {
           if (!this.#info.compressed) {
             if (!this.writeFragments(body)) {
@@ -99732,6 +99836,8 @@ const telemetry_1 = __nccwpck_require__(12417);
         const environment = options.getEnvironment();
         const inject = options.getBooleanOption('inject', true);
         const sourcemaps = options.getSourcemaps();
+        const sourcemapPaths = sourcemaps.flatMap(entry => entry.paths);
+        const debugFiles = options.getDebugFiles();
         const dist = options.getDist();
         const shouldFinalize = options.getBooleanOption('finalize', true);
         const ignoreMissing = options.getBooleanOption('ignore_missing', false);
@@ -99739,7 +99845,6 @@ const telemetry_1 = __nccwpck_require__(12417);
         const deployStartedAtOption = options.getStartedAt();
         const setCommitsOption = options.getSetCommitsOption();
         const projects = options.getProjects();
-        const urlPrefix = options.getUrlPrefixOption();
         const stripCommonPrefix = options.getBooleanOption('strip_common_prefix', false);
         const release = yield options.getRelease();
         if (projects.length === 1) {
@@ -99771,14 +99876,14 @@ const telemetry_1 = __nccwpck_require__(12417);
                 }
             }));
         }
-        Sentry.setTag('sourcemaps', sourcemaps.length > 0);
+        Sentry.setTag('sourcemaps', sourcemapPaths.length > 0);
         Sentry.setTag('inject', inject);
-        if (sourcemaps.length) {
+        if (sourcemapPaths.length) {
             if (inject) {
                 yield (0, telemetry_1.traceStep)('inject-debug-ids', () => __awaiter(void 0, void 0, void 0, function* () {
                     core.debug(`Injecting Debug IDs`);
                     // Unfortunately, @sentry/cli does not yet have an alias for inject
-                    yield (0, cli_1.getCLI)().execute(['sourcemaps', 'inject', ...sourcemaps], true);
+                    yield (0, cli_1.getCLI)().execute(['sourcemaps', 'inject', ...sourcemapPaths], true);
                 }));
             }
             yield (0, telemetry_1.traceStep)('upload-sourcemaps', () => __awaiter(void 0, void 0, void 0, function* () {
@@ -99788,16 +99893,22 @@ const telemetry_1 = __nccwpck_require__(12417);
                     dist,
                     stripCommonPrefix,
                 };
-                // only set the urlPrefix if it's not empty
-                if (urlPrefix) {
-                    sourceMapsOptions.urlPrefix = urlPrefix;
-                }
                 // sentry-cli supports multiple projects, but only uploads sourcemaps for the
                 // first project so we need to upload sourcemaps for each project individually
                 yield Promise.all(projects.map((project) => __awaiter(void 0, void 0, void 0, function* () {
                     return (0, cli_1.getCLI)().uploadSourceMaps(release, Object.assign(Object.assign({}, sourceMapsOptions), { projects: [project] }));
                 })));
                 Sentry.setTag('sourcemaps-uploaded', true);
+            }));
+        }
+        Sentry.setTag('debug-files', debugFiles.length > 0);
+        if (debugFiles.length) {
+            yield (0, telemetry_1.traceStep)('upload-debug-files', () => __awaiter(void 0, void 0, void 0, function* () {
+                core.debug(`Uploading debug files`);
+                // Debug files belong to a project, not a release, so upload them for each project
+                for (const project of projects) {
+                    yield (0, cli_1.getCLI)().execute(['debug-files', 'upload', '--project', project, ...debugFiles], true);
+                }
             }));
         }
         if (environment) {
@@ -99872,8 +99983,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.getWorkingDirectory = exports.getUrlPrefixOption = exports.getProjects = exports.checkEnvironmentVariables = exports.getSetCommitsManualOptions = exports.getSetCommitsOption = exports.getBooleanOption = exports.getDist = exports.getSourcemaps = exports.getStartedAt = exports.getEnvironment = exports.getRelease = void 0;
+exports.getWorkingDirectory = exports.getProjects = exports.checkEnvironmentVariables = exports.getSetCommitsManualOptions = exports.getSetCommitsOption = exports.getBooleanOption = exports.getDist = exports.getDebugFiles = exports.getSourcemaps = exports.getStartedAt = exports.getEnvironment = exports.getRelease = void 0;
 const core = __importStar(__nccwpck_require__(42186));
+const fs_1 = __nccwpck_require__(57147);
 const path_1 = __importDefault(__nccwpck_require__(71017));
 const cli_1 = __nccwpck_require__(56733);
 /**
@@ -99891,8 +100003,8 @@ const getRelease = () => __awaiter(void 0, void 0, void 0, function* () {
     if (releaseOption || versionOption) {
         // Prefer `release` over the deprecated `version`
         release = releaseOption ? releaseOption : versionOption;
-        // If users pass `${{ github.ref }}, strip the unwanted `refs/tags` prefix
-        release = release.replace(/^(refs\/tags\/)/, '');
+        // If users pass `${{ github.ref }}`, strip the `refs/tags/` or `refs/heads/` prefix
+        release = release.replace(/^refs\/(?:tags|heads)\//, '');
     }
     else {
         core.debug('Release version not provided, proposing one...');
@@ -99945,18 +100057,48 @@ const getStartedAt = () => {
     return outputTimestamp;
 };
 exports.getStartedAt = getStartedAt;
+const splitList = (input) => input.split(/\s+/).filter(Boolean);
+const expandSourcemapsEntry = (entry) => {
+    // Keep existing paths as-is, e.g. framework route folders like `[slug]` look like globs.
+    if (!/[*?[\]{}]/.test(entry) || (0, fs_1.existsSync)(entry)) {
+        return [entry];
+    }
+    const matches = (0, fs_1.globSync)(entry);
+    if (!matches.length) {
+        core.warning(`No files match the sourcemaps pattern "${entry}".`);
+    }
+    return matches;
+};
 /**
  * Source maps are optional, but there may be several as a space-separated list.
- * @returns string[]
+ * Entries with glob patterns (e.g. `build/*.map`) are expanded to the matching paths.
+ * `url_prefix` takes one prefix for all entries, or one prefix per entry in the same order.
+ * @throws when several prefixes are given and their count does not match the sourcemaps entries.
  */
 const getSourcemaps = () => {
-    const sourcemapsOption = core.getInput('sourcemaps');
-    if (!sourcemapsOption) {
-        return [];
+    const entries = splitList(core.getInput('sourcemaps'));
+    const prefixes = splitList(core.getInput('url_prefix'));
+    if (prefixes.length > 1 && prefixes.length !== entries.length) {
+        throw new Error('When `url_prefix` has multiple values, each `sourcemaps` entry must have exactly one prefix');
     }
-    return sourcemapsOption.split(' ');
+    return entries.map((entry, index) => {
+        const urlPrefix = prefixes.length > 1 ? prefixes[index] : prefixes[0];
+        return Object.assign({ paths: expandSourcemapsEntry(entry) }, (urlPrefix && { urlPrefix }));
+    });
 };
 exports.getSourcemaps = getSourcemaps;
+/**
+ * Debug files are optional, but there may be several as a whitespace-separated list.
+ * Paths cannot contain spaces.
+ * @returns string[]
+ */
+const getDebugFiles = () => {
+    return core
+        .getInput('debug_files')
+        .split(/\s+/)
+        .filter(file => file.length > 0);
+};
+exports.getDebugFiles = getDebugFiles;
 /**
  * Dist is optional, but should be a string when provided.
  * @returns string
@@ -100055,10 +100197,6 @@ const getProjects = () => {
     return [project];
 };
 exports.getProjects = getProjects;
-const getUrlPrefixOption = () => {
-    return core.getInput('url_prefix');
-};
-exports.getUrlPrefixOption = getUrlPrefixOption;
 const getWorkingDirectory = () => {
     // The action runs inside `github.action_path` and as such
     // doesn't automatically have access to the user's git
@@ -100637,7 +100775,7 @@ const BROWSER_PAGELOAD_SPAN_OP="pageload",BROWSER_NAVIGATION_SPAN_OP="navigation
 /***/ ((module) => {
 
 "use strict";
-module.exports = JSON.parse('{"name":"action-release","version":"3.7.2","private":true,"description":"GitHub Action for creating a release on Sentry","main":"dist/index.js","scripts":{"all":"yarn run format && yarn run lint && yarn run build && yarn test","build":"ncc build src/main.ts -e @sentry/cli","format":"prettier --write **/*.ts **/*.md","format-check":"prettier --check **/*.ts **/*.md","lint":"eslint src/**/*.ts","set-docker-tag":"./scripts/set-docker-tag.sh","set-docker-tag-from-branch":"./scripts/set-docker-tag-from-branch.sh","start":"node dist/index.js","test":"jest"},"repository":{"type":"git","url":"git+https://github.com/getsentry/action-release.git"},"keywords":["actions","sentry","release"],"author":"Sentry","license":"MIT","dependencies":{"@actions/core":"^2.0.3","@sentry/cli":"^2.58.6","@sentry/node":"^10.71.0"},"devDependencies":{"@types/jest":"^29.5.6","@types/node":"^24.0.0","@typescript-eslint/parser":"^6.9.0","@vercel/ncc":"^0.38.1","eslint":"^8.52.0","eslint-plugin-github":"^4.10.1","eslint-plugin-jest":"^27.4.3","jest":"^29.7.0","jest-circus":"^29.7.0","js-yaml":"^4.3.2","prettier":"^3.0.3","ts-jest":"^29.1.1","typescript":"^5.2.2"},"resolutions":{"**/@istanbuljs/load-nyc-config/js-yaml":"3.15.2"},"volta":{"node":"24.22.1","yarn":"1.22.4"}}');
+module.exports = JSON.parse('{"name":"action-release","version":"3.8.0","private":true,"description":"GitHub Action for creating a release on Sentry","main":"dist/index.js","scripts":{"all":"yarn run format && yarn run lint && yarn run build && yarn test","build":"ncc build src/main.ts -e @sentry/cli","format":"prettier --write **/*.ts **/*.md","format-check":"prettier --check **/*.ts **/*.md","lint":"eslint src/**/*.ts","set-docker-tag":"./scripts/set-docker-tag.sh","start":"node dist/index.js","test":"vitest run"},"repository":{"type":"git","url":"git+https://github.com/getsentry/action-release.git"},"keywords":["actions","sentry","release"],"author":"Sentry","license":"MIT","dependencies":{"@actions/core":"^2.0.3","@sentry/cli":"^2.58.6","@sentry/node":"^10.71.0"},"devDependencies":{"@types/node":"^24.0.0","@typescript-eslint/parser":"^6.9.0","@vercel/ncc":"^0.38.1","eslint":"^8.52.0","eslint-plugin-github":"^4.10.1","js-yaml":"^4.3.2","prettier":"^3.0.3","typescript":"^5.2.2","vite":"^8.3.6","vitest":"^5.1.0"},"resolutions":{"**/@istanbuljs/load-nyc-config/js-yaml":"3.15.2"},"volta":{"node":"24.22.3","yarn":"1.22.4"}}');
 
 /***/ })
 

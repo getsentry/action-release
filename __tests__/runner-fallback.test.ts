@@ -2,6 +2,7 @@ import * as fs from 'fs';
 import * as os from 'os';
 import { spawnSync } from 'child_process';
 import * as path from 'path';
+import { describe, expect, test } from 'vitest';
 
 const yaml = require('js-yaml');
 

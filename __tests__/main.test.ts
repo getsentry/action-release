@@ -1,15 +1,18 @@
 import { execSync } from 'child_process';
+import { mkdirSync, mkdtempSync } from 'fs';
+import { tmpdir } from 'os';
+import { afterEach, beforeAll, describe, expect, it, test } from 'vitest';
 import * as path from 'path';
 import * as process from 'process';
 import {
   getBooleanOption,
   getDist,
   getSourcemaps,
+  getDebugFiles,
   getStartedAt,
   getRelease,
   getSetCommitsOption,
   getProjects,
-  getUrlPrefixOption,
   getWorkingDirectory,
   getSetCommitsManualOptions,
 } from '../src/options';
@@ -55,6 +58,7 @@ describe('options', () => {
   describe('getSourcemaps', () => {
     afterEach(() => {
       delete process.env['INPUT_SOURCEMAPS'];
+      delete process.env['INPUT_URL_PREFIX'];
     });
 
     test('should return empty list when sourcemaps is omitted', async () => {
@@ -63,7 +67,58 @@ describe('options', () => {
 
     test('should return array when sourcemaps is false', () => {
       process.env['INPUT_SOURCEMAPS'] = './lib';
-      expect(getSourcemaps()).toEqual(['./lib']);
+      expect(getSourcemaps()).toEqual([{ paths: ['./lib'] }]);
+    });
+
+    test('should apply a single url_prefix to every entry', () => {
+      process.env['INPUT_SOURCEMAPS'] = './lib ./dist';
+      process.env['INPUT_URL_PREFIX'] = '~/';
+      expect(getSourcemaps()).toEqual([
+        { paths: ['./lib'], urlPrefix: '~/' },
+        { paths: ['./dist'], urlPrefix: '~/' },
+      ]);
+    });
+
+    test('should pair each url_prefix with its entry, also for all glob matches', () => {
+      process.env['INPUT_SOURCEMAPS'] = './lib   src/[co]*.ts';
+      process.env['INPUT_URL_PREFIX'] = '~/lib ~/src';
+      expect(getSourcemaps()).toEqual([
+        { paths: ['./lib'], urlPrefix: '~/lib' },
+        { paths: expect.arrayContaining(['src/cli.ts', 'src/options.ts']), urlPrefix: '~/src' },
+      ]);
+    });
+
+    test('should throw when the url_prefix count does not match the entries', () => {
+      process.env['INPUT_SOURCEMAPS'] = './lib ./dist';
+      process.env['INPUT_URL_PREFIX'] = '~/a ~/b ~/c';
+      expect(() => getSourcemaps()).toThrow('each `sourcemaps` entry must have exactly one prefix');
+    });
+
+    test('should expand glob patterns and keep plain paths', () => {
+      process.env['INPUT_SOURCEMAPS'] = './lib src/opt*.ts';
+      expect(getSourcemaps()).toEqual([{ paths: ['./lib'] }, { paths: ['src/options.ts'] }]);
+    });
+
+    test('should keep existing paths that look like glob patterns', () => {
+      const dir = path.join(mkdtempSync(path.join(tmpdir(), 'sourcemaps-')), '[slug]');
+      mkdirSync(dir);
+      process.env['INPUT_SOURCEMAPS'] = dir;
+      expect(getSourcemaps()).toEqual([{ paths: [dir] }]);
+    });
+  });
+
+  describe('getDebugFiles', () => {
+    afterEach(() => {
+      delete process.env['INPUT_DEBUG_FILES'];
+    });
+
+    test('should return empty list when debug_files is omitted', () => {
+      expect(getDebugFiles()).toEqual([]);
+    });
+
+    test('should split whitespace-separated paths and drop empty entries', () => {
+      process.env['INPUT_DEBUG_FILES'] = '  ./build/app.pdb   ./build/app.dSYM\n';
+      expect(getDebugFiles()).toEqual(['./build/app.pdb', './build/app.dSYM']);
     });
   });
 
@@ -136,6 +191,11 @@ describe('options', () => {
     test(`should strip refs from ${params.release}`, async () => {
       process.env[params.release] = 'refs/tags/v1.0.0';
       expect(await getRelease()).toBe('v1.0.0');
+    });
+
+    test(`should strip branch refs from ${params.release}`, async () => {
+      process.env[params.release] = 'refs/heads/release-candidate-1';
+      expect(await getRelease()).toBe('release-candidate-1');
     });
 
     test(`should get release version from ${params.release}`, async () => {
@@ -250,16 +310,6 @@ describe('options', () => {
       expect(() => getProjects()).toThrowError(
         'Environment variable SENTRY_PROJECT is missing a project slug and no projects are specified with the "projects" option'
       );
-    });
-  });
-
-  describe('getUrlPrefixOption', () => {
-    afterEach(() => {
-      delete process.env['INPUT_URL_PREFIX'];
-    });
-    it('get url prefix', () => {
-      process.env['INPUT_URL_PREFIX'] = 'build';
-      expect(getUrlPrefixOption()).toEqual('build');
     });
   });
 
