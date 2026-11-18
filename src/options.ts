@@ -94,7 +94,7 @@ export const getSourcemaps = (): string[] => {
 
     const matches = globSync(entry);
     if (!matches.length) {
-      throw new Error(`No files match the sourcemaps pattern "${entry}".`);
+      core.warning(`No files match the sourcemaps pattern "${entry}".`);
     }
     return matches;
   });
