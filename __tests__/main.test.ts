@@ -1,4 +1,6 @@
 import { execSync } from 'child_process';
+import { mkdirSync, mkdtempSync } from 'fs';
+import { tmpdir } from 'os';
 import { afterEach, beforeAll, describe, expect, it, test } from 'vitest';
 import * as path from 'path';
 import * as process from 'process';
@@ -71,6 +73,13 @@ describe('options', () => {
     test('should expand glob patterns and keep plain paths', () => {
       process.env['INPUT_SOURCEMAPS'] = './lib src/opt*.ts';
       expect(getSourcemaps()).toEqual(['./lib', 'src/options.ts']);
+    });
+
+    test('should keep existing paths that look like glob patterns', () => {
+      const dir = path.join(mkdtempSync(path.join(tmpdir(), 'sourcemaps-')), '[slug]');
+      mkdirSync(dir);
+      process.env['INPUT_SOURCEMAPS'] = dir;
+      expect(getSourcemaps()).toEqual([dir]);
     });
   });
 

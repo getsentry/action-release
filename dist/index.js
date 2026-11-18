@@ -100072,7 +100072,8 @@ const getSourcemaps = () => {
         return [];
     }
     return sourcemapsOption.split(' ').flatMap(entry => {
-        if (!/[*?[\]{}]/.test(entry)) {
+        // Keep existing paths as-is, e.g. framework route folders like `[slug]` look like globs.
+        if (!/[*?[\]{}]/.test(entry) || (0, fs_1.existsSync)(entry)) {
             return [entry];
         }
         const matches = (0, fs_1.globSync)(entry);

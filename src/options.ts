@@ -1,5 +1,5 @@
 import * as core from '@actions/core';
-import { globSync } from 'fs';
+import { existsSync, globSync } from 'fs';
 import path from 'path';
 import { getCLI } from './cli';
 
@@ -88,7 +88,8 @@ export const getSourcemaps = (): string[] => {
   }
 
   return sourcemapsOption.split(' ').flatMap(entry => {
-    if (!/[*?[\]{}]/.test(entry)) {
+    // Keep existing paths as-is, e.g. framework route folders like `[slug]` look like globs.
+    if (!/[*?[\]{}]/.test(entry) || existsSync(entry)) {
       return [entry];
     }
 
