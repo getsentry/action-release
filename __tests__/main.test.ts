@@ -67,6 +67,11 @@ describe('options', () => {
       process.env['INPUT_SOURCEMAPS'] = './lib';
       expect(getSourcemaps()).toEqual(['./lib']);
     });
+
+    test('should expand glob patterns and keep plain paths', () => {
+      process.env['INPUT_SOURCEMAPS'] = './lib src/opt*.ts';
+      expect(getSourcemaps()).toEqual(['./lib', 'src/options.ts']);
+    });
   });
 
   describe('getDebugFiles', () => {

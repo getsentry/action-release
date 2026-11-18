@@ -1,4 +1,5 @@
 import * as core from '@actions/core';
+import { globSync } from 'fs';
 import path from 'path';
 import { getCLI } from './cli';
 
@@ -77,6 +78,7 @@ export const getStartedAt = (): number | null => {
 
 /**
  * Source maps are optional, but there may be several as a space-separated list.
+ * Entries with glob patterns (e.g. `build/*.map`) are expanded to the matching paths.
  * @returns string[]
  */
 export const getSourcemaps = (): string[] => {
@@ -85,7 +87,17 @@ export const getSourcemaps = (): string[] => {
     return [];
   }
 
-  return sourcemapsOption.split(' ');
+  return sourcemapsOption.split(' ').flatMap(entry => {
+    if (!/[*?[\]{}]/.test(entry)) {
+      return [entry];
+    }
+
+    const matches = globSync(entry);
+    if (!matches.length) {
+      core.warning(`No files match the sourcemaps pattern "${entry}".`);
+    }
+    return matches;
+  });
 };
 
 /**
