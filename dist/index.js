@@ -99845,6 +99845,7 @@ const telemetry_1 = __nccwpck_require__(12417);
         const deployStartedAtOption = options.getStartedAt();
         const setCommitsOption = options.getSetCommitsOption();
         const projects = options.getProjects();
+        const stripPrefix = options.getStripPrefix();
         const stripCommonPrefix = options.getBooleanOption('strip_common_prefix', false);
         const release = yield options.getRelease();
         if (projects.length === 1) {
@@ -99892,6 +99893,7 @@ const telemetry_1 = __nccwpck_require__(12417);
                     include: sourcemaps,
                     ext: options.getSourcemapExtensions(),
                     dist,
+                    stripPrefix,
                     stripCommonPrefix,
                 };
                 // sentry-cli supports multiple projects, but only uploads sourcemaps for the
@@ -99984,7 +99986,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.getWorkingDirectory = exports.getProjects = exports.checkEnvironmentVariables = exports.getSetCommitsManualOptions = exports.getSetCommitsOption = exports.getBooleanOption = exports.getDist = exports.getSourcemapExtensions = exports.getDebugFiles = exports.getSourcemaps = exports.getStartedAt = exports.getEnvironment = exports.getRelease = void 0;
+exports.getStripPrefix = exports.getWorkingDirectory = exports.getProjects = exports.checkEnvironmentVariables = exports.getSetCommitsManualOptions = exports.getSetCommitsOption = exports.getBooleanOption = exports.getDist = exports.getSourcemapExtensions = exports.getDebugFiles = exports.getSourcemaps = exports.getStartedAt = exports.getEnvironment = exports.getRelease = void 0;
 const core = __importStar(__nccwpck_require__(42186));
 const fs_1 = __nccwpck_require__(57147);
 const path_1 = __importDefault(__nccwpck_require__(71017));
@@ -100211,6 +100213,10 @@ const getWorkingDirectory = () => {
     return path_1.default.join(process.env.GITHUB_WORKSPACE || '', core.getInput('working_directory'));
 };
 exports.getWorkingDirectory = getWorkingDirectory;
+const getStripPrefix = () => {
+    return splitList(core.getInput('strip_prefix'));
+};
+exports.getStripPrefix = getStripPrefix;
 
 
 /***/ }),

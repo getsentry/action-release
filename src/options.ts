@@ -241,3 +241,7 @@ export const getWorkingDirectory = (): string => {
   // We prefix all paths with `GITHUB_WORKSPACE` which is at the top of the repo.
   return path.join(process.env.GITHUB_WORKSPACE || '', core.getInput('working_directory'));
 };
+
+export const getStripPrefix = (): string[] => {
+  return splitList(core.getInput('strip_prefix'));
+};

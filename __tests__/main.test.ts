@@ -16,6 +16,7 @@ import {
   getProjects,
   getWorkingDirectory,
   getSetCommitsManualOptions,
+  getStripPrefix,
 } from '../src/options';
 
 describe('options', () => {
@@ -120,6 +121,17 @@ describe('options', () => {
     test('should split whitespace-separated paths and drop empty entries', () => {
       process.env['INPUT_DEBUG_FILES'] = '  ./build/app.pdb   ./build/app.dSYM\n';
       expect(getDebugFiles()).toEqual(['./build/app.pdb', './build/app.dSYM']);
+    });
+  });
+
+  describe('getStripPrefix', () => {
+    afterEach(() => {
+      delete process.env['INPUT_STRIP_PREFIX'];
+    });
+
+    test('should split space-separated prefixes', () => {
+      process.env['INPUT_STRIP_PREFIX'] = '.. webpack://';
+      expect(getStripPrefix()).toEqual(['..', 'webpack://']);
     });
   });
 
