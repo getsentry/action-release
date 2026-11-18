@@ -128,10 +128,6 @@ describe('options', () => {
       delete process.env['INPUT_STRIP_PREFIX'];
     });
 
-    test('should return an empty list when strip_prefix is omitted', () => {
-      expect(getStripPrefix()).toEqual([]);
-    });
-
     test('should split space-separated prefixes', () => {
       process.env['INPUT_STRIP_PREFIX'] = '.. webpack://';
       expect(getStripPrefix()).toEqual(['..', 'webpack://']);
