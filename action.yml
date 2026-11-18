@@ -108,6 +108,8 @@ inputs:
   url_prefix:
     description: |-
       Adds a prefix to source map urls after stripping them.
+      A single prefix applies to all sourcemaps entries. To use a different prefix
+      per entry, give a space-separated list with one prefix per entry, in the same order.
     required: false
   strip_common_prefix:
     description: |-

@@ -25,6 +25,7 @@ withTelemetry(
       const environment = options.getEnvironment();
       const inject = options.getBooleanOption('inject', true);
       const sourcemaps = options.getSourcemaps();
+      const sourcemapPaths = sourcemaps.flatMap(entry => entry.paths);
       const debugFiles = options.getDebugFiles();
       const dist = options.getDist();
       const shouldFinalize = options.getBooleanOption('finalize', true);
@@ -33,7 +34,6 @@ withTelemetry(
       const deployStartedAtOption = options.getStartedAt();
       const setCommitsOption = options.getSetCommitsOption();
       const projects = options.getProjects();
-      const urlPrefix = options.getUrlPrefixOption();
       const stripCommonPrefix = options.getBooleanOption('strip_common_prefix', false);
       const release = await options.getRelease();
 
@@ -75,15 +75,15 @@ withTelemetry(
         });
       }
 
-      Sentry.setTag('sourcemaps', sourcemaps.length > 0);
+      Sentry.setTag('sourcemaps', sourcemapPaths.length > 0);
       Sentry.setTag('inject', inject);
 
-      if (sourcemaps.length) {
+      if (sourcemapPaths.length) {
         if (inject) {
           await traceStep('inject-debug-ids', async () => {
             core.debug(`Injecting Debug IDs`);
             // Unfortunately, @sentry/cli does not yet have an alias for inject
-            await getCLI().execute(['sourcemaps', 'inject', ...sourcemaps], true);
+            await getCLI().execute(['sourcemaps', 'inject', ...sourcemapPaths], true);
           });
         }
 
@@ -94,11 +94,6 @@ withTelemetry(
             dist,
             stripCommonPrefix,
           };
-
-          // only set the urlPrefix if it's not empty
-          if (urlPrefix) {
-            sourceMapsOptions.urlPrefix = urlPrefix;
-          }
 
           // sentry-cli supports multiple projects, but only uploads sourcemaps for the
           // first project so we need to upload sourcemaps for each project individually

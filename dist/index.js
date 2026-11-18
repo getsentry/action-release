@@ -99836,6 +99836,7 @@ const telemetry_1 = __nccwpck_require__(12417);
         const environment = options.getEnvironment();
         const inject = options.getBooleanOption('inject', true);
         const sourcemaps = options.getSourcemaps();
+        const sourcemapPaths = sourcemaps.flatMap(entry => entry.paths);
         const debugFiles = options.getDebugFiles();
         const dist = options.getDist();
         const shouldFinalize = options.getBooleanOption('finalize', true);
@@ -99844,7 +99845,6 @@ const telemetry_1 = __nccwpck_require__(12417);
         const deployStartedAtOption = options.getStartedAt();
         const setCommitsOption = options.getSetCommitsOption();
         const projects = options.getProjects();
-        const urlPrefix = options.getUrlPrefixOption();
         const stripCommonPrefix = options.getBooleanOption('strip_common_prefix', false);
         const release = yield options.getRelease();
         if (projects.length === 1) {
@@ -99876,14 +99876,14 @@ const telemetry_1 = __nccwpck_require__(12417);
                 }
             }));
         }
-        Sentry.setTag('sourcemaps', sourcemaps.length > 0);
+        Sentry.setTag('sourcemaps', sourcemapPaths.length > 0);
         Sentry.setTag('inject', inject);
-        if (sourcemaps.length) {
+        if (sourcemapPaths.length) {
             if (inject) {
                 yield (0, telemetry_1.traceStep)('inject-debug-ids', () => __awaiter(void 0, void 0, void 0, function* () {
                     core.debug(`Injecting Debug IDs`);
                     // Unfortunately, @sentry/cli does not yet have an alias for inject
-                    yield (0, cli_1.getCLI)().execute(['sourcemaps', 'inject', ...sourcemaps], true);
+                    yield (0, cli_1.getCLI)().execute(['sourcemaps', 'inject', ...sourcemapPaths], true);
                 }));
             }
             yield (0, telemetry_1.traceStep)('upload-sourcemaps', () => __awaiter(void 0, void 0, void 0, function* () {
@@ -99893,10 +99893,6 @@ const telemetry_1 = __nccwpck_require__(12417);
                     dist,
                     stripCommonPrefix,
                 };
-                // only set the urlPrefix if it's not empty
-                if (urlPrefix) {
-                    sourceMapsOptions.urlPrefix = urlPrefix;
-                }
                 // sentry-cli supports multiple projects, but only uploads sourcemaps for the
                 // first project so we need to upload sourcemaps for each project individually
                 yield Promise.all(projects.map((project) => __awaiter(void 0, void 0, void 0, function* () {
@@ -99987,7 +99983,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.getWorkingDirectory = exports.getUrlPrefixOption = exports.getProjects = exports.checkEnvironmentVariables = exports.getSetCommitsManualOptions = exports.getSetCommitsOption = exports.getBooleanOption = exports.getDist = exports.getDebugFiles = exports.getSourcemaps = exports.getStartedAt = exports.getEnvironment = exports.getRelease = void 0;
+exports.getWorkingDirectory = exports.getProjects = exports.checkEnvironmentVariables = exports.getSetCommitsManualOptions = exports.getSetCommitsOption = exports.getBooleanOption = exports.getDist = exports.getDebugFiles = exports.getSourcemaps = exports.getStartedAt = exports.getEnvironment = exports.getRelease = void 0;
 const core = __importStar(__nccwpck_require__(42186));
 const fs_1 = __nccwpck_require__(57147);
 const path_1 = __importDefault(__nccwpck_require__(71017));
@@ -100061,26 +100057,33 @@ const getStartedAt = () => {
     return outputTimestamp;
 };
 exports.getStartedAt = getStartedAt;
+const splitList = (input) => input.split(/\s+/).filter(Boolean);
+const expandSourcemapsEntry = (entry) => {
+    // Keep existing paths as-is, e.g. framework route folders like `[slug]` look like globs.
+    if (!/[*?[\]{}]/.test(entry) || (0, fs_1.existsSync)(entry)) {
+        return [entry];
+    }
+    const matches = (0, fs_1.globSync)(entry);
+    if (!matches.length) {
+        core.warning(`No files match the sourcemaps pattern "${entry}".`);
+    }
+    return matches;
+};
 /**
  * Source maps are optional, but there may be several as a space-separated list.
  * Entries with glob patterns (e.g. `build/*.map`) are expanded to the matching paths.
- * @returns string[]
+ * `url_prefix` takes one prefix for all entries, or one prefix per entry in the same order.
+ * @throws when several prefixes are given and their count does not match the sourcemaps entries.
  */
 const getSourcemaps = () => {
-    const sourcemapsOption = core.getInput('sourcemaps');
-    if (!sourcemapsOption) {
-        return [];
+    const entries = splitList(core.getInput('sourcemaps'));
+    const prefixes = splitList(core.getInput('url_prefix'));
+    if (prefixes.length > 1 && prefixes.length !== entries.length) {
+        throw new Error('When `url_prefix` has multiple values, each `sourcemaps` entry must have exactly one prefix');
     }
-    return sourcemapsOption.split(' ').flatMap(entry => {
-        // Keep existing paths as-is, e.g. framework route folders like `[slug]` look like globs.
-        if (!/[*?[\]{}]/.test(entry) || (0, fs_1.existsSync)(entry)) {
-            return [entry];
-        }
-        const matches = (0, fs_1.globSync)(entry);
-        if (!matches.length) {
-            core.warning(`No files match the sourcemaps pattern "${entry}".`);
-        }
-        return matches;
+    return entries.map((entry, index) => {
+        const urlPrefix = prefixes.length > 1 ? prefixes[index] : prefixes[0];
+        return Object.assign({ paths: expandSourcemapsEntry(entry) }, (urlPrefix && { urlPrefix }));
     });
 };
 exports.getSourcemaps = getSourcemaps;
@@ -100194,10 +100197,6 @@ const getProjects = () => {
     return [project];
 };
 exports.getProjects = getProjects;
-const getUrlPrefixOption = () => {
-    return core.getInput('url_prefix');
-};
-exports.getUrlPrefixOption = getUrlPrefixOption;
 const getWorkingDirectory = () => {
     // The action runs inside `github.action_path` and as such
     // doesn't automatically have access to the user's git

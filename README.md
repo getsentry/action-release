@@ -87,11 +87,19 @@ Adding the following to your workflow will create a new Sentry release and tell 
 | `commit`                 | The commit SHA of the current release you are creating. Only used when `set_commits` is "manual".                                                                                                                            | -                                        |
 | `previous_commit`        | The commit SHA of the previous release. Required when `set_commits` is "manual".                                                                                                                                             | -                                        |
 | `projects`               | Space-separated list of paths of projects. When omitted, falls back to the environment variable `SENTRY_PROJECT` to determine the project.                                                                                   | -                                        |
-| `url_prefix`             | Adds a prefix to source map urls after stripping them.                                                                                                                                                                       | -                                        |
+| `url_prefix`             | Adds a prefix to source map URLs. A single prefix applies to all `sourcemaps` entries, or give one prefix per entry (see example below).                                                                                     | -                                        |
 | `strip_common_prefix`    | Will remove a common prefix from uploaded filenames. Useful for removing a path that is build-machine-specific.                                                                                                              | `false`                                  |
 | `working_directory`      | Directory to collect sentry release information from. Useful when collecting information from a non-standard checkout directory.                                                                                             | -                                        |
 | `disable_telemetry`      | The action sends telemetry data and crash reports to Sentry. This helps us improve the action. You can turn this off by setting this flag.                                                                                   | `false`                                  |
 | `disable_safe_directory` | The action needs access to the repo it runs in. For that we need to configure git to mark the repo as a safe directory. You can turn this off by setting this flag.                                                          | `false`                                  |
+
+To use a different `url_prefix` per `sourcemaps` entry, give one prefix per entry in the same order:
+
+```yaml
+with:
+  sourcemaps: './dist ./sourcemaps'
+  url_prefix: '~/ ~/sourcemaps'
+```
 
 ### Examples
 
