@@ -1,5 +1,6 @@
 import * as core from '@actions/core';
 import { SourceMapsPathDescriptor } from '@sentry/cli';
+import { existsSync, globSync } from 'fs';
 import path from 'path';
 import { getCLI } from './cli';
 
@@ -76,17 +77,39 @@ export const getStartedAt = (): number | null => {
   return outputTimestamp;
 };
 
-/**
- * Source maps are optional, but there may be several as a space-separated list.
- * @returns string[]
- */
-export const getSourcemaps = (): string[] => {
-  const sourcemapsOption: string = core.getInput('sourcemaps');
-  if (!sourcemapsOption) {
-    return [];
+const splitList = (input: string): string[] => input.split(/\s+/).filter(Boolean);
+
+const expandSourcemapsEntry = (entry: string): string[] => {
+  // Keep existing paths as-is, e.g. framework route folders like `[slug]` look like globs.
+  if (!/[*?[\]{}]/.test(entry) || existsSync(entry)) {
+    return [entry];
   }
 
-  return sourcemapsOption.trim().split(/\s+/).filter(Boolean);
+  const matches = globSync(entry);
+  if (!matches.length) {
+    core.warning(`No files match the sourcemaps pattern "${entry}".`);
+  }
+  return matches;
+};
+
+/**
+ * Source maps are optional, but there may be several as a space-separated list.
+ * Entries with glob patterns (e.g. `build/*.map`) are expanded to the matching paths.
+ * `url_prefix` takes one prefix for all entries, or one prefix per entry in the same order.
+ * @throws when several prefixes are given and their count does not match the sourcemaps entries.
+ */
+export const getSourcemaps = (): SourceMapsPathDescriptor[] => {
+  const entries = splitList(core.getInput('sourcemaps'));
+  const prefixes = splitList(core.getInput('url_prefix'));
+
+  if (prefixes.length > 1 && prefixes.length !== entries.length) {
+    throw new Error('When `url_prefix` has multiple values, each `sourcemaps` entry must have exactly one prefix');
+  }
+
+  return entries.map((entry, index) => {
+    const urlPrefix = prefixes.length > 1 ? prefixes[index] : prefixes[0];
+    return { paths: expandSourcemapsEntry(entry), ...(urlPrefix && { urlPrefix }) };
+  });
 };
 
 /**
@@ -204,36 +227,6 @@ export const getProjects = (): string[] => {
     );
   }
   return [project];
-};
-
-export const getUrlPrefixOption = (): string => {
-  return core.getInput('url_prefix');
-};
-
-/**
- * Map url_prefix values to sourcemaps paths, in order. A single prefix applies to every path.
- * @throws when several prefixes are given and their count does not match the sourcemaps paths.
- */
-export const getSourcemapsInclude = (
-  sourcemaps: string[],
-  prefixInput: string
-): (string | SourceMapsPathDescriptor)[] => {
-  if (sourcemaps.length === 0) {
-    return [];
-  }
-
-  const prefixes = prefixInput.trim().split(/\s+/).filter(Boolean);
-
-  if (prefixes.length > 1 && prefixes.length !== sourcemaps.length) {
-    throw new Error(
-      'When url_prefix has multiple values, each sourcemaps path must have exactly one corresponding prefix'
-    );
-  }
-
-  return sourcemaps.map((sourceMapPath, index) => {
-    const urlPrefix = prefixes.length > 1 ? prefixes[index] : prefixes[0];
-    return urlPrefix ? { paths: [sourceMapPath], urlPrefix } : sourceMapPath;
-  });
 };
 
 export const getWorkingDirectory = (): string => {

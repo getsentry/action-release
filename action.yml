@@ -10,7 +10,7 @@ inputs:
     required: false
   sourcemaps:
     description: |-
-      Space-separated list of paths to JavaScript source maps.
+      Space-separated list of paths or glob patterns to JavaScript source maps.
       Omit to skip uploading sourcemaps.
     required: false
   inject:

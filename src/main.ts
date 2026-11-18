@@ -25,6 +25,7 @@ withTelemetry(
       const environment = options.getEnvironment();
       const inject = options.getBooleanOption('inject', true);
       const sourcemaps = options.getSourcemaps();
+      const sourcemapPaths = sourcemaps.flatMap(entry => entry.paths);
       const debugFiles = options.getDebugFiles();
       const dist = options.getDist();
       const shouldFinalize = options.getBooleanOption('finalize', true);
@@ -33,8 +34,6 @@ withTelemetry(
       const deployStartedAtOption = options.getStartedAt();
       const setCommitsOption = options.getSetCommitsOption();
       const projects = options.getProjects();
-      const urlPrefix = options.getUrlPrefixOption();
-      const sourcemapsInclude = options.getSourcemapsInclude(sourcemaps, urlPrefix);
       const stripCommonPrefix = options.getBooleanOption('strip_common_prefix', false);
       const release = await options.getRelease();
 
@@ -76,22 +75,22 @@ withTelemetry(
         });
       }
 
-      Sentry.setTag('sourcemaps', sourcemaps.length > 0);
+      Sentry.setTag('sourcemaps', sourcemapPaths.length > 0);
       Sentry.setTag('inject', inject);
 
-      if (sourcemaps.length) {
+      if (sourcemapPaths.length) {
         if (inject) {
           await traceStep('inject-debug-ids', async () => {
             core.debug(`Injecting Debug IDs`);
             // Unfortunately, @sentry/cli does not yet have an alias for inject
-            await getCLI().execute(['sourcemaps', 'inject', ...sourcemaps], true);
+            await getCLI().execute(['sourcemaps', 'inject', ...sourcemapPaths], true);
           });
         }
 
         await traceStep('upload-sourcemaps', async () => {
           core.debug(`Adding sourcemaps`);
           const sourceMapsOptions: SentryCliUploadSourceMapsOptions = {
-            include: sourcemapsInclude,
+            include: sourcemaps,
             dist,
             stripCommonPrefix,
           };
