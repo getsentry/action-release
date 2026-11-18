@@ -1,14 +1,10 @@
 import * as Sentry from '@sentry/node';
 import * as core from '@actions/core';
-import {getCLI} from './cli';
+import { SentryCliUploadSourceMapsOptions } from '@sentry/cli';
+import { getCLI } from './cli';
 import * as options from './options';
 import * as process from 'process';
-import {
-  isSelfHosted,
-  isTelemetryEnabled,
-  traceStep,
-  withTelemetry,
-} from './telemetry';
+import { isTelemetryEnabled, traceStep, withTelemetry } from './telemetry';
 
 withTelemetry(
   {
@@ -16,12 +12,21 @@ withTelemetry(
   },
   async () => {
     try {
+      const workingDirectory = options.getWorkingDirectory();
+      const currentWorkingDirectory = process.cwd();
+
+      if (workingDirectory) {
+        process.chdir(workingDirectory);
+      }
+
       // Validate options first so we can fail early.
       options.checkEnvironmentVariables();
 
       const environment = options.getEnvironment();
-      const inject = options.getBooleanOption('inject', false);
+      const inject = options.getBooleanOption('inject', true);
       const sourcemaps = options.getSourcemaps();
+      const sourcemapPaths = sourcemaps.flatMap(entry => entry.paths);
+      const debugFiles = options.getDebugFiles();
       const dist = options.getDist();
       const shouldFinalize = options.getBooleanOption('finalize', true);
       const ignoreMissing = options.getBooleanOption('ignore_missing', false);
@@ -29,14 +34,9 @@ withTelemetry(
       const deployStartedAtOption = options.getStartedAt();
       const setCommitsOption = options.getSetCommitsOption();
       const projects = options.getProjects();
-      const urlPrefix = options.getUrlPrefixOption();
-      const stripPrefix = options.getStripPrefixOption();
-      const stripCommonPrefix = options.getBooleanOption(
-        'strip_common_prefix',
-        false
-      );
-      const version = await options.getVersion();
-      const workingDirectory = options.getWorkingDirectory();
+      const stripPrefix = options.getStripPrefix();
+      const stripCommonPrefix = options.getBooleanOption('strip_common_prefix', false);
+      const release = await options.getRelease();
 
       if (projects.length === 1) {
         Sentry.setTag('project', projects[0]);
@@ -44,70 +44,92 @@ withTelemetry(
         Sentry.setTag('projects', projects.join(','));
       }
 
-      core.debug(`Version is ${version}`);
-      await getCLI().new(version, {projects});
-
-      const currentWorkingDirectory = process.cwd();
-      if (workingDirectory !== null && workingDirectory.length > 0) {
-        process.chdir(workingDirectory);
-      }
+      core.debug(`Release version is ${release}`);
+      await getCLI().new(release, { projects });
 
       Sentry.setTag('set-commits', setCommitsOption);
 
       if (setCommitsOption !== 'skip') {
         await traceStep('set-commits', async () => {
           core.debug(`Setting commits with option '${setCommitsOption}'`);
-          await getCLI().setCommits(version, {
-            auto: true,
-            ignoreMissing,
-            ignoreEmpty,
-          });
+
+          if (setCommitsOption === 'auto') {
+            await getCLI().setCommits(release, {
+              auto: true,
+              ignoreMissing,
+              ignoreEmpty,
+            });
+          } else if (setCommitsOption === 'manual') {
+            const { repo, commit, previousCommit } = options.getSetCommitsManualOptions();
+
+            if (!repo || !commit) {
+              throw new Error('Options `repo` and `commit` are required when `set_commits` is `manual`');
+            }
+
+            await getCLI().setCommits(release, {
+              auto: false,
+              repo,
+              commit,
+              ...(previousCommit && { previousCommit }),
+            });
+          }
         });
       }
 
-      Sentry.setTag('sourcemaps', sourcemaps.length > 0);
+      Sentry.setTag('sourcemaps', sourcemapPaths.length > 0);
       Sentry.setTag('inject', inject);
 
-      if (sourcemaps.length) {
+      if (sourcemapPaths.length) {
         if (inject) {
           await traceStep('inject-debug-ids', async () => {
             core.debug(`Injecting Debug IDs`);
             // Unfortunately, @sentry/cli does not yet have an alias for inject
-            await getCLI().execute(
-              ['sourcemaps', 'inject', ...sourcemaps],
-              true
-            );
+            await getCLI().execute(['sourcemaps', 'inject', ...sourcemapPaths], true);
           });
         }
 
         await traceStep('upload-sourcemaps', async () => {
           core.debug(`Adding sourcemaps`);
+          const sourceMapsOptions: SentryCliUploadSourceMapsOptions = {
+            include: sourcemaps,
+            dist,
+            stripPrefix,
+            stripCommonPrefix,
+          };
+
+          // sentry-cli supports multiple projects, but only uploads sourcemaps for the
+          // first project so we need to upload sourcemaps for each project individually
           await Promise.all(
-            projects.map(async project => {
-              // upload source maps can only do one project at a time
-              const localProjects: [string] = [project];
-              const sourceMapOptions = {
-                include: sourcemaps,
-                projects: localProjects,
-                dist,
-                urlPrefix,
-                stripPrefix,
-                stripCommonPrefix,
-              };
-              return getCLI().uploadSourceMaps(version, sourceMapOptions);
-            })
+            projects.map(async (project: string) =>
+              getCLI().uploadSourceMaps(release, {
+                ...sourceMapsOptions,
+                projects: [project],
+              } as SentryCliUploadSourceMapsOptions & { projects: string[] })
+            )
           );
 
           Sentry.setTag('sourcemaps-uploaded', true);
         });
       }
 
+      Sentry.setTag('debug-files', debugFiles.length > 0);
+
+      if (debugFiles.length) {
+        await traceStep('upload-debug-files', async () => {
+          core.debug(`Uploading debug files`);
+          // Debug files belong to a project, not a release, so upload them for each project
+          for (const project of projects) {
+            await getCLI().execute(['debug-files', 'upload', '--project', project, ...debugFiles], true);
+          }
+        });
+      }
+
       if (environment) {
         await traceStep('add-environment', async () => {
           core.debug(`Adding deploy to release`);
-          await getCLI().newDeploy(version, {
+          await getCLI().newDeploy(release, {
             env: environment,
-            ...(deployStartedAtOption && {started: deployStartedAtOption}),
+            ...(deployStartedAtOption && { started: deployStartedAtOption }),
           });
         });
       }
@@ -117,18 +139,20 @@ withTelemetry(
       if (shouldFinalize) {
         await traceStep('finalizing-release', async () => {
           core.debug(`Finalizing the release`);
-          await getCLI().finalize(version);
+          await getCLI().finalize(release);
 
           Sentry.setTag('finalized', true);
         });
       }
 
-      if (workingDirectory !== null && workingDirectory.length > 0) {
+      if (workingDirectory) {
         process.chdir(currentWorkingDirectory);
       }
 
       core.debug(`Done`);
-      core.setOutput('version', version);
+      // TODO(v4): Remove `version`
+      core.setOutput('version', release);
+      core.setOutput('release', release);
     } catch (error) {
       core.setFailed((error as Error).message);
       throw error;

@@ -1,7 +1,31 @@
+# Pre-requirements
+
+This setup assumes you have [Yarn][Yarn], [Volta][volta] and [pre-commit][pre-commit] installed.
+
+After cloning the repo, run
+
+```bash
+# Install or update application dependencies
+make
+```
+
 # Development of `getsentry/action-release`
 
-This document aims to provide guidelines for maintainers and contains information on how to develop and test this action. 
+This document aims to provide guidelines for maintainers and contains information on how to develop and test this action.
 For info on how to release changes, follow [publishing-a-release](publishing-a-release.md).
+
+The action is a composite GitHub Action.
+
+On Linux runners, the action executes the underlying JavaScript script
+via a Docker image we publish.
+
+For Mac OS and Windows runners, the action cannot run the Docker image and instead installs
+the `@sentry/cli` dependency corresponding to the architecture of the runner and then executes the underlying JavaScript
+distribution.
+
+This split in architecture is done to optimize the run-time of the action but at the same time support non-Linux runners.
+
+This action runs fastest on Linux runners.
 
 ## Development
 
@@ -9,110 +33,45 @@ The action is using `@sentry/cli` under the hood and is written in TypeScript. S
 
 Options to the action are exposed via `action.yml`, changes that impact options need to be documented in the `README.md`.
 
+> [!NOTE]
+> Actions have to be exposed in 3 places in `action.yml`
+>
+> 1. Under the `inputs` field - These are the actual inputs exposed to users
+> 2. Under the `env` field inside the `Run docker image` step. All inputs have to be mapped from inputs to `INPUT_X` env variables.
+> 3. Under the `env` field inside the `Run Release Action
+
 Telemetry for internal development is collected using `@sentry/node`, see `src/telemetry.ts` for utilities.
+
+## Development steps
+
+> [!NOTE]
+> Contributors will need to create an internal integration in their Sentry org and need to be an admin.
+> See [#Prerequisites](../README.md#prerequisites).
+
+Members of this repo will not have to set anything up since [the integration](https://sentry-ecosystem.sentry.io/settings/developer-settings/end-to-end-action-release-integration-416eb2/) is already set-up. Just open the PR and you will see [a release created](https://sentry-ecosystem.sentry.io/releases/?project=4505075304693760) for your PR.
+
+1. Create a branch
+2. Make changes
+3. If possible, add unit and E2E tests (E2E tests go in `.github/workflows/e2e.yml`)
+4. Run `yarn install` to install deps
+5. Run `yarn build` to build the action
+6. Commit the changes and the build inside `dist/`
+
+Do not change the Docker image tag in `action.yml`. PR builds do not publish an image to ghcr.io.
+The E2E tests load the image of the PR into a local registry (see `.github/actions/use-local-image`).
+
+### Testing in a different repo
+
+- After the PR is merged, use `getsentry/action-release@master`. CI publishes the `master` image after the E2E tests pass.
+- Before the PR is merged, use `getsentry/action-release@<your-branch>` on a macOS or Windows runner.
+  These runners do not use the Docker image. They run `dist/` from your branch.
+  Linux runners use the Docker image, and CI does not publish an image for PR branches.
 
 ## Testing
 
 You can run unit tests with `yarn test`.
 
-### E2E testing on GitHub's CI
+### Troubleshooting
 
-The first job in [test.yml](../.github/workflows/test.yml) has instructions on how to tweak a job in order to execute your changes as part of the PR.
-
-> [!NOTE]  
-> Contributors will need to create an internal integration in their Sentry org and need to be an admin. 
-> See [#Prerequisites](../README.md#prerequisites).
-
-Members of this repo will not have to set anything up since [the integration](https://sentry-ecosystem.sentry.io/settings/developer-settings/end-to-end-action-release-integration-416eb2/) is already set-up. Just open the PR and you will see [a release created](https://sentry-ecosystem.sentry.io/releases/?project=4505075304693760) for your PR.
-
-### Test your own repo against an action-release PR
-
-> [!NOTE]
-> This assumes that you have gone through the [#Usage](../README.md#usage) section and have managed to get your GitHub repository to have worked with this action.
-
-> [!NOTE]
-> Once we start producing Docker images for PRs we can get rid of the need of using the `sed` command below.
-
-**Step 1**  
-* Create a branch, make changes and push it
-* Run this command, commit the changes and push it
-  * This will cause the action-release to be built using the `Dockerfile`
-  * You will need to revert this change once your changes are approved and ready to be merged
-
-```shell
-sed -i .backup 's|docker://ghcr.io/getsentry/action-release-image:latest|Dockerfile|' action.yml
-```
-
-**Step 2**  
-Test out your action-release changes on your own repo.
-* Get the sha for the latest commit on **Step 1**
-* Modify your usage of action-release to point to that commit (if you're using a fork, edit the `getsentry` org in the string below)
-
-Example:
-
-```yml
-  - name: Sentry Release
-    uses: getsentry/action-release@<latest commit sha>
-    env:
-      # You will remove this in the next steps when ready
-      MOCK: true
-      SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-      SENTRY_ORG: ${{ vars.SENTRY_ORG }}
-      # If you specify a GitHub environment for the branch from where you create
-      # releases from (e.g. master), you can then specify a repository-level variable
-      # for all other branches. This allows using a second project for end-to-end testing
-      SENTRY_PROJECT: ${{ vars.SENTRY_PROJECT }}
-```
-
-> [!NOTE]
-> If you want to locally test the action, read the next section, otherwise, keep reading.
-
-> [!NOTE]
-> Only remove `MOCK: true` once you follow the steps below that will allow you to use two different projects. This will avoid polluting your Sentry releases for your existing Sentry project.
-
-**Step 3**  
-Create a new Sentry project under your existing Sentry org (only this one time).
-
-**Step 4**  
-Create an environment variable in GitHub for the branch you release from (e.g. `master`) and define the same variable as a repository variable which all other branches will use (i.e. your PR's branch)
-
-**Step 5**  
-Comment out the MOCK env variable from **Step 2**.
-
-**Step 6**  
-Push to GitHub and the CI will do an end-to-end run!
-
-### Local testing via act
-
-Alternatively, you can test the action locally using [act](https://github.com/nektos/act).
-
-To get started, you can clone [this sample repo](https://github.com/scefali/github-actions-react/blob/master/.github/workflows/deploy.yml) to test locally.
-
-**Step 1**  
-Install `act`.
-
-```bash
-brew install act
-```
-
-> [!NOTE]
-> Make sure you commit your changes in your branch before running `act`.
-
-**Step 3**  
-Create an integration and set the SENTRY_AUTH_TOKEN (see [#Usage](../README.md#usage)).
-
-> [!NOTE]
-> If you have `direnv` installed, you can define the variable within your repo in an `.env` file.
-
-**Step 4**  
-Run the action.
-
-```bash
-act -s SENTRY_ORG={your_org_slug} -s SENTRY_PROJECT={your_project_slug}
-```
-
-> [!NOTE]
-> Make sure that `SENTRY_AUTH_TOKEN` is loaded as an env variable.
-
-**Step 5**  
-Choose Medium Docker builds.
+- If the `verify-dist` action fails for your PR, you likely forgot to commit the build output.
+  Run `yarn install` and `yarn build` and commit the `dist/` folder.

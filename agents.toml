@@ -1,0 +1,31 @@
+version = 1
+agents = ["claude"]
+
+[trust]
+github_orgs = ["getsentry"]
+github_repos = ["getsentry/skills", "anthropics/skills"]
+
+
+[[skills]]
+name = "dotagents"
+source = "getsentry/dotagents"
+
+[[skills]]
+name = "fix-security-vulnerability"
+source = "path:.agents/skills/fix-security-vulnerability"
+
+[[skills]]
+name = "triage-issue"
+source = "path:.agents/skills/triage-issue"
+
+[[skills]]
+name = "verify-dist"
+source = "path:.agents/skills/verify-dist"
+
+[[skills]]
+name = "skill-scanner"
+source = "getsentry/skills"
+
+[[skills]]
+name = "skill-creator"
+source = "anthropics/skills"

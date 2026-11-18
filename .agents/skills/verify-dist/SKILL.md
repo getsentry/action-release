@@ -1,0 +1,83 @@
+---
+name: verify-dist
+description: Regenerate and commit dist/index.js when source files or runtime deps change
+argument-hint: [--check | --fix]
+---
+
+# Verify Dist Skill
+
+`action-release` ships a bundle in `dist/` built by `ncc`. The `verify-dist` CI workflow (`.github/workflows/verify-dist.yml`) fails any PR where the committed bundle does not match the source. This skill keeps them in sync locally.
+
+`dist/` is a directory, not a single file. Alongside `dist/index.js`, `ncc` emits code-split chunks (`dist/319.index.js` and friends) for every dynamic `import()` in a dependency. `@opentelemetry/resources` loads its per-platform `getMachineId` that way, so the chunks arrive with `@sentry/node`. `index.js` loads them at runtime with a relative `require`, so they must sit next to it and must all be committed.
+
+## When to invoke
+
+- You changed anything under `src/`.
+- You bumped a **runtime** dep in `package.json` (anything under `dependencies`, not `devDependencies`).
+- CI posted "Detected uncommitted changes after build" on a PR.
+
+## Modes
+
+### `--check` (default)
+
+Report whether `dist/` is in sync with the current source tree. Do not modify anything.
+
+```bash
+yarn install --frozen-lockfile
+yarn build
+git diff --ignore-space-at-eol --stat dist/
+git ls-files --others --exclude-standard dist/   # new chunks show up here, not in git diff
+```
+
+- If both commands print nothing → `dist/` is in sync. Done.
+- If either prints something → report the changed files and line counts, then ask the user whether to switch to `--fix`.
+
+### `--fix`
+
+Rebuild and stage `dist/`.
+
+```bash
+yarn install
+yarn build
+git add dist/
+git status --short dist/
+```
+
+Do **not** commit automatically — let the user review the bundle diff first. A reasonable follow-up commit message:
+
+```
+build: regenerate dist/index.js
+```
+
+Or, if tied to a source change:
+
+```
+<type>(<scope>): <summary>
+
+Regenerates dist/index.js.
+```
+
+### Before the user commits: pre-commit hook reminder
+
+Whoever runs the follow-up commit needs the repo's pre-commit hooks installed. Verify with `ls .git/hooks/pre-commit`; if missing, run `make` (installs yarn deps + `pre-commit install`) or `pre-commit install`.
+
+If a hook modifies files, the commit fails. Recover by staging the modified files and committing again (**never `--amend`**, because the hook-failed commit never landed):
+
+```bash
+git add <modified files>
+git commit -m "<same message>"
+```
+
+## Notes
+
+- The CI check runs `git diff --ignore-space-at-eol dist/` — whitespace-only diffs pass, anything else fails. Match that locally.
+- CI also fails on untracked files in `dist/` via `git ls-files --others --exclude-standard dist/`. `git diff` alone never reports a brand-new chunk, so a missing chunk would otherwise pass CI and only break at runtime on whichever platform needs it.
+- `yarn build` shells out to `ncc build src/main.ts -e @sentry/cli`. `@sentry/cli` is deliberately excluded from the bundle because it ships its own native binaries at runtime.
+- The bundle diff can be large even for small source changes (minifier + bundler reshuffles). That is expected; just verify the intended symbols are present.
+- Never hand-edit `dist/index.js` or any chunk. Always regenerate.
+
+## Related files
+
+- `.github/workflows/verify-dist.yml` — the CI check this skill satisfies.
+- `package.json` → `scripts.build` — the canonical build command.
+- `src/main.ts` — the ncc entry point.

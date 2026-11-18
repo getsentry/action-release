@@ -1,75 +1,176 @@
-name: "build"
+name: Build and Test
+
 on:
+  pull_request:
+    paths-ignore:
+      - '**.md'
   push:
     branches:
       - master
-
-env:
-  # Variables defined in the repository
-  SENTRY_ORG: ${{ vars.SENTRY_ORG }}
-  # For master we have an environment variable that selects the action-release project
-  # instead of action-release-prs
-  # For other branches: https://sentry-ecosystem.sentry.io/releases/?project=4505075304693760
-  # For master branch: https://sentry-ecosystem.sentry.io/releases/?project=6576594
-  SENTRY_PROJECT: ${{ vars.SENTRY_PROJECT }}
+      - release/**
+    paths-ignore:
+      - '**.md'
 
 jobs:
+  prepare-docker:
+    name: Prepare docker tag
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      docker_tag: ${{ steps.docker_tag.outputs.docker_tag }}
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+
+      - name: Get docker tag
+        id: docker_tag
+        run: |
+          if [[ "$GITHUB_REF" == "refs/heads/master" ]]; then
+            echo "docker_tag=master" >> $GITHUB_OUTPUT
+          else
+            TAG=$(yq '... | select(has("uses") and .uses | test("docker://ghcr.io/getsentry/action-release-image:.*")) | .uses' action.yml | awk -F':' '{print $3}')
+            echo "docker_tag=$TAG" >> $GITHUB_OUTPUT
+          fi
+
+  # Builds the images without a push, so this job needs no write access. PRs
+  # (including fork PRs) and pushes use the same build. The e2e tests load the
+  # app image into a local registry, see `use-local-image`.
   docker-build:
-    name: Build & pubish Docker images
+    name: Build Docker images
+    runs-on: ${{ matrix.platform.runner }}
+    permissions:
+      contents: read
+    strategy:
+      matrix:
+        target:
+          - name: builder
+            image: action-release-builder-image
+          - name: app
+            image: action-release-image
+        # Build each arch on a native runner. QEMU emulation of arm64 crashes Node.
+        platform:
+          - name: linux/amd64
+            arch: amd64
+            runner: ubuntu-26.04
+          - name: linux/arm64
+            arch: arm64
+            runner: ubuntu-26.04-arm
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
+
+      # BUILDKIT_INLINE_CACHE creates the image in such a way that you can
+      # then use --cache-from (think of a remote cache)
+      # This feature is allowed thanks to using the buildx plugin
+      #
+      # There's a COPY command in the builder stage that can easily invalidate the cache
+      # If you notice, please add more exceptions to .dockerignore since we loose the value
+      # of using --cache-from on the app stage
+      - name: Build
+        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
+        with:
+          platforms: ${{ matrix.platform.name }}
+          # Local name inside the tar only, also on master and release runs. It is never
+          # pushed to ghcr.io. `docker-publish` pushes the image under its ghcr.io name.
+          tags: localhost:5000/${{ matrix.target.image }}:pr
+          # OCI archive, so it keeps the provenance attestation and `docker-publish`
+          # can push the exact bytes that the e2e tests used.
+          outputs: type=oci,dest=${{ runner.temp }}/image.tar
+          # Inline cache only holds the final stage, so the app build also
+          # reads the builder image to reuse the builder stage.
+          cache-from: |
+            ghcr.io/${{ github.repository_owner }}/action-release-builder-image:master
+            ghcr.io/${{ github.repository_owner }}/action-release-image:master
+          target: ${{ matrix.target.name }}
+          build-args: BUILDKIT_INLINE_CACHE=1
+
+      - name: Upload image
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: ${{ matrix.target.image }}-${{ matrix.platform.arch }}
+          path: ${{ runner.temp }}/image.tar
+          retention-days: 1
+
+  # The only job that can write to ghcr.io. It runs only on push (reviewed code),
+  # after the e2e tests pass, and publishes the exact images they tested.
+  docker-publish:
+    name: Publish Docker images
+    needs: [prepare-docker, e2e]
+    if: github.event_name == 'push'
     runs-on: ubuntu-latest
     permissions:
       packages: write
     strategy:
       matrix:
-        target:
-          - name: builder
-            image: action-release-builder-image:latest
-          - name: app
-            image: action-release-image:latest
+        image:
+          - action-release-builder-image
+          - action-release-image
     steps:
-    - name: Checkout repo
-      uses: actions/checkout@v3
-      with:
-        fetch-depth: 0
+      - name: Download images
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          pattern: ${{ matrix.image }}-*
+          path: ${{ runner.temp }}/images
 
-    - name: Set up QEMU
-      uses: docker/setup-qemu-action@v3
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v3
+      # skopeo reads the credentials of `docker login`. `--preserve-digests` fails
+      # the push if the image would change, so ghcr.io gets the tested bytes.
+      - name: Push arch images
+        env:
+          IMAGE: ghcr.io/${{ github.repository_owner }}/${{ matrix.image }}:${{ needs.prepare-docker.outputs.docker_tag }}
+        run: |
+          for ARCH in amd64 arm64; do
+            skopeo copy --all --preserve-digests \
+              "oci-archive:$RUNNER_TEMP/images/${{ matrix.image }}-$ARCH/image.tar" \
+              "docker://$IMAGE-$ARCH"
+          done
 
-    - name: Login to GitHub Container Registry
-      uses: docker/login-action@v3
-      with:
-        registry: ghcr.io
-        username: ${{ github.actor }}
-        password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Create and verify multi-arch manifest
+        env:
+          IMAGE: ghcr.io/${{ github.repository_owner }}/${{ matrix.image }}:${{ needs.prepare-docker.outputs.docker_tag }}
+        run: |
+          docker buildx imagetools create -t "$IMAGE" "$IMAGE-amd64" "$IMAGE-arm64"
+          PLATFORMS=$(docker buildx imagetools inspect "$IMAGE" --format '{{json .Manifest}}' | jq -r '.manifests[].platform | "\(.os)/\(.architecture)"')
+          echo "$PLATFORMS"
+          grep -qx linux/amd64 <<< "$PLATFORMS"
+          grep -qx linux/arm64 <<< "$PLATFORMS"
 
-    # BUILDKIT_INLINE_CACHE creates the image in such a way that you can
-    # then use --cache-from (think of a remote cache)
-    # This feature is allowed thanks to using the buildx plugin
-    #
-    # There's a COPY command in the builder stage that can easily invalidate the cache
-    # If you notice, please add more exceptions to .dockerignore since we loose the value
-    # of using --cache-from on the app stage
-    - name: Build and push
-      uses: docker/build-push-action@v6
-      with:
-        platforms: linux/amd64,linux/arm64
-        push: ${{ github.ref == 'refs/heads/master' }}
-        tags: ghcr.io/${{ github.repository_owner }}/${{ matrix.target.image }}
-        cache-from: ghcr.io/${{ github.repository_owner }}/${{ matrix.target.image }}
-        target: ${{ matrix.target.name }}
-        build-args: BUILDKIT_INLINE_CACHE=1
+  lint:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
-    # This step creates real Sentry releases for the action itself:
-    # https://sentry-ecosystem.sentry.io/releases/?project=6576594
-    - name: Sentry Release
-      uses: getsentry/action-release@v1
-      if: vars.SENTRY_ORG != ''
-      env:
-        SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-        SENTRY_LOG_LEVEL: debug
-      with:
-        environment: 'production'
-        ignore_missing: true
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+
+      - name: Install
+        run: yarn install
+
+      - name: Check format
+        run: yarn format-check
+
+      - name: Lint
+        run: yarn lint
+
+      - name: Build
+        run: yarn build
+
+  # All E2E tests are in e2e.yml. Add new tests there, so they also gate docker-publish.
+  e2e:
+    name: E2E
+    needs: docker-build
+    uses: ./.github/workflows/e2e.yml
+    secrets: inherit
+    permissions:
+      contents: read

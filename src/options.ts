@@ -1,28 +1,39 @@
 import * as core from '@actions/core';
-import {getCLI} from './cli';
+import { SourceMapsPathDescriptor } from '@sentry/cli';
+import { existsSync, globSync } from 'fs';
+import path from 'path';
+import { getCLI } from './cli';
 
 /**
  * Get the release version string from parameter or propose one.
  * @throws
  * @returns Promise<string>
  */
-export const getVersion = async (): Promise<string> => {
+export const getRelease = async (): Promise<string> => {
+  // TODO(v4): Remove `version` and `version_prefix`, they were deprecated in v3
+  const releaseOption: string = core.getInput('release');
   const versionOption: string = core.getInput('version');
+  const releasePrefixOption: string = core.getInput('release_prefix');
   const versionPrefixOption: string = core.getInput('version_prefix');
-  let version = '';
-  if (versionOption) {
-    // If the users passes in `${{github.ref}}, then it will have an unwanted prefix.
-    version = versionOption.replace(/^(refs\/tags\/)/, '');
+
+  let release = '';
+  if (releaseOption || versionOption) {
+    // Prefer `release` over the deprecated `version`
+    release = releaseOption ? releaseOption : versionOption;
+    // If users pass `${{ github.ref }}, strip the unwanted `refs/tags` prefix
+    release = release.replace(/^(refs\/tags\/)/, '');
   } else {
-    core.debug('Version not provided, proposing one...');
-    version = await getCLI().proposeVersion();
+    core.debug('Release version not provided, proposing one...');
+    release = await getCLI().proposeVersion();
   }
 
-  if (versionPrefixOption) {
-    version = `${versionPrefixOption}${version}`;
+  if (releasePrefixOption) {
+    release = `${releasePrefixOption}${release}`;
+  } else if (versionPrefixOption) {
+    release = `${versionPrefixOption}${release}`;
   }
 
-  return version;
+  return release;
 };
 
 /**
@@ -60,25 +71,57 @@ export const getStartedAt = (): number | null => {
   }
 
   if (!outputTimestamp || outputTimestamp < 0) {
-    throw new Error(
-      'started_at not in valid format. Unix timestamp or ISO 8601 date expected'
-    );
+    throw new Error('started_at not in valid format. Unix timestamp or ISO 8601 date expected');
   }
 
   return outputTimestamp;
 };
 
-/**
- * Source maps are optional, but there may be several as a space-separated list.
- * @returns string[]
- */
-export const getSourcemaps = (): string[] => {
-  const sourcemapsOption: string = core.getInput('sourcemaps');
-  if (!sourcemapsOption) {
-    return [];
+const splitList = (input: string): string[] => input.split(/\s+/).filter(Boolean);
+
+const expandSourcemapsEntry = (entry: string): string[] => {
+  // Keep existing paths as-is, e.g. framework route folders like `[slug]` look like globs.
+  if (!/[*?[\]{}]/.test(entry) || existsSync(entry)) {
+    return [entry];
   }
 
-  return sourcemapsOption.split(' ');
+  const matches = globSync(entry);
+  if (!matches.length) {
+    core.warning(`No files match the sourcemaps pattern "${entry}".`);
+  }
+  return matches;
+};
+
+/**
+ * Source maps are optional, but there may be several as a space-separated list.
+ * Entries with glob patterns (e.g. `build/*.map`) are expanded to the matching paths.
+ * `url_prefix` takes one prefix for all entries, or one prefix per entry in the same order.
+ * @throws when several prefixes are given and their count does not match the sourcemaps entries.
+ */
+export const getSourcemaps = (): SourceMapsPathDescriptor[] => {
+  const entries = splitList(core.getInput('sourcemaps'));
+  const prefixes = splitList(core.getInput('url_prefix'));
+
+  if (prefixes.length > 1 && prefixes.length !== entries.length) {
+    throw new Error('When `url_prefix` has multiple values, each `sourcemaps` entry must have exactly one prefix');
+  }
+
+  return entries.map((entry, index) => {
+    const urlPrefix = prefixes.length > 1 ? prefixes[index] : prefixes[0];
+    return { paths: expandSourcemapsEntry(entry), ...(urlPrefix && { urlPrefix }) };
+  });
+};
+
+/**
+ * Debug files are optional, but there may be several as a whitespace-separated list.
+ * Paths cannot contain spaces.
+ * @returns string[]
+ */
+export const getDebugFiles = (): string[] => {
+  return core
+    .getInput('debug_files')
+    .split(/\s+/)
+    .filter(file => file.length > 0);
 };
 
 /**
@@ -100,10 +143,7 @@ export const getDist = (): string | undefined => {
  * @param defaultValue boolean
  * @returns boolean
  */
-export const getBooleanOption = (
-  input: string,
-  defaultValue: boolean
-): boolean => {
+export const getBooleanOption = (input: string, defaultValue: boolean): boolean => {
   const option = core.getInput(input);
   if (!option) {
     return defaultValue;
@@ -123,7 +163,7 @@ export const getBooleanOption = (
   throw Error(`${input} is not a boolean`);
 };
 
-export const getSetCommitsOption = (): 'auto' | 'skip' => {
+export const getSetCommitsOption = (): 'auto' | 'skip' | 'manual' => {
   let setCommitOption = core.getInput('set_commits');
   // default to auto
   if (!setCommitOption) {
@@ -136,22 +176,27 @@ export const getSetCommitsOption = (): 'auto' | 'skip' => {
       return 'auto';
     case 'skip':
       return 'skip';
+    case 'manual':
+      return 'manual';
     default:
-      throw Error('set_commits must be "auto" or "skip"');
+      throw Error('set_commits must be "auto", "skip" or "manual"');
   }
 };
 
+export const getSetCommitsManualOptions = (): { repo: string; commit: string; previousCommit: string } => {
+  const repo = core.getInput('repo');
+  const commit = core.getInput('commit');
+  const previousCommit = core.getInput('previous_commit');
+
+  return { repo, commit, previousCommit };
+};
 /**
  * Check for required environment variables.
  */
 export const checkEnvironmentVariables = (): void => {
   if (process.env['MOCK']) {
     // Set environment variables for mock runs if they aren't already
-    for (const variable of [
-      'SENTRY_AUTH_TOKEN',
-      'SENTRY_ORG',
-      'SENTRY_PROJECT',
-    ]) {
+    for (const variable of ['SENTRY_AUTH_TOKEN', 'SENTRY_ORG', 'SENTRY_PROJECT']) {
       if (!(variable in process.env)) {
         process.env[variable] = variable;
       }
@@ -159,14 +204,10 @@ export const checkEnvironmentVariables = (): void => {
   }
 
   if (!process.env['SENTRY_ORG']) {
-    throw Error(
-      'Environment variable SENTRY_ORG is missing an organization slug'
-    );
+    throw Error('Environment variable SENTRY_ORG is missing an organization slug');
   }
   if (!process.env['SENTRY_AUTH_TOKEN']) {
-    throw Error(
-      'Environment variable SENTRY_AUTH_TOKEN is missing an auth token'
-    );
+    throw Error('Environment variable SENTRY_AUTH_TOKEN is missing an auth token');
   }
 };
 
@@ -188,14 +229,13 @@ export const getProjects = (): string[] => {
   return [project];
 };
 
-export const getUrlPrefixOption = (): string => {
-  return core.getInput('url_prefix');
-};
-
 export const getWorkingDirectory = (): string => {
-  return core.getInput('working_directory');
+  // The action runs inside `github.action_path` and as such
+  // doesn't automatically have access to the user's git
+  // We prefix all paths with `GITHUB_WORKSPACE` which is at the top of the repo.
+  return path.join(process.env.GITHUB_WORKSPACE || '', core.getInput('working_directory'));
 };
 
-export const getStripPrefixOption = (): string => {
-  return core.getInput('strip_prefix');
+export const getStripPrefix = (): string[] => {
+  return splitList(core.getInput('strip_prefix'));
 };
