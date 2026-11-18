@@ -100077,7 +100077,7 @@ const getSourcemaps = () => {
         }
         const matches = (0, fs_1.globSync)(entry);
         if (!matches.length) {
-            core.warning(`No files match the sourcemaps pattern "${entry}".`);
+            throw new Error(`No files match the sourcemaps pattern "${entry}".`);
         }
         return matches;
     });

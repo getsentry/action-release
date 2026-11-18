@@ -72,6 +72,11 @@ describe('options', () => {
       process.env['INPUT_SOURCEMAPS'] = './lib src/opt*.ts';
       expect(getSourcemaps()).toEqual(['./lib', 'src/options.ts']);
     });
+
+    test('should throw when a glob pattern matches no files', () => {
+      process.env['INPUT_SOURCEMAPS'] = 'src/*.nope';
+      expect(() => getSourcemaps()).toThrow('No files match the sourcemaps pattern "src/*.nope".');
+    });
   });
 
   describe('getDebugFiles', () => {
