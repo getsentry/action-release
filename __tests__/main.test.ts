@@ -8,6 +8,7 @@ import {
   getBooleanOption,
   getDist,
   getSourcemaps,
+  getSourcemapExtensions,
   getDebugFiles,
   getStartedAt,
   getRelease,
@@ -119,6 +120,17 @@ describe('options', () => {
     test('should split whitespace-separated paths and drop empty entries', () => {
       process.env['INPUT_DEBUG_FILES'] = '  ./build/app.pdb   ./build/app.dSYM\n';
       expect(getDebugFiles()).toEqual(['./build/app.pdb', './build/app.dSYM']);
+    });
+  });
+
+  describe('getSourcemapExtensions', () => {
+    afterEach(() => {
+      delete process.env['INPUT_EXT'];
+    });
+
+    test('should split whitespace-separated extensions', () => {
+      process.env['INPUT_EXT'] = 'js   map  ts\n mjs';
+      expect(getSourcemapExtensions()).toEqual(['js', 'map', 'ts', 'mjs']);
     });
   });
 

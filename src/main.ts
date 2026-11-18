@@ -91,6 +91,7 @@ withTelemetry(
           core.debug(`Adding sourcemaps`);
           const sourceMapsOptions: SentryCliUploadSourceMapsOptions = {
             include: sourcemaps,
+            ext: options.getSourcemapExtensions(),
             dist,
             stripCommonPrefix,
           };
