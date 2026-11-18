@@ -13,6 +13,13 @@ inputs:
       Space-separated list of paths or glob patterns to JavaScript source maps.
       Omit to skip uploading sourcemaps.
     required: false
+  ext:
+    description: |-
+      Space-separated list of file extensions to upload from `sourcemaps`
+      directories (e.g. "js map ts"). Replaces the sentry-cli defaults
+      (js cjs mjs map jsbundle bundle), so list them too if you still need them.
+      Omit to use the defaults.
+    required: false
   inject:
     description: |-
       Injects Debug IDs into source files and source maps to ensure proper
@@ -188,6 +195,7 @@ runs:
         INPUT_ENVIRONMENT: ${{ inputs.environment }}
         INPUT_INJECT: ${{ inputs.inject }}
         INPUT_SOURCEMAPS: ${{ inputs.sourcemaps }}
+        INPUT_EXT: ${{ inputs.ext }}
         INPUT_DEBUG_FILES: ${{ inputs.debug_files }}
         INPUT_DIST: ${{ inputs.dist }}
         INPUT_FINALIZE: ${{ inputs.finalize }}

@@ -125,6 +125,12 @@ export const getDebugFiles = (): string[] => {
 };
 
 /**
+ * File extensions that sentry-cli scans when it uploads source maps from a directory.
+ * An empty list keeps the sentry-cli defaults.
+ */
+export const getSourcemapExtensions = (): string[] => splitList(core.getInput('ext'));
+
+/**
  * Dist is optional, but should be a string when provided.
  * @returns string
  */

@@ -99890,6 +99890,7 @@ const telemetry_1 = __nccwpck_require__(12417);
                 core.debug(`Adding sourcemaps`);
                 const sourceMapsOptions = {
                     include: sourcemaps,
+                    ext: options.getSourcemapExtensions(),
                     dist,
                     stripCommonPrefix,
                 };
@@ -99983,7 +99984,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.getWorkingDirectory = exports.getProjects = exports.checkEnvironmentVariables = exports.getSetCommitsManualOptions = exports.getSetCommitsOption = exports.getBooleanOption = exports.getDist = exports.getDebugFiles = exports.getSourcemaps = exports.getStartedAt = exports.getEnvironment = exports.getRelease = void 0;
+exports.getWorkingDirectory = exports.getProjects = exports.checkEnvironmentVariables = exports.getSetCommitsManualOptions = exports.getSetCommitsOption = exports.getBooleanOption = exports.getDist = exports.getSourcemapExtensions = exports.getDebugFiles = exports.getSourcemaps = exports.getStartedAt = exports.getEnvironment = exports.getRelease = void 0;
 const core = __importStar(__nccwpck_require__(42186));
 const fs_1 = __nccwpck_require__(57147);
 const path_1 = __importDefault(__nccwpck_require__(71017));
@@ -100099,6 +100100,12 @@ const getDebugFiles = () => {
         .filter(file => file.length > 0);
 };
 exports.getDebugFiles = getDebugFiles;
+/**
+ * File extensions that sentry-cli scans when it uploads source maps from a directory.
+ * An empty list keeps the sentry-cli defaults.
+ */
+const getSourcemapExtensions = () => splitList(core.getInput('ext'));
+exports.getSourcemapExtensions = getSourcemapExtensions;
 /**
  * Dist is optional, but should be a string when provided.
  * @returns string
