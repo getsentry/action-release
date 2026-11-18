@@ -10,7 +10,7 @@ import {
   getSetCommitsOption,
   getProjects,
   getUrlPrefixOption,
-  groupSourcemapsByUrlPrefix,
+  getSourcemapsInclude,
   getWorkingDirectory,
   getSetCommitsManualOptions,
 } from '../src/options';
@@ -78,41 +78,35 @@ describe('options', () => {
     });
   });
 
-  describe('groupSourcemapsByUrlPrefix', () => {
+  describe('getSourcemapsInclude', () => {
     const paths = ['./dist', './sourcemaps'];
 
-    test('uses one upload with no prefix', () => {
-      expect(groupSourcemapsByUrlPrefix(paths, '')).toEqual([{ include: paths }]);
+    test('returns plain paths without a prefix', () => {
+      expect(getSourcemapsInclude(paths, '')).toEqual(paths);
     });
 
-    test('preserves the existing single-prefix upload for all paths', () => {
-      expect(groupSourcemapsByUrlPrefix(paths, '~/')).toEqual([{ include: paths, urlPrefix: '~/' }]);
+    test('applies a single prefix to every path', () => {
+      expect(getSourcemapsInclude(paths, '~/')).toEqual([
+        { paths: ['./dist'], urlPrefix: '~/' },
+        { paths: ['./sourcemaps'], urlPrefix: '~/' },
+      ]);
     });
 
     test('maps multiple prefixes to the corresponding paths', () => {
-      expect(groupSourcemapsByUrlPrefix(paths, ' ~/   ~/sourcemaps ')).toEqual([
-        { include: ['./dist'], urlPrefix: '~/' },
-        { include: ['./sourcemaps'], urlPrefix: '~/sourcemaps' },
+      expect(getSourcemapsInclude(paths, ' ~/   ~/sourcemaps ')).toEqual([
+        { paths: ['./dist'], urlPrefix: '~/' },
+        { paths: ['./sourcemaps'], urlPrefix: '~/sourcemaps' },
       ]);
-    });
-
-    test('maps extra-whitespace-separated source-map paths to matching prefixes', () => {
-      process.env['INPUT_SOURCEMAPS'] = '  ./dist   \n\t./sourcemaps ';
-      expect(groupSourcemapsByUrlPrefix(getSourcemaps(), '~/ ~/sourcemaps')).toEqual([
-        { include: ['./dist'], urlPrefix: '~/' },
-        { include: ['./sourcemaps'], urlPrefix: '~/sourcemaps' },
-      ]);
-      delete process.env['INPUT_SOURCEMAPS'];
     });
 
     test('rejects mismatched multiple prefixes before creating a release', () => {
-      expect(() => groupSourcemapsByUrlPrefix(paths, '~/a ~/b ~/c')).toThrow(
+      expect(() => getSourcemapsInclude(paths, '~/a ~/b ~/c')).toThrow(
         /each sourcemaps path must have exactly one corresponding prefix/
       );
     });
 
     test('ignores prefix settings when no sourcemaps were configured', () => {
-      expect(groupSourcemapsByUrlPrefix([], '~/a ~/b')).toEqual([]);
+      expect(getSourcemapsInclude([], '~/a ~/b')).toEqual([]);
     });
   });
 

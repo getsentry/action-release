@@ -1,4 +1,5 @@
 import * as core from '@actions/core';
+import { SourceMapsPathDescriptor } from '@sentry/cli';
 import path from 'path';
 import { getCLI } from './cli';
 
@@ -198,38 +199,29 @@ export const getUrlPrefixOption = (): string => {
 };
 
 /**
- * Build separate uploads only when individual URL prefixes are provided.
- * Preserve the original single-prefix upload for all source-map paths.
+ * Map url_prefix values to sourcemaps paths, in order. A single prefix applies to every path.
+ * @throws when several prefixes are given and their count does not match the sourcemaps paths.
  */
-export const groupSourcemapsByUrlPrefix = (
+export const getSourcemapsInclude = (
   sourcemaps: string[],
   prefixInput: string
-): { include: string[]; urlPrefix?: string }[] => {
+): (string | SourceMapsPathDescriptor)[] => {
   if (sourcemaps.length === 0) {
     return [];
   }
 
   const prefixes = prefixInput.trim().split(/\s+/).filter(Boolean);
 
-  if (prefixes.length <= 1) {
-    return [
-      {
-        include: sourcemaps,
-        ...(prefixes[0] && { urlPrefix: prefixes[0] }),
-      },
-    ];
-  }
-
-  if (prefixes.length !== sourcemaps.length) {
+  if (prefixes.length > 1 && prefixes.length !== sourcemaps.length) {
     throw new Error(
       'When url_prefix has multiple values, each sourcemaps path must have exactly one corresponding prefix'
     );
   }
 
-  return sourcemaps.map((sourceMapPath, index) => ({
-    include: [sourceMapPath],
-    urlPrefix: prefixes[index],
-  }));
+  return sourcemaps.map((sourceMapPath, index) => {
+    const urlPrefix = prefixes.length > 1 ? prefixes[index] : prefixes[0];
+    return urlPrefix ? { paths: [sourceMapPath], urlPrefix } : sourceMapPath;
+  });
 };
 
 export const getWorkingDirectory = (): string => {

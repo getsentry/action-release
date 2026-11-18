@@ -33,7 +33,7 @@ withTelemetry(
       const setCommitsOption = options.getSetCommitsOption();
       const projects = options.getProjects();
       const urlPrefix = options.getUrlPrefixOption();
-      const sourceMapUploads = options.groupSourcemapsByUrlPrefix(sourcemaps, urlPrefix);
+      const sourcemapsInclude = options.getSourcemapsInclude(sourcemaps, urlPrefix);
       const stripCommonPrefix = options.getBooleanOption('strip_common_prefix', false);
       const release = await options.getRelease();
 
@@ -89,19 +89,20 @@ withTelemetry(
 
         await traceStep('upload-sourcemaps', async () => {
           core.debug(`Adding sourcemaps`);
-          // sentry-cli uploads to one project at a time. When multiple
-          // url_prefix entries were given, paths must also be uploaded
-          // individually so each retains its own prefix.
+          const sourceMapsOptions: SentryCliUploadSourceMapsOptions = {
+            include: sourcemapsInclude,
+            dist,
+            stripCommonPrefix,
+          };
+
+          // sentry-cli supports multiple projects, but only uploads sourcemaps for the
+          // first project so we need to upload sourcemaps for each project individually
           await Promise.all(
-            projects.flatMap((project: string) =>
-              sourceMapUploads.map(async group =>
-                getCLI().uploadSourceMaps(release, {
-                  ...group,
-                  dist,
-                  stripCommonPrefix,
-                  projects: [project],
-                } as SentryCliUploadSourceMapsOptions & { projects: string[] })
-              )
+            projects.map(async (project: string) =>
+              getCLI().uploadSourceMaps(release, {
+                ...sourceMapsOptions,
+                projects: [project],
+              } as SentryCliUploadSourceMapsOptions & { projects: string[] })
             )
           );
 
