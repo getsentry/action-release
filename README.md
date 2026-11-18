@@ -212,6 +212,36 @@ Suggestions and issues can be posted on the repository's
   - Your repository is connected in Sentry through the GitHub integration, and its name in Sentry matches the GitHub repository.
   - The checkout has the full history (`fetch-depth: 0`, see above). Sentry finds new commits by comparing with the commit of the previous release.
 
+- On Linux, the action runs in a Docker container. It does not work on runners without Docker, such as `ubuntu-slim`.
+  The job fails in the `Set up job` step, when the runner pulls the action's image.
+  You cannot install Docker in an earlier step, because the runner pulls the image before any step runs.
+  Use one of these workarounds:
+
+  - Run the action in a separate job on a runner that has Docker, such as `ubuntu-latest`.
+    Pass your build output to this job with `actions/upload-artifact` and `actions/download-artifact`.
+  - Use [Sentry CLI](https://docs.sentry.io/cli/) directly:
+
+    ```yaml
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Create Sentry release
+      env:
+        SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+        SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
+        SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
+      run: |
+        curl -sL https://sentry.io/get-cli/ | sh
+        VERSION=$(sentry-cli releases propose-version)
+        sentry-cli releases new "$VERSION"
+        sentry-cli releases set-commits "$VERSION" --auto
+        sentry-cli sourcemaps inject ./dist
+        sentry-cli sourcemaps upload --release "$VERSION" ./dist
+        sentry-cli deploys new --release "$VERSION" --env production
+        sentry-cli releases finalize "$VERSION"
+    ```
+
 - Not finding the repository
 
   ```text
