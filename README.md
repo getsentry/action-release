@@ -60,7 +60,7 @@ Adding the following to your workflow will create a new Sentry release and tell 
 
 | name                | description                                                                                                          | default              |
 | ------------------- | -------------------------------------------------------------------------------------------------------------------- | -------------------- |
-| `SENTRY_AUTH_TOKEN` | **[Required]** Authentication token for Sentry. See [Prerequisites](#prerequisites).           | -                    |
+| `SENTRY_AUTH_TOKEN` | **[Required]** Authentication token for Sentry. See [Prerequisites](#prerequisites).                                 | -                    |
 | `SENTRY_ORG`        | **[Required]** The slug of the organization name in Sentry.                                                          | -                    |
 | `SENTRY_PROJECT`    | The slug of the project name in Sentry. One of `SENTRY_PROJECT` or `projects` is required.                           | -                    |
 | `SENTRY_URL`        | The URL used to connect to Sentry. (Only required for [Self-Hosted Sentry](https://develop.sentry.dev/self-hosted/)) | `https://sentry.io/` |
@@ -72,13 +72,13 @@ Adding the following to your workflow will create a new Sentry release and tell 
 | `environment`            | Set the environment for this release. E.g. "production" or "staging". Omit to skip adding deploy to release.                                                                                                                 | -                                        |
 | `sourcemaps`             | Space-separated list of paths to JavaScript sourcemaps. Omit to skip uploading sourcemaps.                                                                                                                                   | -                                        |
 | `inject`                 | Injects Debug IDs into source files and source maps to ensure proper un-minifcation of your stacktraces. Does nothing if `sourcemaps` was not set.                                                                           | `true`                                   |
-| `debug_files`            | Space-separated list of paths to debug information files (e.g. dSYM, PDB, ELF, Breakpad). Paths cannot contain spaces. Omit to skip uploading debug files.                                                                                                | -                                        |
+| `debug_files`            | Space-separated list of paths to debug information files (e.g. dSYM, PDB, ELF, Breakpad). Paths cannot contain spaces. Omit to skip uploading debug files.                                                                   | -                                        |
 | `finalize`               | When false, omit marking the release as finalized and released.                                                                                                                                                              | `true`                                   |
 | `ignore_missing`         | When the flag is set and the previous release commit was not found in the repository, will create a release with the default commits count instead of failing the command.                                                   | `false`                                  |
 | `ignore_empty`           | When the flag is set, command will not fail and just exit silently if no new commits for a given release have been found.                                                                                                    | `false`                                  |
 | `dist`                   | Unique identifier for the distribution, used to further segment your release. Usually your build number.                                                                                                                     | -                                        |
 | `started_at`             | Unix timestamp of the release start date. Omit for current time.                                                                                                                                                             | -                                        |
-| `release`                | Identifier that uniquely identifies the releases. Should match the `release` property in your Sentry SDK init call if one was set. _Note: the `refs/tags/` prefix is automatically stripped when `version` is `github.ref`._ | <code>${{&nbsp;github.sha&nbsp;}}</code> |
+| `release`                | Identifier that uniquely identifies the releases. Should match the `release` property in your Sentry SDK init call if one was set. _Note: the `refs/tags/` prefix is automatically stripped when `release` is `github.ref`._ | <code>${{&nbsp;github.sha&nbsp;}}</code> |
 | `version`                | Deprecated: Use `release` instead.                                                                                                                                                                                           | <code>${{&nbsp;github.sha&nbsp;}}</code> |
 | `release_prefix`         | Value prepended to auto-generated version. For example "v".                                                                                                                                                                  | -                                        |
 | `version_prefix`         | Deprecated: Use `release_prefix` instead.                                                                                                                                                                                    | -                                        |
@@ -120,6 +120,15 @@ Adding the following to your workflow will create a new Sentry release and tell 
     with:
       environment: 'production'
       release: 'v1.0.1'
+  ```
+
+- Create a new Sentry release named after the pushed git tag.
+
+  ```yaml
+  - uses: getsentry/action-release@v3
+    with:
+      environment: 'production'
+      release: ${{ github.ref_name }}
   ```
 
 - Create a new Sentry release for [Self-Hosted Sentry](https://develop.sentry.dev/self-hosted/)
@@ -187,6 +196,11 @@ Suggestions and issues can be posted on the repository's
     with:
       fetch-depth: 0
   ```
+
+- If a release is created but has no commits, check that:
+
+  - Your repository is connected in Sentry through the GitHub integration, and its name in Sentry matches the GitHub repository.
+  - The checkout has the full history (`fetch-depth: 0`, see above). Sentry finds new commits by comparing with the commit of the previous release.
 
 - Not finding the repository
 
