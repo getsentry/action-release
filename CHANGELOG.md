@@ -1,5 +1,12 @@
 # Changelog
 
+## 3.9.1
+
+### Internal Changes 🔧
+
+- (telemetry) Tag custom sourcemaps extensions by @andreiborza and @claude in [#359](https://github.com/getsentry/action-release/pull/359)
+- Set docker tag for master [skip ci] by @sentry-release-bot in [d50e5d09](https://github.com/getsentry/action-release/commit/d50e5d09562aac81d9887971075d188eeef1565e)
+
 ## 3.9.0
 
 ### New Features ✨
