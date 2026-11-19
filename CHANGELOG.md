@@ -1,5 +1,32 @@
 # Changelog
 
+## 3.9.0
+
+### New Features ✨
+
+#### Sourcemaps
+
+- Expose custom extension input (#46) by @harshitethic and @andreiborza in [#345](https://github.com/getsentry/action-release/pull/345)
+- Support matching URL prefixes for multiple paths by @harshitethic, @andreiborza and @daocuong11 in [#340](https://github.com/getsentry/action-release/pull/340)
+
+#### Other
+
+- Add option `strip_prefix` by @tpope, @vlechemin and @andreiborza in [#237](https://github.com/getsentry/action-release/pull/237)
+- Support glob patterns in `sourcemaps` input by @andreiborza and @claude in [#357](https://github.com/getsentry/action-release/pull/357)
+
+### Bug Fixes 🐛
+
+- (release) Strip refs/heads prefix from branch releases (#86) by @harshitethic and @andreiborza in [#344](https://github.com/getsentry/action-release/pull/344)
+
+### Documentation 📚
+
+- Document workarounds for runners without Docker by @andreiborza and @claude in [#358](https://github.com/getsentry/action-release/pull/358)
+- Clarify tag-based releases and empty commit troubleshooting by @andreiborza and @claude in [#356](https://github.com/getsentry/action-release/pull/356)
+
+### Internal Changes 🔧
+
+- Run e2e tests on PRs with a local image registry by @andreiborza and @claude in [#346](https://github.com/getsentry/action-release/pull/346)
+
 ## 3.8.0
 
 ### New Features ✨
