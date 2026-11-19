@@ -80,6 +80,9 @@ withTelemetry(
       Sentry.setTag('inject', inject);
 
       if (sourcemapPaths.length) {
+        const ext = options.getSourcemapExtensions();
+        Sentry.setTag('sourcemaps-ext', ext.length ? ext.join(',') : 'default');
+
         if (inject) {
           await traceStep('inject-debug-ids', async () => {
             core.debug(`Injecting Debug IDs`);
@@ -92,7 +95,7 @@ withTelemetry(
           core.debug(`Adding sourcemaps`);
           const sourceMapsOptions: SentryCliUploadSourceMapsOptions = {
             include: sourcemaps,
-            ext: options.getSourcemapExtensions(),
+            ext,
             dist,
             stripPrefix,
             stripCommonPrefix,

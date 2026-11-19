@@ -99880,6 +99880,8 @@ const telemetry_1 = __nccwpck_require__(12417);
         Sentry.setTag('sourcemaps', sourcemapPaths.length > 0);
         Sentry.setTag('inject', inject);
         if (sourcemapPaths.length) {
+            const ext = options.getSourcemapExtensions();
+            Sentry.setTag('sourcemaps-ext', ext.length ? ext.join(',') : 'default');
             if (inject) {
                 yield (0, telemetry_1.traceStep)('inject-debug-ids', () => __awaiter(void 0, void 0, void 0, function* () {
                     core.debug(`Injecting Debug IDs`);
@@ -99891,7 +99893,7 @@ const telemetry_1 = __nccwpck_require__(12417);
                 core.debug(`Adding sourcemaps`);
                 const sourceMapsOptions = {
                     include: sourcemaps,
-                    ext: options.getSourcemapExtensions(),
+                    ext,
                     dist,
                     stripPrefix,
                     stripCommonPrefix,
